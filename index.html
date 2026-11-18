@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Akıl ve Zekâ Oyunları Platformu | 16 İnteraktif Zekâ Oyunu</title>
+  <meta name="description" content="MEB müfredatına ve atölye çalışmalarına uygun 16 interaktif akıl ve zekâ oyunu platformu. Strateji, mantık, uzamsal algı ve sözel beceriler.">
+  <meta name="theme-color" content="#1e1b4b">
+  
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #273549;
+      --accent-primary: #3b82f6;
+      --accent-primary-hover: #2563eb;
+      --accent-secondary: #8b5cf6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border-color: #334155;
+      --border-focus: #60a5fa;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Arka Plan Dekoratif Işıkları */
+    .bg-glow-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb-1 {
+      position: absolute;
+      top: -150px;
+      left: 20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 70%);
+      border-radius: 50%;
+      filter: blur(40px);
+    }
+    .glow-orb-2 {
+      position: absolute;
+      top: 400px;
+      right: -100px;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0) 70%);
+      border-radius: 50%;
+      filter: blur(50px);
+    }
+
+    /* Konteyner */
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HEADER & HERO */
+    header.hero-header {
+      padding: 48px 0 32px 0;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-radius: var(--radius-full);
+      color: #93c5fd;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 30%, #93c5fd 70%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 760px;
+      margin: 0 auto 28px auto;
+      font-weight: 400;
+    }
+
+    /* İSTATİSTİK ŞERİDİ */
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 36px;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      color: var(--text-main);
+      backdrop-filter: blur(8px);
+    }
+    .stat-pill .icon {
+      font-size: 16px;
+    }
+    .stat-pill strong {
+      color: #60a5fa;
+    }
+
+    /* KONTROL PANELİ (Arama & Filtreler) */
+    .controls-wrapper {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(12px);
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 46px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .btn-random {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-random:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(124, 58, 237, 0.45);
+      filter: brightness(1.1);
+    }
+
+    .btn-random:active {
+      transform: translateY(0);
+    }
+
+    /* Kategori Butonları */
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .filter-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #0f172a;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .filter-btn:hover {
+      color: var(--text-main);
+      border-color: #475569;
+      background: #172033;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-primary);
+      color: #ffffff;
+      border-color: var(--accent-primary);
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+    }
+
+    .filter-btn .count-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      font-size: 11px;
+    }
+
+    /* OYUN KARTLARI GRİDİ */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+
+    .game-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .game-card:hover {
+      transform: translateY(-6px);
+      background: var(--bg-card-hover);
+      border-color: #475569;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Kart Üst Renkli Çizgisi */
+    .card-accent-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--card-color, #3b82f6);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .game-icon-box {
+      width: 58px;
+      height: 58px;
+      border-radius: var(--radius-md);
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05);
+      transition: transform 0.25s ease;
+    }
+
+    .game-card:hover .game-icon-box {
+      transform: scale(1.08) rotate(3deg);
+    }
+
+    .card-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .difficulty-badge {
+      font-size: 11px;
+      color: #facc15;
+      letter-spacing: 1px;
+    }
+
+    .game-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .game-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    /* Beceri Etiketleri */
+    .skills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .skill-tag {
+      font-size: 11.5px;
+      padding: 3px 9px;
+      background: rgba(15, 23, 42, 0.7);
+      color: #94a3b8;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Kart Aksiyon Butonları */
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .btn-play {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 18px;
+      background: var(--accent-primary);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      font-size: 14.5px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-play:hover {
+      background: var(--accent-primary-hover);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn-play:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon-ext {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-icon-ext:hover {
+      color: #ffffff;
+      border-color: #64748b;
+      background: #1e293b;
+      transform: translateY(-2px);
+    }
+
+    .btn-icon-ext svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    /* SONUÇ BULUNAMADI */
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+    }
+    .no-results .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .no-results h3 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .no-results p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* REHBER & BİLGİ ALANI */
+    .info-section {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      margin-bottom: 60px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .info-section h2 {
+      font-size: 1.6rem;
+      color: #ffffff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .info-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    .info-card h4 {
+      font-size: 1.05rem;
+      color: #60a5fa;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .info-card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer.portal-footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border-color);
+      background: #0b1120;
+      padding: 32px 0;
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .footer-sub {
+      font-size: 12.5px;
+      color: var(--text-dim);
+    }
+
+    /* ========================================================
+       FULLSCREEN EMBEDDED MODAL PLAYER (Gömülü Oyun Oynatıcı)
+       ======================================================== */
+    .game-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(12px);
+      z-index: 100000;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .game-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .game-modal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #1e293b;
+      border-bottom: 1px solid var(--border-color);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .modal-game-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-game-icon {
+      font-size: 24px;
+    }
+
+    .modal-game-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-modal-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: #0f172a;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-modal-action:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    .btn-modal-close {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: white;
+    }
+    .btn-modal-close:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
+    .game-iframe-wrapper {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #000;
+    }
+
+    .game-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2rem;
+      }
+      .controls-wrapper {
+        padding: 14px;
+      }
+      .search-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-random {
+        justify-content: center;
+      }
+      .info-section {
+        padding: 20px;
+      }
+      .game-modal-bar {
+        padding: 8px 12px;
+      }
+      .modal-game-title {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Arka Plan Efekti -->
+  <div class="bg-glow-container">
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+  </div>
+
+  <div class="container">
+    
+    <!-- HERO HEADER -->
+    <header class="hero-header">
+      <div class="hero-badge">
+        <span>✨</span>
+        <span>MEB Müfredatı ve Zekâ Oyunları Atölyesi Uyumlu</span>
+      </div>
+      <h1 class="hero-title">Akıl ve Zekâ Oyunları</h1>
+      <p class="hero-subtitle">
+        Strateji, analitik düşünme, uzamsal zekâ, mantık ve sözel becerileri geliştirmek için tasarlanmış 16 adet dijital akıl ve zekâ oyunu platformu.
+      </p>
+
+      <!-- İstatistik Hapları -->
+      <div class="stats-row">
+        <div class="stat-pill">
+          <span class="icon">🎮</span>
+          <span>Toplam: <strong>16 Oyun</strong></span>
+        </div>
+        <div class="stat-pill">
+          <span class="icon">📁</span>
+          <span>Kategori: <strong>4 Alan</strong></span>
+        </div>
+        <div class="stat-pill">
+          <span class="icon">⚡</span>
+          <span>Erişim: <strong>Hızlı & Ücretsiz</strong></span>
+        </div>
+        <div class="stat-pill">
+          <span class="icon">📱</span>
+          <span>Cihaz: <strong>Akıllı Tahta & Mobil</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KONTROL PANELİ (ARAMA & KATEGORİLER) -->
+    <section class="controls-wrapper" aria-label="Oyun Filtreleme ve Arama">
+      <div class="search-row">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Oyun adı, beceri veya anahtar kelime ara... (örn: sudoku, dama, kelime)" autocomplete="off">
+        </div>
+        <button class="btn-random" id="btnRandom" title="Rastgele bir oyun seç ve hemen oyna!">
+          <span>🎲</span>
+          <span>Rastgele Oyun Seç</span>
+        </button>
+      </div>
+
+      <!-- Kategori Hapları -->
+      <div class="filter-pills" id="categoryPills" role="tablist">
+        <button class="filter-btn active" data-category="all" role="tab">
+          <span>🌟</span>
+          <span>Tümü</span>
+          <span class="count-badge" id="countAll">16</span>
+        </button>
+        <button class="filter-btn" data-category="strategy" role="tab">
+          <span>♟️</span>
+          <span>Strateji Oyunları</span>
+          <span class="count-badge" id="countStrategy">4</span>
+        </button>
+        <button class="filter-btn" data-category="logic" role="tab">
+          <span>🧩</span>
+          <span>Mantık & Matematik</span>
+          <span class="count-badge" id="countLogic">5</span>
+        </button>
+        <button class="filter-btn" data-category="spatial" role="tab">
+          <span>🧊</span>
+          <span>Görsel & Mekânsal</span>
+          <span class="count-badge" id="countSpatial">5</span>
+        </button>
+        <button class="filter-btn" data-category="verbal" role="tab">
+          <span>🔤</span>
+          <span>Sözel & Kelime</span>
+          <span class="count-badge" id="countVerbal">2</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- OYUN KARTLARI GRİDİ -->
+    <main>
+      <div class="games-grid" id="gamesGrid">
+        <!-- Javascript dinamik olarak kartları basacaktır -->
+      </div>
+    </main>
+
+    <!-- AKILLI TAHTA & EĞİTİM REHBERİ -->
+    <section class="info-section">
+      <h2>
+        <span>🏫</span>
+        <span>Eğitim ve Sınıf İçi Kullanım Rehberi</span>
+      </h2>
+      <p style="color: var(--text-muted); font-size: 14.5px;">
+        Bu platform; bilişim teknolojileri sınıfları, akıl ve zekâ oyunları atölyeleri, serbest etkinlik saatleri ve bireysel öğrenci çalışmaları için özel olarak optimize edilmiştir.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4><span>🖥️</span> Akıllı Tahta & Dokunmatik</h4>
+          <p>Tüm oyunlar dokunmatik ekran hareketlerini (sürükle-bırak, dokunma) destekler. Sınıf içi etkileşimli tahtalarda tam ekran modunda doğrudan oynatılabilir.</p>
+        </div>
+        <div class="info-card">
+          <h4><span>🚀</span> GitHub Pages & Web Yayını</h4>
+          <p>Harici bir veritabanı veya sunucu dili (PHP/NodeJS) gerektirmez. GitHub Pages veya herhangi bir statik web sunucusunda anında çalışır.</p>
+        </div>
+        <div class="info-card">
+          <h4><span>💾</span> Çevrim Dışı (Offline) Kullanım</h4>
+          <p>İnternet bağlantısı olmadan da kullanılabilir. Klasörü USB belleğe veya bilgisayara atıp ana <code>index.html</code> dosyasını açmanız yeterlidir.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="portal-footer">
+    <div class="container">
+      <p class="footer-text">
+        <strong>Akıl ve Zekâ Oyunları Platformu</strong> • Oyun ve Oyun Etkinlikleri Koleksiyonu
+      </p>
+      <p class="footer-sub">
+        Öğrencilerin problem çözme, stratejik düşünme ve zihinsel esnekliklerini geliştirmek amacıyla hazırlanmıştır.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ========================================================
+       GÖMÜLÜ OYUN OYNATICI MODAL (FULLSCREEN POPUP)
+       ======================================================== -->
+  <div class="game-modal-overlay" id="gameModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="game-modal-bar">
+      <div class="modal-game-info">
+        <button class="btn-modal-action" id="btnModalBack" title="Ana Sayfaya / Oyun Listesine Dön">
+          <span>⬅</span>
+          <span>Oyun Listesine Dön</span>
+        </button>
+        <span class="modal-game-icon" id="modalGameIcon">🎮</span>
+        <span class="modal-game-title" id="modalGameTitle">Oyun Adı</span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-action" id="btnModalFullscreen" title="Tarayıcıyı Tam Ekran Yap">
+          <span>⛶</span>
+          <span>Tam Ekran</span>
+        </button>
+        <a href="#" target="_blank" class="btn-modal-action" id="btnModalNewTab" title="Yeni Sekmede Bağımsız Aç">
+          <span>↗</span>
+          <span>Ayrı Sekmede Aç</span>
+        </a>
+        <button class="btn-modal-action btn-modal-close" id="btnModalClose" title="Kapat">
+          <span>✕</span>
+          <span>Kapat</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="game-iframe-wrapper">
+      <iframe id="gameIframe" class="game-iframe" src="" allowfullscreen allow="autoplay"></iframe>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT KODLARI -->
+  <script>
+    // 16 Adet Akıl ve Zekâ Oyunu Veri Tabanı
+    const GAMES_DATA = [
+      {
+        id: "dama",
+        title: "Türk Daması",
+        folder: "dama",
+        category: "strategy",
+        categoryName: "Strateji",
+        icon: "👑",
+        difficulty: "⭐⭐⭐",
+        description: "Geleneksel Türk Daması kurallarıyla 8x8 tahtada yatay ve dikey hareketlerle rakip taşları toplayın, damaya ulaşarak üstünlük sağlayın.",
+        skills: ["Stratejik Planlama", "Taktiksel Görüş", "Hamle Hesabı"],
+        color: "#dc2626"
+      },
+      {
+        id: "mangala",
+        title: "Mangala",
+        folder: "mangala",
+        category: "strategy",
+        categoryName: "Strateji",
+        icon: "🏺",
+        difficulty: "⭐⭐",
+        description: "Tarihi Türk zekâ ve strateji oyunu. Taşları kuyulara taktiksel biçimde dağıtarak hazinenizi doldurun ve rakibi alt edin.",
+        skills: ["Sayı Sayma", "İleri Görüş", "Strateji Geliştirme"],
+        color: "#b45309"
+      },
+      {
+        id: "dokuz_tas",
+        title: "Dokuz Taş",
+        folder: "dokuz_tas",
+        category: "strategy",
+        categoryName: "Strateji",
+        icon: "💠",
+        difficulty: "⭐⭐",
+        description: "Üç iç içe kare üzerinde 9'ar taşla oynanan klasik antik strateji. Taşlarınızı üçlü dizerek (caz yaparak) rakibin taşlarını ele geçirin.",
+        skills: ["Konum Analizi", "Savunma & Hücum", "Taktiksel Zekâ"],
+        color: "#4f46e5"
+      },
+      {
+        id: "uc_tas",
+        title: "3 Taş Oyunu",
+        folder: "uc_tas",
+        category: "strategy",
+        categoryName: "Strateji",
+        icon: "⚪",
+        difficulty: "⭐",
+        description: "Geleneksel üç taş oyunu. 3 taşınızı tahtaya yerleştirip çizgiler üzerinde hareket ettirerek aynı doğrultuda üçlü yapmaya çalışın.",
+        skills: ["Hızlı Karar Verme", "Önleyici Hamle", "Çizgi Mantığı"],
+        color: "#059669"
+      },
+      {
+        id: "sudoku",
+        title: "Klasik Sudoku",
+        folder: "sudoku",
+        category: "logic",
+        categoryName: "Mantık & Matematik",
+        icon: "🔲",
+        difficulty: "⭐⭐⭐",
+        description: "9x9'luk alanda her satır, sütun ve 3x3'lük blokta 1-9 arası rakamları tekrar etmeden yerleştirme mantık bulmacası.",
+        skills: ["Mantıksal Eleme", "Konsantrasyon", "Detay Analizi"],
+        color: "#2563eb"
+      },
+      {
+        id: "bolgesel_sudoku",
+        title: "Bölgesel Sudoku",
+        folder: "bolgesel_sudoku",
+        category: "logic",
+        categoryName: "Mantık & Matematik",
+        icon: "🔢",
+        difficulty: "⭐⭐",
+        description: "Klasik bloklar yerine farklı geometrik bölgelerden oluşan ızgarada satır, sütun ve bölge kurallarına göre sayıları yerleştirin.",
+        skills: ["Uzamsal Mantık", "Kural Takibi", "Problem Çözme"],
+        color: "#7c3aed"
+      },
+      {
+        id: "kendoku",
+        title: "Kendoku (KenKen)",
+        folder: "kendoku",
+        category: "logic",
+        categoryName: "Mantık & Matematik",
+        icon: "➗",
+        difficulty: "⭐⭐⭐",
+        description: "Toplama, çıkarma, çarpma ve bölme ipuçlarını kullanarak ızgarayı satır ve sütunlarda sayı tekrarı olmadan kafes kurallarıyla doldurun.",
+        skills: ["Dört İşlem", "Aritmetik Sezgi", "Mantıksal Çıkarım"],
+        color: "#0891b2"
+      },
+      {
+        id: "cit_oyunu",
+        title: "Çit Oyunu (Slitherlink)",
+        folder: "cit_oyunu",
+        category: "logic",
+        categoryName: "Mantık & Matematik",
+        icon: "📐",
+        difficulty: "⭐⭐⭐",
+        description: "Karelerdeki sayı ipuçlarına göre noktalar arasını birleştirerek kendisini kesmeyen tek bir kapalı çit döngüsü oluşturun.",
+        skills: ["Geometrik Çıkarım", "Döngü Mantığı", "Eleme Yöntemi"],
+        color: "#0d9488"
+      },
+      {
+        id: "Sihirli_piramit",
+        title: "Sihirli Piramit",
+        folder: "Sihirli_piramit",
+        category: "logic",
+        categoryName: "Mantık & Matematik",
+        icon: "🔺",
+        difficulty: "⭐⭐",
+        description: "Piramidin en tepesinden başlayarak birbirine bağlı komşu sayılardan geçip her satırdan birer sayı seçerek tabana ulaşın.",
+        skills: ["Yol Planlama", "Sayısal Sezgi", "Stratejik Tercih"],
+        color: "#d97706"
+      },
+      {
+        id: "tangram",
+        title: "Tangram",
+        folder: "tangram",
+        category: "spatial",
+        categoryName: "Görsel & Mekânsal",
+        icon: "🧩",
+        difficulty: "⭐⭐",
+        description: "7 adet geometrik parçayı üst üste getirmeden döndürüp birleştirerek hedef silüetleri ve figürleri eksiksiz tamamlayın.",
+        skills: ["Parça-Bütün İlişkisi", "Geometrik Algı", "Yaratıcı Zekâ"],
+        color: "#ea580c"
+      },
+      {
+        id: "pentomino",
+        title: "Pentomino",
+        folder: "pentomino",
+        category: "spatial",
+        categoryName: "Görsel & Mekânsal",
+        icon: "🟦",
+        difficulty: "⭐⭐⭐",
+        description: "5 birimkareden oluşan 12 farklı geometrik polyomino parçasını boşluk bırakmadan oyun alanına doğru şekilde yerleştirin.",
+        skills: ["Uzamsal Düşünme", "Rotasyon & Yansıma", "Geometrik Optimizasyon"],
+        color: "#6366f1"
+      },
+      {
+        id: "somaKupu",
+        title: "Soma Küpü",
+        folder: "somaKupu",
+        category: "spatial",
+        categoryName: "Görsel & Mekânsal",
+        icon: "🧊",
+        difficulty: "⭐⭐⭐",
+        description: "3 boyutlu 7 adet poli-küp parçasını 3D uzayda çevirip bir araya getirerek 3x3x3 boyutundaki büyük küpü inşa edin.",
+        skills: ["3 Boyutlu Düşünme", "Hacim Algısı", "Zihinsel Döndürme"],
+        color: "#3b82f6"
+      },
+      {
+        id: "abc_baglama",
+        title: "ABC Bağlamaca",
+        folder: "abc_baglama",
+        category: "spatial",
+        categoryName: "Görsel & Mekânsal",
+        icon: "🔗",
+        difficulty: "⭐⭐",
+        description: "Aynı harf çiftlerini ızgara üzerinde çizgiler birbirini kesmeyecek şekilde yatay ve dikey hatlarla birleştirin.",
+        skills: ["Bağlantısal Zekâ", "Yol Bulma", "Mekânsal Kısıt"],
+        color: "#10b981"
+      },
+      {
+        id: "görsellerde_fark_bulma",
+        title: "Görsellerde Fark Bulma",
+        folder: "görsellerde_fark_bulma",
+        category: "spatial",
+        categoryName: "Görsel & Mekânsal",
+        icon: "🔍",
+        difficulty: "⭐⭐",
+        description: "Birbirine çok benzeyen iki görsel arasındaki ustalıkla gizlenmiş ince farkları dikkatle tarayarak bulun ve işaretleyin.",
+        skills: ["Görsel Dikkat", "Odaklanma & Tarama", "Detay Algısı"],
+        color: "#ec4899"
+      },
+      {
+        id: "anagram",
+        title: "Anagram Oyunu",
+        folder: "anagram",
+        category: "verbal",
+        categoryName: "Sözel & Kelime",
+        icon: "🔠",
+        difficulty: "⭐⭐",
+        description: "Karışık olarak dizilmiş harflerden anlamlı Türkçe kelimeleri hızlıca türeterek kelime hazinenizi test edin ve geliştirin.",
+        skills: ["Kelime Dağarcığı", "Sözel Akıl Yürütme", "Hızlı Çağrışım"],
+        color: "#8b5cf6"
+      },
+      {
+        id: "ortak_heceli_kelimeler",
+        title: "Ortak Heceli Kelimeler",
+        folder: "ortak_heceli_kelimeler",
+        category: "verbal",
+        categoryName: "Sözel & Kelime",
+        icon: "🗣️",
+        difficulty: "⭐",
+        description: "Farklı kelimelerin paylaştığı ortak heceleri ve ses birliklerini bularak kelimeleri doğru şekilde tamamlayın.",
+        skills: ["Dil Bilgisi & Heceleme", "Fonolojik Farkındalık", "Sözel Bellek"],
+        color: "#f59e0b"
+      }
+    ];
+
+    // DOM Elementleri
+    const gamesGrid = document.getElementById("gamesGrid");
+    const searchInput = document.getElementById("searchInput");
+    const categoryPills = document.getElementById("categoryPills");
+    const btnRandom = document.getElementById("btnRandom");
+
+    // Modal DOM Elementleri
+    const gameModal = document.getElementById("gameModal");
+    const gameIframe = document.getElementById("gameIframe");
+    const modalGameTitle = document.getElementById("modalGameTitle");
+    const modalGameIcon = document.getElementById("modalGameIcon");
+    const btnModalBack = document.getElementById("btnModalBack");
+    const btnModalClose = document.getElementById("btnModalClose");
+    const btnModalFullscreen = document.getElementById("btnModalFullscreen");
+    const btnModalNewTab = document.getElementById("btnModalNewTab");
+
+    let currentCategory = "all";
+    let searchQuery = "";
+
+    // Kartları Oluştur
+    function renderGames() {
+      const filtered = GAMES_DATA.filter(game => {
+        const matchesCategory = currentCategory === "all" || game.category === currentCategory;
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return matchesCategory;
+
+        const matchesTitle = game.title.toLowerCase().includes(query);
+        const matchesDesc = game.description.toLowerCase().includes(query);
+        const matchesSkills = game.skills.some(s => s.toLowerCase().includes(query));
+        const matchesCat = game.categoryName.toLowerCase().includes(query);
+
+        return matchesCategory && (matchesTitle || matchesDesc || matchesSkills || matchesCat);
+      });
+
+      if (filtered.length === 0) {
+        gamesGrid.innerHTML = `
+          <div class="no-results">
+            <div class="icon">🔍</div>
+            <h3>Aradığınız kriterlere uygun oyun bulunamadı</h3>
+            <p>Farklı bir kelime aramayı deneyebilir veya kategori filtrelerini sıfırlayabilirsiniz.</p>
+            <button class="filter-btn active" onclick="resetFilters()">Tüm Oyunları Göster</button>
+          </div>
+        `;
+        return;
+      }
+
+      gamesGrid.innerHTML = filtered.map(game => {
+        const gameUrl = `./${encodeURIComponent(game.folder)}/index.html`;
+        const skillsHtml = game.skills.map(s => `<span class="skill-tag">#${escapeHtml(s)}</span>`).join("");
+
+        return `
+          <article class="game-card" style="--card-color: ${game.color};">
+            <div class="card-accent-line"></div>
+            
+            <div class="card-header">
+              <div class="game-icon-box" title="${escapeHtml(game.title)}">
+                <span>${game.icon}</span>
+              </div>
+              <div class="card-badges">
+                <span class="category-badge">${escapeHtml(game.categoryName)}</span>
+                <span class="difficulty-badge" title="Zorluk Derecesi">${game.difficulty}</span>
+              </div>
+            </div>
+
+            <h3 class="game-title">${escapeHtml(game.title)}</h3>
+            <p class="game-desc">${escapeHtml(game.description)}</p>
+
+            <div class="skills-row">
+              ${skillsHtml}
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-play" onclick="openGameModal('${game.id}')" title="Sayfadan ayrılmadan hemen oyna">
+                <span>▶</span>
+                <span>Hemen Oyna</span>
+              </button>
+              <a href="${gameUrl}" target="_blank" class="btn-icon-ext" title="Yeni sekmede bağımsız aç">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    // Modal Aç
+    function openGameModal(gameId) {
+      const game = GAMES_DATA.find(g => g.id === gameId);
+      if (!game) return;
+
+      const gameUrl = `./${encodeURIComponent(game.folder)}/index.html`;
+
+      modalGameTitle.textContent = game.title;
+      modalGameIcon.textContent = game.icon;
+      btnModalNewTab.href = gameUrl;
+      
+      // Iframe yükle
+      gameIframe.src = gameUrl;
+      
+      gameModal.classList.add("active");
+      gameModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    // Modal Kapat
+    function closeGameModal() {
+      gameModal.classList.remove("active");
+      gameModal.setAttribute("aria-hidden", "true");
+      gameIframe.src = ""; // Kaynak tüketimini ve sesleri durdur
+      document.body.style.overflow = "";
+
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Tam Ekran Geçişi
+    function toggleFullscreenModal() {
+      if (!document.fullscreenElement) {
+        gameModal.requestFullscreen().catch(err => {
+          console.warn("Fullscreen hatası:", err);
+        });
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Filtreleri Sıfırla
+    function resetFilters() {
+      currentCategory = "all";
+      searchQuery = "";
+      searchInput.value = "";
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.category === "all");
+      });
+      renderGames();
+    }
+
+    // Rastgele Oyun Seç
+    function pickRandomGame() {
+      const available = GAMES_DATA;
+      const randomGame = available[Math.floor(Math.random() * available.length)];
+      openGameModal(randomGame.id);
+    }
+
+    // HTML Kaçış Yardımcısı
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Olay Dinleyicileri
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      renderGames();
+    });
+
+    categoryPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".filter-btn");
+      if (!btn) return;
+
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      currentCategory = btn.dataset.category;
+      renderGames();
+    });
+
+    btnRandom.addEventListener("click", pickRandomGame);
+
+    btnModalBack.addEventListener("click", closeGameModal);
+    btnModalClose.addEventListener("click", closeGameModal);
+    btnModalFullscreen.addEventListener("click", toggleFullscreenModal);
+
+    // Klavye Kısayolları (ESC ile modal kapatma, / ile aramaya odaklanma)
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && gameModal.classList.contains("active")) {
+        closeGameModal();
+      }
+      if (e.key === "/" && !gameModal.classList.contains("active") && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+
+    // İlk Yükleme
+    renderGames();
+  </script>
+</body>
+</html>

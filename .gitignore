@@ -1,0 +1,15 @@
+# İşletim sistemi kalıntıları
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE ve Editör kalıntıları
+.vscode/
+.idea/
+
+# Büyük medya ve SCORM paketleri (GitHub Pages için gereksiz)
+*.mp4
+*.mkv
+*.avi
+*.zip
+imsmanifest.xml

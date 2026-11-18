@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ORTAK HECELİ KELİMELER OYUNU | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f1420;
+      --bg-radial: radial-gradient(circle at 50% 30%, #1a253a 0%, #0c1119 100%);
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --gold-primary: #feca57;
+      --cyan-accent: #00cec9;
+      --emerald-accent: #10ac84;
+      --coral-accent: #ff5252;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: var(--bg-radial);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 10px 14px 20px;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (SPLASH SCREEN)
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: rgba(22, 32, 50, 0.96);
+      border: 2px solid rgba(254, 202, 87, 0.4);
+      border-radius: 28px;
+      padding: 42px 36px;
+      max-width: 760px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75), 0 0 50px rgba(254, 202, 87, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      animation: splashIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #feca57, #00cec9, #10ac84);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(20px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid rgba(254, 202, 87, 0.38);
+      padding: 7px 22px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .splash-title {
+      font-size: 50px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 20%, var(--gold-primary) 70%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      line-height: 1.15;
+    }
+
+    /* Önizleme Paneli */
+    .splash-preview-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: rgba(14, 22, 36, 0.6);
+      padding: 14px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 100%;
+    }
+
+    .preview-arrow-box {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preview-grid-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .preview-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preview-cell {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .preview-cell.common {
+      background: linear-gradient(145deg, #f5b041, #d68910);
+      color: #1a1a1a;
+      border: 2px solid #feca57;
+      box-shadow: 0 0 14px rgba(254, 202, 87, 0.45);
+    }
+
+    .preview-cell.given {
+      background: linear-gradient(145deg, #1f2f4c, #162238);
+      border: 1.5px solid #364968;
+      color: #e2e8f0;
+    }
+
+    .preview-result-pill {
+      margin-left: 8px;
+      background: rgba(0, 206, 201, 0.15);
+      border: 1px solid rgba(0, 206, 201, 0.4);
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--cyan-accent);
+    }
+
+    /* 3 Adımlı Kısa Yönerge */
+    .splash-rules-box {
+      width: 100%;
+      background: rgba(14, 22, 36, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .splash-rules-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .splash-rules-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .splash-rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .splash-rule-item strong {
+      color: #ffffff;
+    }
+
+    .rule-badge {
+      background: rgba(254, 202, 87, 0.2);
+      color: var(--gold-primary);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .start-instruction-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold-primary);
+      margin-bottom: 14px;
+    }
+
+    .btn-start-activity {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0c1b26;
+      border: none;
+      padding: 15px 50px;
+      font-size: 20px;
+      font-weight: 900;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0, 206, 201, 0.4);
+      transition: all 0.2s;
+    }
+
+    .btn-start-activity:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 14px 32px rgba(0, 206, 201, 0.6);
+    }
+
+    /* ==========================================================================
+       3. ANA OYUN DÜZENİ VE ÜST KONTROL ŞERİDİ
+       ========================================================================== */
+    .game-wrapper {
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    /* Üst Kontrol Şeridi */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 9px 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--gold-primary);
+      background: rgba(254, 202, 87, 0.12);
+      border: 1px solid rgba(254, 202, 87, 0.3);
+      padding: 6px 14px;
+      border-radius: 12px;
+    }
+
+    .dynamic-status-box {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(14, 22, 36, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 7px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #e2e8f0;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan-accent);
+      box-shadow: 0 0 8px var(--cyan-accent);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-top {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: #e2e8f0;
+      padding: 7px 13px;
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-top:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-top-reset {
+      background: rgba(255, 82, 82, 0.12);
+      border-color: rgba(255, 82, 82, 0.35);
+      color: #ff7675;
+    }
+
+    /* Seviye ve Puan Şeridi */
+    .level-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 15px;
+      padding: 7px 14px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .level-pills-scroll {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow-x: auto;
+      padding: 2px;
+      scrollbar-width: thin;
+    }
+
+    .level-pill {
+      background: rgba(14, 22, 36, 0.7);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .level-pill:hover {
+      border-color: var(--cyan-accent);
+      color: #ffffff;
+    }
+
+    .level-pill.active {
+      background: linear-gradient(135deg, rgba(0, 206, 201, 0.25), rgba(16, 172, 132, 0.25));
+      border-color: var(--cyan-accent);
+      color: var(--cyan-accent);
+    }
+
+    .level-pill.completed {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+    }
+
+    .level-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(14, 22, 36, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 5px 10px;
+      border-radius: 9px;
+    }
+
+    .stat-badge-gold {
+      color: var(--gold-primary);
+      border-color: rgba(254, 202, 87, 0.3);
+    }
+
+    /* ==========================================================================
+       4. MERKEZİ OYUN ALANI (BULMACA VE TABLO)
+       ========================================================================== */
+    .game-stage-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 22px;
+      padding: 20px 18px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    /* Ortak Hece Giriş Bölgesi */
+    .common-syllable-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: rgba(14, 22, 36, 0.7);
+      border: 2px dashed rgba(254, 202, 87, 0.4);
+      padding: 12px 24px;
+      border-radius: 18px;
+    }
+
+    .common-syllable-header {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .syllable-inputs-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .syllable-slot {
+      width: 56px;
+      height: 60px;
+      background: linear-gradient(145deg, #1c263c, #131c2d);
+      border: 2.5px solid var(--border-color);
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--gold-primary);
+      cursor: pointer;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s;
+    }
+
+    .syllable-slot:hover {
+      border-color: rgba(254, 202, 87, 0.7);
+    }
+
+    .syllable-slot.focused {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 18px rgba(254, 202, 87, 0.6);
+      transform: scale(1.04);
+    }
+
+    .syllable-slot.filled {
+      background: linear-gradient(145deg, #d68910, #b9770e);
+      border-color: #feca57;
+      color: #ffffff;
+    }
+
+    /* Bulmaca Izgarası */
+    .puzzle-grid-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      max-width: 640px;
+      align-items: center;
+    }
+
+    .grid-row-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .row-index-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .row-cells-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(14, 20, 32, 0.7);
+      padding: 5px 9px;
+      border-radius: 13px;
+      border: 1px solid var(--border-color);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .grid-cell {
+      width: 48px;
+      height: 50px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #ffffff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      transition: all 0.2s;
+    }
+
+    .grid-cell.cell-common {
+      background: linear-gradient(145deg, #1c2a44, #121c2e);
+      border: 2px solid rgba(254, 202, 87, 0.35);
+      color: var(--gold-primary);
+    }
+
+    .grid-cell.cell-common.has-char {
+      background: linear-gradient(145deg, #f5b041, #d68910);
+      color: #1a1a1a;
+      border-color: #feca57;
+      box-shadow: 0 0 12px rgba(254, 202, 87, 0.4);
+    }
+
+    .grid-cell.cell-given {
+      background: linear-gradient(145deg, #233454, #18243c);
+      border: 1.5px solid #3d557c;
+      color: #f1f5f9;
+    }
+
+    .grid-cell.cell-blank {
+      background: #0c111a;
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+      opacity: 0.25;
+      box-shadow: none;
+    }
+
+    /* Çözülen Satır Stili */
+    .grid-row-item.row-solved .row-cells-group {
+      border-color: var(--emerald-accent);
+      background: rgba(16, 172, 132, 0.12);
+      box-shadow: 0 0 16px rgba(16, 172, 132, 0.25);
+    }
+
+    .grid-row-item.row-solved .grid-cell.cell-common {
+      background: linear-gradient(145deg, #10ac84, #0d8a6a);
+      border-color: #55efc4;
+      color: #ffffff;
+    }
+
+    .grid-row-item.row-solved .grid-cell.cell-given {
+      background: linear-gradient(145deg, #165646, #0e3b30);
+      border-color: #10ac84;
+      color: #e6fff8;
+    }
+
+    .row-info-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--cyan-accent);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .row-info-btn:hover {
+      background: rgba(0, 206, 201, 0.2);
+      border-color: var(--cyan-accent);
+      transform: scale(1.06);
+    }
+
+    .row-solved-badge {
+      font-size: 18px;
+      color: var(--emerald-accent);
+      width: 24px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .grid-row-item.row-solved .row-solved-badge {
+      opacity: 1;
+    }
+
+    /* Kelime Tanım / Bilgi Şeridi */
+    .word-definition-banner {
+      width: 100%;
+      max-width: 640px;
+      background: rgba(14, 22, 36, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 11px 16px;
+      font-size: 13.5px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      transition: all 0.3s;
+    }
+
+    .word-definition-banner.highlight {
+      border-color: var(--cyan-accent);
+      background: rgba(0, 206, 201, 0.12);
+    }
+
+    .def-tag {
+      background: rgba(0, 206, 201, 0.2);
+      color: var(--cyan-accent);
+      border: 1px solid rgba(0, 206, 201, 0.4);
+      padding: 3px 9px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .def-text {
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    /* Sanal Harf Klavyesi */
+    .virtual-keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-width: 640px;
+      background: rgba(14, 22, 36, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 10px;
+      align-items: center;
+    }
+
+    .vk-row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .vk-key {
+      min-width: 38px;
+      height: 42px;
+      flex: 1;
+      max-width: 48px;
+      background: linear-gradient(145deg, #202d46, #162033);
+      border: 1px solid #364867;
+      border-radius: 9px;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .vk-key:hover {
+      background: linear-gradient(145deg, #2d3f62, #1f2c45);
+      border-color: var(--cyan-accent);
+      color: var(--cyan-accent);
+      transform: translateY(-1px);
+    }
+
+    .vk-key:active {
+      transform: translateY(1px);
+      background: var(--cyan-accent);
+      color: #0c1b26;
+    }
+
+    .vk-key.vk-key-backspace {
+      flex: 1.8;
+      max-width: 76px;
+      background: rgba(255, 82, 82, 0.18);
+      border-color: rgba(255, 82, 82, 0.4);
+      color: #ff7675;
+    }
+
+    /* Alt Aksiyon Butonları */
+    .bottom-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 640px;
+      flex-wrap: wrap;
+    }
+
+    .btn-act {
+      padding: 11px 24px;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-act-check {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0c1b26;
+      box-shadow: 0 5px 18px rgba(0, 206, 201, 0.4);
+    }
+
+    .btn-act-check:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 206, 201, 0.6);
+    }
+
+    .btn-act-hint {
+      background: rgba(254, 202, 87, 0.15);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      color: var(--gold-primary);
+    }
+
+    .btn-act-hint:hover {
+      background: rgba(254, 202, 87, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .btn-act-clear {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: #cbd5e1;
+    }
+
+    .btn-act-clear:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-act-next {
+      background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+      color: #ffffff;
+      box-shadow: 0 5px 18px rgba(9, 132, 227, 0.4);
+    }
+
+    /* ==========================================================================
+       5. MODALLAR (ZAFER VE YÖNERGE)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(7, 11, 18, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: rgba(22, 32, 50, 0.98);
+      border: 2px solid var(--border-color);
+      border-radius: 26px;
+      padding: 34px 30px;
+      max-width: 560px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      animation: modalZoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalZoomIn {
+      from { transform: scale(0.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .btn-close-modal {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      color: #e2e8f0;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close-modal:hover {
+      background: rgba(255, 82, 82, 0.25);
+      border-color: #ff5252;
+      color: #ffffff;
+    }
+
+    .victory-trophy {
+      font-size: 64px;
+      margin-bottom: 10px;
+      animation: trophyFloat 2s ease-in-out infinite;
+    }
+
+    @keyframes trophyFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .victory-title {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 10%, var(--gold-primary) 70%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .victory-word-box {
+      width: 100%;
+      background: rgba(14, 22, 36, 0.8);
+      border: 1.5px solid rgba(254, 202, 87, 0.35);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+
+    .victory-common-pill {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.2);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-primary);
+      padding: 5px 16px;
+      border-radius: 18px;
+      font-size: 17px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .victory-words-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: center;
+      margin-top: 6px;
+    }
+
+    .v-word-badge {
+      background: rgba(0, 206, 201, 0.15);
+      border: 1px solid rgba(0, 206, 201, 0.3);
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--cyan-accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    /* Yönerge Kartı */
+    .info-modal-card {
+      max-width: 600px;
+      text-align: left;
+    }
+
+    .info-modal-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--gold-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .info-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .info-step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(254, 202, 87, 0.2);
+      border: 1.5px solid var(--gold-primary);
+      color: var(--gold-primary);
+      font-size: 12px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2500;
+    }
+
+    @media (max-width: 768px) {
+      .splash-card { padding: 26px 18px; }
+      .splash-title { font-size: 36px; }
+      .grid-cell { width: 42px; height: 44px; font-size: 19px; }
+      .syllable-slot { width: 48px; height: 52px; font-size: 25px; }
+      .btn-start-activity { padding: 13px 36px; font-size: 17px; }
+      .top-bar { flex-direction: column; gap: 7px; }
+      .dynamic-status-box { width: 100%; }
+      .vk-key { min-width: 30px; height: 36px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. GİRİŞ EKRANI (AÇILIŞ / SPLASH SCREEN)
+       ========================================================================== -->
+  <div class="screen-overlay" id="splashScreen">
+    <div class="splash-card">
+      
+      <!-- 1. Üst Rozet -->
+      <div class="splash-badge">
+        OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI
+      </div>
+
+      <!-- 2. Ana Başlık -->
+      <h1 class="splash-title">ORTAK HECELİ KELİMELER OYUNU</h1>
+
+      <!-- 3. Önizleme -->
+      <div class="splash-preview-panel">
+        <div class="preview-arrow-box">
+          <span>⬇</span>
+          <span>GİZLİ ORTAK HECE</span>
+          <span>⬇</span>
+        </div>
+        <div class="preview-grid-rows">
+          <div class="preview-row">
+            <div class="preview-cell common">S</div>
+            <div class="preview-cell common">İ</div>
+            <span style="font-weight: 800; color: var(--cyan-accent);">+</span>
+            <div class="preview-cell given">S</div>
+            <div class="preview-cell given">T</div>
+            <div class="preview-cell given">E</div>
+            <div class="preview-cell given">M</div>
+            <span class="preview-result-pill">SİSTEM</span>
+          </div>
+          <div class="preview-row">
+            <div class="preview-cell common">S</div>
+            <div class="preview-cell common">İ</div>
+            <span style="font-weight: 800; color: var(--cyan-accent);">+</span>
+            <div class="preview-cell given">N</div>
+            <div class="preview-cell given">E</div>
+            <div class="preview-cell given">K</div>
+            <span class="preview-result-pill">SİNEK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Kısa Oynayış Yönergesi Kutusu -->
+      <div class="splash-rules-box">
+        <div class="splash-rules-title">
+          <span>📌</span> Kısa Oynayış Yönergesi
+        </div>
+        <div class="splash-rules-grid">
+          <div class="splash-rule-item">
+            <div class="rule-badge">1</div>
+            <div><strong>Satırları İncele:</strong> Tablodaki yarım kalmış kelimeleri ve harf kutularını incele.</div>
+          </div>
+          <div class="splash-rule-item">
+            <div class="rule-badge">2</div>
+            <div><strong>Ortak Heceyi Bul:</strong> Bütün satırların başına gelerek anlamlı kelimeler oluşturan gizli ortak heceyi keşfet.</div>
+          </div>
+          <div class="splash-rule-item">
+            <div class="rule-badge">3</div>
+            <div><strong>Tabloyu Tamamla:</strong> Heceyi kutulara yaz, satırlardaki kelimeleri oluştur ve kontrol et!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Başlama Yönerge Metni -->
+      <div class="start-instruction-text">
+        Ortak Heceli Kelimeler oyununu oynamak için etkinliğe başla
+      </div>
+
+      <!-- 6. Başlat Butonu -->
+      <button class="btn-start-activity" onclick="startGame()">
+        ▶ ETKİNLİĞE BAŞLA
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. ANA OYUN DÜZENİ
+       ========================================================================== -->
+  <div class="game-wrapper">
+
+    <!-- Üst Kontrol Şeridi (Header Bar) -->
+    <header class="top-bar">
+      <div class="brand-badge">
+        <span>🔤</span> ORTAK HECELİ KELİMELER
+      </div>
+
+      <div class="dynamic-status-box" id="statusBar">
+        <div class="status-indicator"></div>
+        <span id="statusText">Tüm satırları tamamlayan ortak heceyi bulun...</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn-top btn-top-reset" onclick="resetCurrentPuzzle()">
+          🔄 Baştan Başla
+        </button>
+        <button class="btn-top" onclick="openRulesModal()">
+          ℹ️ Yönerge
+        </button>
+        <button class="btn-top" onclick="toggleSound()">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button class="btn-top" onclick="toggleFullScreen()">
+          ⛶
+        </button>
+      </div>
+    </header>
+
+    <!-- Seviye ve Puan Şeridi -->
+    <div class="level-bar">
+      <div class="level-pills-scroll" id="levelPillsContainer">
+        <!-- JS ile Seviyeler -->
+      </div>
+      <div class="level-stats">
+        <div class="stat-badge stat-badge-gold">
+          <span>⭐</span> Puan: <span id="scoreDisplay">0</span>
+        </div>
+        <div class="stat-badge">
+          <span>🎯</span> Aşama: <span id="levelDisplay">1 / 10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Merkezi Oyun Sahnesi -->
+    <main class="game-stage-card">
+
+      <!-- Ortak Hece Giriş Alanı -->
+      <div class="common-syllable-zone">
+        <div class="common-syllable-header">
+          <span style="font-size: 16px;">⬇</span>
+          <span id="syllableZoneTitle">GİZLİ ORTAK HECE (2 Harf)</span>
+          <span style="font-size: 16px;">⬇</span>
+        </div>
+        <div class="syllable-inputs-row" id="syllableSlotsRack">
+          <!-- JS ile Hece Yuvaları -->
+        </div>
+      </div>
+
+      <!-- Kelime Tablosu -->
+      <div class="puzzle-grid-container" id="puzzleGrid">
+        <!-- JS ile Satırlar -->
+      </div>
+
+      <!-- Kelime Anlam Şeridi -->
+      <div class="word-definition-banner" id="definitionBanner">
+        <span class="def-tag" id="defTag">İPUCU</span>
+        <span class="def-text" id="defText">
+          Satırlardaki kelimeleri tamamlamak için ortak hece kutularına harf girin veya satır sonundaki soru işaretine dokunun.
+        </span>
+      </div>
+
+      <!-- Dokunmatik Klavye -->
+      <div class="virtual-keyboard">
+        <div class="vk-row" id="vkRow1"></div>
+        <div class="vk-row" id="vkRow2"></div>
+        <div class="vk-row" id="vkRow3"></div>
+      </div>
+
+      <!-- Aksiyon Butonları -->
+      <div class="bottom-actions-row">
+        <button class="btn-act btn-act-check" onclick="checkPuzzle(true)">
+          🔍 Kontrol Et
+        </button>
+        <button class="btn-act btn-act-hint" onclick="useHint()">
+          💡 İpucu Al
+        </button>
+        <button class="btn-act btn-act-clear" onclick="clearInput()">
+          🗑️ Temizle
+        </button>
+        <button class="btn-act btn-act-next" id="btnNextLevel" onclick="nextPuzzle()" style="display: none;">
+          ⏭️ Sonraki Bulmaca
+        </button>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ==========================================================================
+       3. MODALLAR: ZAFER KARTI VE YÖNERGE
+       ========================================================================== -->
+  
+  <!-- ZAFER MODALI -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card">
+      <div class="victory-trophy">🏆</div>
+      <h2 class="victory-title">Tebrikler, Bulmacayı Çözdünüz!</h2>
+      
+      <div class="victory-word-box">
+        <div class="victory-common-pill" id="victoryCommonPill">
+          ORTAK HECE: Sİ
+        </div>
+        <div style="font-size: 13.5px; color: #cbd5e1; margin-bottom: 6px;">Oluşturulan Anlamlı Kelimeler:</div>
+        <div class="victory-words-list" id="victoryWordsList"></div>
+      </div>
+
+      <div style="font-size: 15px; font-weight: 800; color: var(--gold-primary); margin-bottom: 18px;">
+        Kazanılan Puan: +100 ⭐
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-act btn-act-next" onclick="nextPuzzle()">
+          ▶ Sonraki Bulmaca
+        </button>
+        <button class="btn-act btn-act-clear" onclick="replayCurrentPuzzle()">
+          🔄 Yeniden Oyna
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- YÖNERGE MODALI -->
+  <div class="modal-overlay" id="rulesModal">
+    <div class="modal-card info-modal-card">
+      <button class="btn-close-modal" onclick="closeRulesModal()">✕</button>
+      <div class="info-modal-title">
+        <span>📖</span> Ortak Heceli Kelimeler Çözüm Rehberi
+      </div>
+      <div class="info-steps">
+        <div class="info-step">
+          <div class="info-step-num">1</div>
+          <div><strong>Satırlardaki Harfleri Değerlendirin:</strong> Her satırda kelimenin son kısmı verilmiştir. Harf sayılarını ve bilinen kelime sonlarını inceleyin.</div>
+        </div>
+        <div class="info-step">
+          <div class="info-step-num">2</div>
+          <div><strong>En Kolay Satırdan Başlayın:</strong> En çok tanıdık gelen satırdan yola çıkarak aklınıza gelen ilk heceyi test edin. Örneğin "nek" görünce aklınıza "sinek" geliyorsa "Sİ" hecesini deneyin.</div>
+        </div>
+        <div class="info-step">
+          <div class="info-step-num">3</div>
+          <div><strong>Tüm Satırlarda Test Edin:</strong> Bulduğunuz ortak hece tablodaki BÜTÜN satırların başına gelmeli ve hepsinde anlamlı bir Türkçe kelime oluşturmalıdır!</div>
+        </div>
+      </div>
+      <div style="text-align: right; width: 100%;">
+        <button class="btn-act btn-act-check" onclick="closeRulesModal()">
+          Anladım, Oyuna Dön
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konfeti Tuvali -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ==========================================================================
+       4. JAVASCRIPT MOTORU
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       1. SCORM 1.2 MOTORU
+       ========================================================================== */
+    const ScormAPI = {
+      api: null,
+      isInitialized: false,
+      startTime: null,
+
+      findAPI(win) {
+        let attempts = 0;
+        while (win && attempts < 10) {
+          if (win.API) return win.API;
+          if (win.parent && win.parent !== win) {
+            win = win.parent;
+          } else if (win.opener) {
+            win = win.opener;
+          } else {
+            break;
+          }
+          attempts++;
+        }
+        return null;
+      },
+
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (this.api) {
+            const res = this.api.LMSInitialize("");
+            if (res === "true" || res === true) {
+              this.isInitialized = true;
+              this.startTime = new Date();
+              this.setStatus("incomplete");
+              console.log("[SCORM 1.2] LMS bağlantısı sağlandı.");
+            }
+          }
+        } catch (e) {
+          console.warn("[SCORM] Yerel modda çalışılıyor.");
+        }
+      },
+
+      formatTime(dateStart, dateEnd) {
+        let diffMs = (dateEnd - dateStart);
+        let sec = Math.floor(diffMs / 1000);
+        let hrs = Math.floor(sec / 3600);
+        sec %= 3600;
+        let mins = Math.floor(sec / 60);
+        sec %= 60;
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      },
+
+      setStatus(status) {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          this.api.LMSSetValue("cmi.core.lesson_status", status);
+          this.api.LMSCommit("");
+        } catch (e) {}
+      },
+
+      setScore(rawScore, min = 0, max = 100) {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          this.api.LMSSetValue("cmi.core.score.raw", String(rawScore));
+          this.api.LMSSetValue("cmi.core.score.min", String(min));
+          this.api.LMSSetValue("cmi.core.score.max", String(max));
+          if (this.startTime) {
+            this.api.LMSSetValue("cmi.core.session_time", this.formatTime(this.startTime, new Date()));
+          }
+          this.api.LMSCommit("");
+        } catch (e) {}
+      },
+
+      finish() {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          if (this.startTime) {
+            this.api.LMSSetValue("cmi.core.session_time", this.formatTime(this.startTime, new Date()));
+          }
+          this.api.LMSFinish("");
+          this.isInitialized = false;
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => ScormAPI.init());
+    window.addEventListener("unload", () => ScormAPI.finish());
+
+    /* ==========================================================================
+       2. WEB AUDIO API SES MOTORU
+       ========================================================================== */
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleSound() {
+      isSoundMuted = !isSoundMuted;
+      document.getElementById("soundIcon").innerText = isSoundMuted ? "🔇" : "🔊";
+      if (!isSoundMuted) playTone(580, 'sine', 0.08, 0.2);
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.12, vol = 0.22) {
+      if (isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function sndType() { playTone(460, 'triangle', 0.07, 0.22); }
+    function sndDelete() { playTone(280, 'sine', 0.08, 0.2); }
+    function sndHint() {
+      playTone(520, 'triangle', 0.1, 0.2);
+      setTimeout(() => playTone(784, 'triangle', 0.16, 0.22), 60);
+    }
+    function sndWin() {
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => playTone(freq, 'triangle', 0.26, 0.3), idx * 100);
+      });
+    }
+    function sndLose() {
+      playTone(440, 'sine', 0.18, 0.2);
+      setTimeout(() => playTone(349.23, 'sine', 0.25, 0.22), 100);
+    }
+
+    /* ==========================================================================
+       3. BULMACA HAVUZU (10 AŞAMA)
+       ========================================================================== */
+    const PUZZLE_LEVELS = [
+      {
+        id: 1, title: "Seviye 1", syllable: "Sİ",
+        rows: [
+          { target: "SİSTEM", given: ["S", "T", "E", "M"], hint: "Birbiriyle uyumlu çalışan parçaların oluşturduğu düzenli bütün." },
+          { target: "SİNCAP", given: ["N", "C", "A", "P"], hint: "Ağaçlarda yaşayan, ceviz seven sevimli kemirgen." },
+          { target: "SİNEK",  given: ["N", "E", "K"],      hint: "Küçük, iki kanatlı ve hızlı uçan böcek türü." },
+          { target: "SİPER",  given: ["P", "E", "R"],      hint: "Tehlikelerden veya rüzgârdan korunmak için arkasına saklanılan yer." },
+          { target: "SİTE",   given: ["T", "E"],           hint: "Birden çok binanın bir arada bulunduğu yerleşim alanı veya internet sayfası." },
+          { target: "SİNİ",   given: ["N", "İ"],           hint: "Üzerinde yemek yenilen büyük yuvarlak tepsi." }
+        ]
+      },
+      {
+        id: 2, title: "Seviye 2", syllable: "BAL",
+        rows: [
+          { target: "BALIK",   given: ["I", "K"],           hint: "Suda solungaçlarıyla nefes alıp yüzen canlı." },
+          { target: "BALTA",   given: ["T", "A"],           hint: "Ağaç ve odun kesmek için kullanılan keskin alet." },
+          { target: "BALON",   given: ["O", "N"],           hint: "İçi gazla doldurulan renkli hafif küre." },
+          { target: "BALMUMU", given: ["M", "U", "M", "U"], hint: "Arıların petek örmek için salgıladığı doğal sarı madde." },
+          { target: "BALÇIK",  given: ["Ç", "I", "K"],      hint: "İçinde çok miktarda kil bulunan, yapışkan koyu çamur." }
+        ]
+      },
+      {
+        id: 3, title: "Seviye 3", syllable: "DE",
+        rows: [
+          { target: "DENİZ", given: ["N", "İ", "Z"], hint: "Kıtaları birbirinden ayıran büyük tuzlu su kütlesi." },
+          { target: "DEMİR", given: ["M", "İ", "R"], hint: "Sanayide en çok kullanılan dayanıklı metal." },
+          { target: "DEVRE", given: ["V", "R", "E"], hint: "Elektrik akımının içinden aktığı kapalı yol." },
+          { target: "DERİN", given: ["R", "İ", "N"], hint: "Dibi yüzeyden çok uzakta bulunan, sığ olmayan." },
+          { target: "DERİ",  given: ["R", "İ"],      hint: "Vücudu dıştan saran koruyucu tabaka." },
+          { target: "DEDE",  given: ["D", "E"],      hint: "Annemizin veya babamızın babası, büyükbaba." }
+        ]
+      },
+      {
+        id: 4, title: "Seviye 4", syllable: "KAL",
+        rows: [
+          { target: "KALEM",  given: ["E", "M"],      hint: "Yazı yazmaya ve çizmeye yarayan araç." },
+          { target: "KALIP",  given: ["I", "P"],      hint: "Bir şeye biçim vermeye yarayan oyuk nesne." },
+          { target: "KALE",   given: ["E"],           hint: "Savunma amacıyla yapılan yüksek surlu taş yapı." },
+          { target: "KALP",   given: ["P"],           hint: "Vücuda kan pompalayan hayati organımız." },
+          { target: "KALBUR", given: ["B", "U", "R"], hint: "Taneli maddeleri ayıklamaya yarayan iri delikli elek." },
+          { target: "KALÇA",  given: ["Ç", "A"],      hint: "Gövde ile bacakların birleştiği kemikli yan bölge." }
+        ]
+      },
+      {
+        id: 5, title: "Seviye 5", syllable: "GÖZ",
+        rows: [
+          { target: "GÖZLÜK",  given: ["L", "Ü", "K"],      hint: "Daha net görmek veya ışıktan korunmak için takılan optik araç." },
+          { target: "GÖZCÜ",   given: ["C", "Ü"],           hint: "Çevreyi dikkatle izleyip haber veren nöbetçi." },
+          { target: "GÖZLEM",  given: ["L", "E", "M"],      hint: "Bir nesneyi veya olayı dikkatle izleyip inceleme." },
+          { target: "GÖZDAĞI", given: ["D", "A", "Ğ", "I"], hint: "Korkutmak veya caydırmak için yapılan sert uyarı." },
+          { target: "GÖZE",    given: ["E"],                hint: "Pınarın su kaynattığı yer veya hücre." }
+        ]
+      },
+      {
+        id: 6, title: "Seviye 6", syllable: "Kİ",
+        rows: [
+          { target: "KİTAP",  given: ["T", "A", "P"], hint: "Ciltlenmiş sayfalardan oluşan okuma kaynağı." },
+          { target: "KİLİM",  given: ["L", "İ", "M"], hint: "Renkli desenlerle dokunmuş geleneksel yer sergisi." },
+          { target: "KİRAZ",  given: ["R", "A", "Z"], hint: "İnce uzun saplı, sulu ve lezzetli kırmızı yaz meyvesi." },
+          { target: "KİLİT",  given: ["L", "İ", "T"], hint: "Kapıyı anahtarla emniyete alan metal mekanizma." },
+          { target: "KİBRİT", given: ["B", "R", "İ", "T"], hint: "Ucu kükürtlü, sürtüldüğünde alev alan ateş çöpü." },
+          { target: "KİRLİ",  given: ["R", "L", "İ"], hint: "Temiz ve pak olmayan, lekeli." }
+        ]
+      },
+      {
+        id: 7, title: "Seviye 7", syllable: "YAZ",
+        rows: [
+          { target: "YAZI",   given: ["I"],           hint: "Düşünceleri harflerle kağıda dökme işi." },
+          { target: "YAZAR",  given: ["A", "R"],      hint: "Kitap, masal veya şiir yazan edebiyatçı." },
+          { target: "YAZLIK", given: ["L", "I", "K"], hint: "Yaz mevsiminde oturulan konut veya giyecek." },
+          { target: "YAZICI", given: ["I", "C", "I"], hint: "Belgeleri kağıda basan teknolojik donanım." },
+          { target: "YAZMA",  given: ["M", "A"],      hint: "Yazı yazma işi veya süslü başörtüsü." }
+        ]
+      },
+      {
+        id: 8, title: "Seviye 8", syllable: "BAŞ",
+        rows: [
+          { target: "BAŞKAN", given: ["K", "A", "N"], hint: "Bir topluluğu veya meclisi yöneten lider." },
+          { target: "BAŞARI", given: ["A", "R", "I"], hint: "Emek vererek ulaşılan güzel ve gurur verici sonuç." },
+          { target: "BAŞLIK", given: ["L", "I", "K"], hint: "Bir yazının veya kitabın en üstündeki ad." },
+          { target: "BAŞKA",  given: ["K", "A"],      hint: "Bundan ayrı olan, farklı, öteki." },
+          { target: "BAŞAK",  given: ["A", "K"],      hint: "Tahılların tanelerini üzerinde taşıyan zarif uç kısmı." }
+        ]
+      },
+      {
+        id: 9, title: "Seviye 9", syllable: "EL",
+        rows: [
+          { target: "ELMA",    given: ["M", "A"],           hint: "Kırmızı, sarı veya yeşil vitamin deposu kütür meyve." },
+          { target: "ELDİVEN", given: ["D", "İ", "V", "E", "N"], hint: "Elleri soğuktan korumak için giyilen giyecek." },
+          { target: "ELBİSE",  given: ["B", "İ", "S", "E"], hint: "Giyinmek amacıyla kumaştan dikilmiş her türlü giysi." },
+          { target: "ELMAS",   given: ["M", "A", "S"],      hint: "Doğadaki en sert ve en değerli ışıltılı taş." },
+          { target: "ELÇİ",    given: ["Ç", "İ"],           hint: "Bir devleti temsil eden yetkili diplomat." }
+        ]
+      },
+      {
+        id: 10, title: "Seviye 10", syllable: "TOP",
+        rows: [
+          { target: "TOPRAK", given: ["R", "A", "K"], hint: "Üzerinde bitkilerin yetiştiği yeryüzü örtüsü." },
+          { target: "TOPLAM", given: ["L", "A", "M"], hint: "Bir araya getirilen parçaların oluşturduğu nihai miktar." },
+          { target: "TOPAL",  given: ["A", "L"],      hint: "Yürürken bacağı hafifçe aksayan." },
+          { target: "TOPLA",  given: ["L", "A"],      hint: "Dağınık olanları düzenli bir araya getirmek." },
+          { target: "TOPAÇ",  given: ["A", "Ç"],      hint: "Kendi ekseni etrafında fırıl fırıl dönen geleneksel ahşap oyuncak." }
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       4. OYUN YÖNETİMİ
+       ========================================================================== */
+    let currentLevelIndex = 0;
+    let score = 0;
+    let completedLevels = new Set();
+    let currentInput = [];
+    let focusedSlotIndex = 0;
+    let isCurrentLevelSolved = false;
+
+    const VK_KEYS_ROW1 = ["A", "B", "C", "Ç", "D", "E", "F", "G", "Ğ", "H"];
+    const VK_KEYS_ROW2 = ["I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P"];
+    const VK_KEYS_ROW3 = ["R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
+
+    function startGame() {
+      document.getElementById("splashScreen").classList.add("hidden");
+      sndType();
+      initVirtualKeyboard();
+      renderLevelPills();
+      loadPuzzle(0);
+    }
+
+    function initVirtualKeyboard() {
+      const r1 = document.getElementById("vkRow1");
+      const r2 = document.getElementById("vkRow2");
+      const r3 = document.getElementById("vkRow3");
+      r1.innerHTML = ""; r2.innerHTML = ""; r3.innerHTML = "";
+
+      const makeKey = (ch, parent) => {
+        const btn = document.createElement("button");
+        btn.className = "vk-key";
+        btn.innerText = ch;
+        btn.onclick = () => onCharInput(ch);
+        parent.appendChild(btn);
+      };
+
+      VK_KEYS_ROW1.forEach(ch => makeKey(ch, r1));
+      VK_KEYS_ROW2.forEach(ch => makeKey(ch, r2));
+      VK_KEYS_ROW3.forEach(ch => makeKey(ch, r3));
+
+      const btnDel = document.createElement("button");
+      btnDel.className = "vk-key vk-key-backspace";
+      btnDel.innerHTML = "⌫ Sil";
+      btnDel.onclick = onBackspace;
+      r3.appendChild(btnDel);
+    }
+
+    function renderLevelPills() {
+      const cont = document.getElementById("levelPillsContainer");
+      cont.innerHTML = "";
+      PUZZLE_LEVELS.forEach((lvl, idx) => {
+        const pill = document.createElement("button");
+        pill.className = `level-pill ${idx === currentLevelIndex ? 'active' : ''} ${completedLevels.has(idx) ? 'completed' : ''}`;
+        pill.innerHTML = `${completedLevels.has(idx) ? '✓ ' : ''}${lvl.title}`;
+        pill.onclick = () => loadPuzzle(idx);
+        cont.appendChild(pill);
+      });
+      document.getElementById("levelDisplay").innerText = `${currentLevelIndex + 1} / ${PUZZLE_LEVELS.length}`;
+      document.getElementById("scoreDisplay").innerText = score;
+    }
+
+    function loadPuzzle(lvlIndex) {
+      currentLevelIndex = lvlIndex;
+      isCurrentLevelSolved = completedLevels.has(lvlIndex);
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+      const syllLen = puzzle.syllable.length;
+
+      document.getElementById("syllableZoneTitle").innerText = `GİZLİ ORTAK HECE (${syllLen} Harf)`;
+      document.getElementById("statusText").innerText = `Aşama ${currentLevelIndex + 1}: ${syllLen} harfli ortak heceyi bulun...`;
+      document.getElementById("btnNextLevel").style.display = "none";
+
+      currentInput = new Array(syllLen).fill("");
+      focusedSlotIndex = 0;
+
+      if (completedLevels.has(lvlIndex)) {
+        for (let i = 0; i < syllLen; i++) currentInput[i] = puzzle.syllable[i];
+      }
+
+      renderSyllableSlots();
+      renderPuzzleGrid();
+      renderLevelPills();
+      showDefinition("İPUCU", "Kutulara harf girin veya satır sonundaki soru işaretine basarak ipucu alın.");
+    }
+
+    function renderSyllableSlots() {
+      const rack = document.getElementById("syllableSlotsRack");
+      rack.innerHTML = "";
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+
+      for (let i = 0; i < puzzle.syllable.length; i++) {
+        const slot = document.createElement("div");
+        slot.className = `syllable-slot ${i === focusedSlotIndex ? 'focused' : ''} ${currentInput[i] ? 'filled' : ''}`;
+        slot.innerText = currentInput[i] || "";
+        slot.onclick = () => {
+          focusedSlotIndex = i;
+          renderSyllableSlots();
+          sndType();
+        };
+        rack.appendChild(slot);
+      }
+    }
+
+    function renderPuzzleGrid() {
+      const grid = document.getElementById("puzzleGrid");
+      grid.innerHTML = "";
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+      const syllLen = puzzle.syllable.length;
+
+      let maxCols = 0;
+      puzzle.rows.forEach(r => {
+        const total = syllLen + r.given.length;
+        if (total > maxCols) maxCols = total;
+      });
+
+      puzzle.rows.forEach((row, rIdx) => {
+        const rowEl = document.createElement("div");
+        rowEl.className = `grid-row-item ${isCurrentLevelSolved ? 'row-solved' : ''}`;
+
+        const idxBadge = document.createElement("div");
+        idxBadge.className = "row-index-badge";
+        idxBadge.innerText = rIdx + 1;
+        rowEl.appendChild(idxBadge);
+
+        const cellsGroup = document.createElement("div");
+        cellsGroup.className = "row-cells-group";
+
+        for (let c = 0; c < syllLen; c++) {
+          const cCell = document.createElement("div");
+          const charVal = currentInput[c] || "";
+          cCell.className = `grid-cell cell-common ${charVal ? 'has-char' : ''}`;
+          cCell.innerText = charVal;
+          cellsGroup.appendChild(cCell);
+        }
+
+        row.given.forEach(gChar => {
+          const gCell = document.createElement("div");
+          gCell.className = "grid-cell cell-given";
+          gCell.innerText = gChar;
+          cellsGroup.appendChild(gCell);
+        });
+
+        const rowTotal = syllLen + row.given.length;
+        for (let b = rowTotal; b < maxCols; b++) {
+          const bCell = document.createElement("div");
+          bCell.className = "grid-cell cell-blank";
+          cellsGroup.appendChild(bCell);
+        }
+
+        rowEl.appendChild(cellsGroup);
+
+        const infoBtn = document.createElement("button");
+        infoBtn.className = "row-info-btn";
+        infoBtn.innerHTML = "❓";
+        infoBtn.onclick = () => {
+          sndHint();
+          showDefinition(`SATIR ${rIdx + 1}`, `${row.target}: ${row.hint}`);
+        };
+        rowEl.appendChild(infoBtn);
+
+        const solvedBadge = document.createElement("div");
+        solvedBadge.className = "row-solved-badge";
+        solvedBadge.innerText = "✓";
+        rowEl.appendChild(solvedBadge);
+
+        grid.appendChild(rowEl);
+      });
+    }
+
+    function onCharInput(char) {
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+      char = char.toLocaleUpperCase('tr-TR');
+      sndType();
+
+      currentInput[focusedSlotIndex] = char;
+      if (focusedSlotIndex < puzzle.syllable.length - 1) {
+        focusedSlotIndex++;
+      }
+
+      renderSyllableSlots();
+      renderPuzzleGrid();
+
+      if (currentInput.every(c => c && c.trim() !== "")) {
+        setTimeout(() => checkPuzzle(false), 220);
+      }
+    }
+
+    function onBackspace() {
+      sndDelete();
+      if (currentInput[focusedSlotIndex] !== "") {
+        currentInput[focusedSlotIndex] = "";
+      } else if (focusedSlotIndex > 0) {
+        focusedSlotIndex--;
+        currentInput[focusedSlotIndex] = "";
+      }
+      renderSyllableSlots();
+      renderPuzzleGrid();
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (document.querySelector(".modal-overlay.active")) return;
+      if (!document.getElementById("splashScreen").classList.contains("hidden")) return;
+
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        onBackspace();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        checkPuzzle(true);
+      } else if (e.key === "ArrowLeft") {
+        if (focusedSlotIndex > 0) {
+          focusedSlotIndex--;
+          renderSyllableSlots();
+          sndType();
+        }
+      } else if (e.key === "ArrowRight") {
+        const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+        if (focusedSlotIndex < puzzle.syllable.length - 1) {
+          focusedSlotIndex++;
+          renderSyllableSlots();
+          sndType();
+        }
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        const valid = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZabcçdefgğhıijklmnoöprsştuüvyz";
+        if (valid.includes(e.key)) {
+          e.preventDefault();
+          onCharInput(e.key);
+        }
+      }
+    });
+
+    function checkPuzzle(isManualClick = true) {
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+      const entered = currentInput.join("");
+
+      if (entered.length < puzzle.syllable.length || currentInput.some(c => !c)) {
+        if (isManualClick) {
+          sndLose();
+          showDefinition("DİKKAT", "Henüz hece tamamlanmadı. Lütfen tüm kutuları doldurun!");
+          document.getElementById("statusText").innerText = "⚠️ Henüz tamamlanmadı, tekrar dene!";
+        }
+        return;
+      }
+
+      if (entered === puzzle.syllable) {
+        sndWin();
+        isCurrentLevelSolved = true;
+        completedLevels.add(currentLevelIndex);
+        score = completedLevels.size * 100;
+
+        ScormAPI.setScore(Math.round((completedLevels.size / PUZZLE_LEVELS.length) * 100));
+        if (completedLevels.size === PUZZLE_LEVELS.length) {
+          ScormAPI.setStatus("passed");
+        }
+
+        renderPuzzleGrid();
+        renderLevelPills();
+        fireConfetti();
+        openVictoryModal();
+      } else {
+        sndLose();
+        document.getElementById("statusText").innerText = "Henüz tamamlanmadı, tekrar dene!";
+        showDefinition("DENEME", `"${entered}" hecesi tüm satırlarda anlamlı kelime oluşturmuyor.`);
+      }
+    }
+
+    function useHint() {
+      sndHint();
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+      let hintGiven = false;
+
+      for (let i = 0; i < puzzle.syllable.length; i++) {
+        if (currentInput[i] !== puzzle.syllable[i]) {
+          currentInput[i] = puzzle.syllable[i];
+          focusedSlotIndex = Math.min(i + 1, puzzle.syllable.length - 1);
+          hintGiven = true;
+          break;
+        }
+      }
+
+      renderSyllableSlots();
+      renderPuzzleGrid();
+
+      if (hintGiven) {
+        showDefinition("İPUCU", "Ortak hecenin bir harfi açıldı. Şimdi kelimeleri inceleyin!");
+      } else {
+        const randRow = puzzle.rows[Math.floor(Math.random() * puzzle.rows.length)];
+        showDefinition("KELİME İPUCU", `${randRow.target}: ${randRow.hint}`);
+      }
+    }
+
+    function clearInput() {
+      sndDelete();
+      currentInput = new Array(PUZZLE_LEVELS[currentLevelIndex].syllable.length).fill("");
+      focusedSlotIndex = 0;
+      renderSyllableSlots();
+      renderPuzzleGrid();
+      showDefinition("TEMİZLENDİ", "Kutular temizlendi.");
+    }
+
+    function resetCurrentPuzzle() {
+      clearInput();
+      document.getElementById("statusText").innerText = "Kutular sıfırlandı. Yeni hece deneyin...";
+    }
+
+    function nextPuzzle() {
+      closeVictoryModal();
+      if (currentLevelIndex < PUZZLE_LEVELS.length - 1) {
+        loadPuzzle(currentLevelIndex + 1);
+      } else {
+        loadPuzzle(0);
+        showDefinition("ŞAMPİYON!", "Tebrikler! Bütün bulmacaları başarıyla tamamladınız.");
+      }
+    }
+
+    function replayCurrentPuzzle() {
+      closeVictoryModal();
+      resetCurrentPuzzle();
+    }
+
+    function showDefinition(tag, text) {
+      const banner = document.getElementById("definitionBanner");
+      document.getElementById("defTag").innerText = tag;
+      document.getElementById("defText").innerText = text;
+      banner.classList.add("highlight");
+      setTimeout(() => banner.classList.remove("highlight"), 1000);
+    }
+
+    function openVictoryModal() {
+      const puzzle = PUZZLE_LEVELS[currentLevelIndex];
+      document.getElementById("victoryCommonPill").innerText = `ORTAK HECE: ${puzzle.syllable}`;
+      const list = document.getElementById("victoryWordsList");
+      list.innerHTML = "";
+      puzzle.rows.forEach(r => {
+        const b = document.createElement("div");
+        b.className = "v-word-badge";
+        b.innerText = `✓ ${r.target}`;
+        list.appendChild(b);
+      });
+      document.getElementById("victoryModal").classList.add("active");
+    }
+
+    function closeVictoryModal() {
+      document.getElementById("victoryModal").classList.remove("active");
+    }
+
+    function openRulesModal() {
+      sndType();
+      document.getElementById("rulesModal").classList.add("active");
+    }
+
+    function closeRulesModal() {
+      sndType();
+      document.getElementById("rulesModal").classList.remove("active");
+    }
+
+    function fireConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#feca57', '#00cec9', '#10ac84', '#ff5252', '#ffffff'];
+
+      for (let i = 0; i < 80; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 180,
+          y: canvas.height / 2 - 60,
+          vx: (Math.random() - 0.5) * 15,
+          vy: (Math.random() - 1.2) * 15,
+          size: Math.random() * 7 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          alpha: 1
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = 0;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.35;
+          p.rotation += p.vRot;
+          p.alpha -= 0.014;
+
+          if (p.alpha > 0) {
+            active++;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+            ctx.restore();
+          }
+        });
+        if (active > 0) requestAnimationFrame(animate);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      animate();
+    }
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

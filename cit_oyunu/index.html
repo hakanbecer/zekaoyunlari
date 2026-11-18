@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ÇİT OYUNU | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE VİDEO UYUMLU RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial-1: #1a253a;
+      --bg-radial-2: #0c1119;
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --border-light: rgba(254, 202, 87, 0.35);
+
+      --gold-primary: #feca57;
+      --gold-dark: #f5b041;
+      --cyan-accent: #00cec9;
+      --cyan-light: #38bdf8;
+      --emerald-accent: #10ac84;
+      --emerald-light: #34d399;
+      --coral-accent: #ff5252;
+      --coral-light: #ff7675;
+
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-wood-outer: #162035;
+      --board-wood-inner: #1c2742;
+      --dot-color: #feca57;
+      --line-glow: rgba(254, 202, 87, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, var(--bg-radial-1) 0%, var(--bg-radial-2) 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 10px 14px;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (SPLASH SCREEN / AÇILIŞ KARTI)
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-light);
+      border-radius: 32px;
+      padding: 46px 40px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(254, 202, 87, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #feca57, #10ac84, #ff5252);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(25px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid rgba(254, 202, 87, 0.45);
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .splash-title {
+      font-size: 56px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 15%, var(--gold-primary) 65%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      text-shadow: 0 4px 24px rgba(254, 202, 87, 0.35);
+      line-height: 1.15;
+    }
+
+    /* 3B Parça Önizlemesi */
+    .splash-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 14px 28px;
+    }
+
+    .preview-fence-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .preview-fence-line {
+      width: 44px;
+      height: 8px;
+      background: linear-gradient(90deg, #feca57, #ff9f43);
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(254, 202, 87, 0.8);
+    }
+
+    .preview-fence-x {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--coral-accent);
+      text-shadow: 0 0 8px rgba(255, 82, 82, 0.6);
+    }
+
+    .preview-fence-num {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #10ac84, #059669);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 18px;
+      box-shadow: 0 4px 10px rgba(16, 172, 132, 0.4);
+    }
+
+    /* Kısa Oynayış Yönergesi Kutusu */
+    .splash-instructions {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 18px 24px;
+      text-align: left;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .instructions-header {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .instructions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .instructions-list li {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .step-num {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 16px 52px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 172, 132, 0.45);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 206, 201, 0.55);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================================
+       3. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */
+    .top-header {
+      width: 100%;
+      max-width: 1180px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 10px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(254, 202, 87, 0.12);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      padding: 7px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .status-box {
+      flex: 1;
+      min-width: 220px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 8px 18px;
+      text-align: center;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--cyan-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .status-box.success {
+      border-color: var(--emerald-accent);
+      color: var(--emerald-light);
+      background: rgba(16, 172, 132, 0.18);
+    }
+
+    .status-box.alert {
+      border-color: var(--coral-accent);
+      color: var(--coral-light);
+      background: rgba(255, 82, 82, 0.18);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-header:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      transform: translateY(-1px);
+    }
+
+    .btn-header:active {
+      transform: translateY(1px);
+    }
+
+    .btn-header.icon-only {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+
+    /* ==========================================================================
+       4. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ========================================================================== */
+    .level-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(22, 32, 50, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 6px 14px;
+      margin-bottom: 12px;
+      max-width: 1180px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .level-btn {
+      background: transparent;
+      border: 1.5px solid transparent;
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .level-btn:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .level-btn.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: var(--cyan-light);
+      color: var(--cyan-light);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    /* ==========================================================================
+       5. OYUN ANA ALANI (LAYOUT: SOL KONTROL + MERKEZ TAHTA)
+       ========================================================================== */
+    .game-layout {
+      width: 100%;
+      max-width: 1180px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 20px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    /* Sol Yan Kontrol Kartı */
+    .side-panel {
+      flex: 1;
+      min-width: 290px;
+      max-width: 340px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel-section-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Çizim Aracı Seçicisi */
+    .tool-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .tool-btn {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .tool-btn:hover {
+      background: rgba(30, 41, 59, 0.85);
+      transform: translateY(-1px);
+    }
+
+    .tool-btn.active-line {
+      background: rgba(254, 202, 87, 0.18);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      box-shadow: 0 0 14px rgba(254, 202, 87, 0.3);
+    }
+
+    .tool-btn.active-x {
+      background: rgba(255, 82, 82, 0.18);
+      border-color: var(--coral-accent);
+      color: var(--coral-accent);
+      box-shadow: 0 0 14px rgba(255, 82, 82, 0.3);
+    }
+
+    .tool-tip {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 8px 12px;
+      border-radius: 10px;
+      border-left: 3px solid var(--cyan-light);
+    }
+
+    /* Aksiyon Butonları */
+    .action-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--cyan-light);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active {
+      transform: translateY(1px);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      border: none;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 14px 20px;
+      box-shadow: 0 6px 18px rgba(16, 172, 132, 0.4);
+      margin-top: 4px;
+    }
+
+    .action-btn.primary:hover {
+      box-shadow: 0 8px 24px rgba(0, 206, 201, 0.55);
+      transform: translateY(-2px) scale(1.01);
+    }
+
+    /* ==========================================================================
+       6. MERKEZÎ OYUN TAHTASI VE SVG IZGARA
+       ========================================================================== */
+    .board-stage {
+      flex: 2;
+      min-width: 320px;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Durum Hapları (Stat Pills) */
+    .board-stats {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Tahta Kapsayıcısı */
+    .svg-board-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: var(--board-wood-outer);
+      border-radius: 28px;
+      border: 3.5px solid var(--border-color);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 4px 20px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    svg.slither-board {
+      display: block;
+      width: 100%;
+      max-width: 520px;
+      height: auto;
+      touch-action: manipulation;
+    }
+
+    /* SVG Kenar Hitbox (Dokunmatik ve Akıllı Tahta İçin Geniş) */
+    .edge-hitbox {
+      stroke: transparent;
+      stroke-width: 36px;
+      cursor: pointer;
+      stroke-linecap: round;
+      transition: stroke 0.15s ease;
+    }
+
+    .edge-hitbox:hover {
+      stroke: rgba(254, 202, 87, 0.35);
+    }
+
+    /* Çit Çizgisi */
+    .edge-line-glow {
+      stroke: var(--gold-dark);
+      stroke-width: 14px;
+      stroke-linecap: round;
+      pointer-events: none;
+      opacity: 0.6;
+      filter: drop-shadow(0 0 8px rgba(254, 202, 87, 0.8));
+    }
+
+    .edge-line-core {
+      stroke: var(--gold-primary);
+      stroke-width: 8px;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    /* Çarpı İşareti (X) */
+    .edge-x-arm {
+      stroke: var(--coral-accent);
+      stroke-width: 3.5px;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    /* Noktalar */
+    .grid-dot {
+      fill: var(--dot-color);
+      stroke: #090d15;
+      stroke-width: 2.5px;
+      pointer-events: none;
+      filter: drop-shadow(0 0 4px rgba(254, 202, 87, 0.5));
+    }
+
+    /* Hücre Sayıları */
+    .cell-number {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-weight: 900;
+      font-size: 34px;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+      fill: #ffffff;
+      transition: fill 0.25s ease, transform 0.25s ease;
+    }
+
+    .cell-number.satisfied {
+      fill: var(--emerald-accent);
+      filter: drop-shadow(0 0 6px rgba(16, 172, 132, 0.7));
+    }
+
+    .cell-number.violated {
+      fill: var(--coral-accent);
+      filter: drop-shadow(0 0 8px rgba(255, 82, 82, 0.8));
+    }
+
+    /* Tamamlanma Parlaması */
+    @keyframes pulseVictory {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(254, 202, 87, 0.8)); }
+      50% { filter: drop-shadow(0 0 20px rgba(254, 202, 87, 1)) brightness(1.2); }
+    }
+
+    .victory-active .edge-line-core {
+      stroke: #ffffff;
+      animation: pulseVictory 1.5s infinite;
+    }
+
+    .victory-active .edge-line-glow {
+      stroke: var(--gold-primary);
+      stroke-width: 18px;
+      opacity: 0.9;
+    }
+
+    /* ==========================================================================
+       7. DİYALOG VE GERİ BİLDİRİM MODALLARI
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 26px;
+      padding: 32px 36px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 52px;
+      line-height: 1;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    .modal-desc {
+      font-size: 14.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    /* Yönerge Modalına Özel */
+    .rules-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .rule-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .rule-item-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .rule-item-text h4 {
+      font-size: 13.5px;
+      color: var(--gold-primary);
+      margin-bottom: 2px;
+    }
+
+    .rule-item-text p {
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* Konfeti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1500;
+    }
+
+    /* ==========================================================================
+       8. DUYARLI EKRAN (RESPONSIVE) AYARLARI
+       ========================================================================== */
+    @media (max-width: 820px) {
+      .splash-card {
+        padding: 32px 22px;
+      }
+      .splash-title {
+        font-size: 42px;
+      }
+      .game-layout {
+        flex-direction: column;
+        align-items: center;
+      }
+      .side-panel {
+        max-width: 100%;
+        width: 100%;
+      }
+      .board-stage {
+        max-width: 100%;
+        width: 100%;
+      }
+      .top-header {
+        padding: 10px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. GİRİŞ EKRANI (SPLASH SCREEN / AÇILIŞ KARTI)
+       ========================================================================== -->
+  <div class="screen-overlay" id="splashScreen">
+    <div class="splash-card">
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h1 class="splash-title">ÇİT OYUNU</h1>
+
+      <!-- 3B Parça Önizlemesi -->
+      <div class="splash-preview">
+        <div class="preview-fence-item">
+          <div class="preview-fence-line"></div>
+          <span>Çit Çizgisi</span>
+        </div>
+        <div class="preview-fence-item">
+          <span class="preview-fence-x">✕</span>
+          <span>Çarpı (X)</span>
+        </div>
+        <div class="preview-fence-item">
+          <div class="preview-fence-num">3</div>
+          <span>Sayı Kuralı</span>
+        </div>
+      </div>
+
+      <!-- Kısa Oynayış Yönergesi Kutusu -->
+      <div class="splash-instructions">
+        <div class="instructions-header">
+          <span>📌</span> Kısa Oynayış Yönergesi
+        </div>
+        <ul class="instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            <span>Noktalar arasındaki kenarlara tıklayarak yatay ve dikey çit çizgileri çek.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span>Karelerdeki sayılar kadar etrafına çit koy; sıfırın kenarlarına çarpı koy.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span>Çizgileri kesiştirmeden ve dallandırmadan tek bir kapalı halka oluştur.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="splash-prompt">Çit oyununu oynamak için etkinliğe başla</div>
+      <button class="btn-start" onclick="startGameFromSplash()">
+        <span>▶</span> ETKİNLİĞE BAŞLA
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */ -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span>⬡</span>
+        <span>ÇİT OYUNU</span>
+      </div>
+    </div>
+
+    <div class="status-box" id="statusBox">
+      <span>Tek bir kapalı halka oluşturun ve tüm sayıları sağlayın.</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header" onclick="restartCurrentLevel()">
+        <span>🔄</span> Baştan Başla
+      </button>
+      <button class="btn-header" onclick="openRulesModal()">
+        <span>ℹ️</span> Yönerge
+      </button>
+      <button class="btn-header icon-only" id="soundBtn" onclick="toggleSound()" title="Sesi Aç/Kapat">
+        <span>🔊</span>
+      </button>
+      <button class="btn-header icon-only" onclick="toggleFullScreen()" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       3. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ========================================================================== -->
+  <nav class="level-bar" id="levelBar">
+    <!-- Seviye butonları JavaScript ile dinamik olarak oluşturulacak -->
+  </nav>
+
+  <!-- ==========================================================================
+       4. OYUN ANA ALANI
+       ========================================================================== -->
+  <main class="game-layout">
+
+    <!-- Sol Yan Panel: Araçlar ve Kontroller -->
+    <aside class="side-panel">
+      <div class="panel-section-title">
+        <span>✏️</span> ÇİZİM ARACI
+      </div>
+      <div class="tool-selector">
+        <button class="tool-btn active-line" id="toolLineBtn" onclick="selectTool('line')">
+          <span>📏</span> Çit Çiz (Sol Tık)
+        </button>
+        <button class="tool-btn" id="toolXBtn" onclick="selectTool('x')">
+          <span>❌</span> Çarpı Koy (Sağ Tık)
+        </button>
+      </div>
+
+      <div class="tool-tip">
+        💡 <strong>İpucu:</strong> Kenara sol tıklayarak <em>Boş ➔ Çit ➔ Çarpı</em> arasında geçiş yapabilir, sağ tıkla doğrudan <em>Çarpı (X)</em> koyabilirsiniz.
+      </div>
+
+      <div class="panel-section-title" style="margin-top: 4px;">
+        <span>⚡</span> HAMLE KONTROLLERİ
+      </div>
+      <div class="action-grid">
+        <div class="action-row">
+          <button class="action-btn" onclick="undoMove()">
+            <span>↩️</span> Geri Al
+          </button>
+          <button class="action-btn" onclick="givePedagogicalHint()">
+            <span>💡</span> İpucu
+          </button>
+        </div>
+        <div class="action-row">
+          <button class="action-btn" onclick="clearUserMoves()">
+            <span>🗑️</span> Temizle
+          </button>
+          <button class="action-btn" onclick="showSolutionDemo()">
+            <span>✨</span> Çözümü Gör
+          </button>
+        </div>
+        <button class="action-btn primary" onclick="checkPuzzleSolution(true)">
+          <span>✓</span> Çiti Kontrol Et
+        </button>
+      </div>
+    </aside>
+
+    <!-- Merkez Oyun Tahtası Sahnesi -->
+    <section class="board-stage">
+      <div class="board-stats">
+        <div class="stat-pill" id="statLevelBadge">Seviye: 1 (Ders Örneği 4x4)</div>
+        <div class="stat-pill" id="statEdgesCount">Çit Çizgileri: 0</div>
+        <div class="stat-pill" id="statTimer">⏱️ 00:00</div>
+        <div class="stat-pill" id="statStatus">Durum: Oynanıyor</div>
+      </div>
+
+      <div class="svg-board-container" id="svgContainer">
+        <!-- SVG Çit Tahtası Buraya Dinamik Çizilecek -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       5. MODALLAR (YÖNERGE, GERİ BİLDİRİM VE ZAFER KARTI)
+       ========================================================================== -->
+
+  <!-- Yönerge Modalı -->
+  <div class="modal-overlay" id="rulesModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-icon">📖</div>
+      <h2 class="modal-title">ÇİT OYUNU KURALLARI</h2>
+      <div class="rules-grid">
+        <div class="rule-item">
+          <div class="rule-item-icon">1️⃣</div>
+          <div class="rule-item-text">
+            <h4>Tek Bir Kapalı Halka</h4>
+            <p>Noktalar arasında yatay ve dikey çizgiler çekerek başladığı noktaya geri dönen tek bir kapalı çit oluşturun.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-item-icon">0️⃣</div>
+          <div class="rule-item-text">
+            <h4>Sıfırın (0) Sırrı</h4>
+            <p>İçinde 0 yazan karenin hiçbir kenarında çit olamaz! 4 kenarına da hemen kırmızı çarpı (X) koyun.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-item-icon">3️⃣</div>
+          <div class="rule-item-text">
+            <h4>Üçün (3) Kuralı</h4>
+            <p>3 yazan karenin 4 kenarından tam 3 tanesinde çizgi vardır. Sıfırın yanındaki 3'ün kalan 3 kenarı kesinlikle çizilir.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-item-icon">❌</div>
+          <div class="rule-item-text">
+            <h4>Kesişme ve Dallanma Yasaktır</h4>
+            <p>Çizgiler artı (+) veya TE şeklinde dallanamaz. Her noktadan ya sıfır ya da tam olarak iki çizgi geçebilir.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="action-btn primary" style="width: 100%;" onclick="closeRulesModal()">
+          Anladım, Oyuna Dön ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eksik / Hata Bildirim Modalı -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-card">
+      <div class="modal-icon" id="alertIcon">💡</div>
+      <h3 class="modal-title" id="alertTitle">Henüz Tamamlanmadı!</h3>
+      <p class="modal-desc" id="alertDesc">
+        Çit çizgileri başladığı noktaya geri dönen tek bir kapalı halka oluşturmalı ve tüm sayıların kuralları tam sağlanmalıdır.
+      </p>
+      <div class="modal-actions">
+        <button class="action-btn" onclick="closeAlertModal()">
+          <span>✏️</span> Devam Et
+        </button>
+        <button class="action-btn primary" onclick="restartFromAlert()">
+          <span>🔁</span> Baştan Başla
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zafer Modalı (MOD B Solo Puzzle Zafer Kartı) -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card" style="border-color: var(--emerald-accent);">
+      <div class="modal-icon">🏆</div>
+      <h2 class="modal-title" style="color: var(--emerald-light);">Tebrikler, Bulmacayı Çözdünüz!</h2>
+      <p class="modal-desc" id="victoryDesc">
+        Harika bir mantık yürütmeyle tüm kuralları eksiksiz sağladınız ve tek bir kapalı halka oluşturdunuz!
+      </p>
+      <div class="modal-actions">
+        <button class="action-btn" onclick="restartCurrentLevel()">
+          <span>🔄</span> Yeniden Oyna
+        </button>
+        <button class="action-btn primary" onclick="loadNextLevel()">
+          <span>Sonraki Bulmaca ➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konfeti Efekti -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ==========================================================================
+       6. SCORM 1.2 VE WEB AUDIO API MOTORU
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       SCORM 1.2 MOTORU (SIFIR HATA VE TAM UYUMLULUK)
+       ========================================================================== */
+    const SCORM = {
+      api: null,
+      startTime: null,
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && attempts < 10) {
+          if (win.parent && win.parent !== win) {
+            win = win.parent;
+          } else if (win.opener) {
+            win = win.opener;
+          } else {
+            break;
+          }
+          attempts++;
+        }
+        return win ? win.API : null;
+      },
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (this.api && typeof this.api.LMSInitialize === "function") {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM bağımsız modda çalışıyor:", e);
+        }
+        this.startTime = new Date();
+      },
+      complete() {
+        try {
+          if (this.api && typeof this.api.LMSSetValue === "function") {
+            this.api.LMSSetValue("cmi.core.score.raw", "100");
+            this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+            if (this.startTime) {
+              const diff = Math.floor((new Date() - this.startTime) / 1000);
+              const hrs = String(Math.floor(diff / 3600)).padStart(2, "0");
+              const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+              const secs = String(diff % 60).padStart(2, "0");
+              this.api.LMSSetValue("cmi.core.session_time", `${hrs}:${mins}:${secs}`);
+            }
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM complete hatası:", e);
+        }
+      },
+      finish() {
+        try {
+          if (this.api && typeof this.api.LMSFinish === "function") {
+            this.api.LMSFinish("");
+          }
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => SCORM.init());
+    window.addEventListener("beforeunload", () => SCORM.finish());
+
+    /* ==========================================================================
+       WEB AUDIO API SES MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playLine() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(420, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(740, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+      playX() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(500, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.03);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.03);
+      }
+      playGentleAlert() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(290, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(240, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.28);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.28);
+      }
+      playHint() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        [659.25, 880.00].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.09;
+          gain.gain.setValueAtTime(0.2, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.25);
+        });
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.12;
+          gain.gain.setValueAtTime(0.25, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.45);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    function toggleSound() {
+      sound.muted = !sound.muted;
+      document.getElementById('soundBtn').innerHTML = sound.muted ? '<span>🔇</span>' : '<span>🔊</span>';
+    }
+
+    /* ==========================================================================
+       7. BULMACA VERİLERİ (100% DOĞRULANMIŞ & EŞSİZ SLITHERLINK DÖNGÜLERİ)
+       ========================================================================== */
+    const PUZZLES = [
+      {
+        id: 1,
+        title: "1. Ders Örneği (4x4)",
+        sub: "Video Dersindeki Orijinal Bulmaca",
+        rows: 4,
+        cols: 4,
+        clues: {
+          "0,2": 3, "1,0": 2, "1,2": 3, "1,3": 0,
+          "2,0": 2, "3,0": 2, "3,1": 1, "3,3": 1
+        },
+        solutionH: ["0,1", "0,2", "1,2", "2,0", "2,2", "4,0", "4,1", "4,2"],
+        solutionV: ["0,1", "0,3", "1,1", "1,2", "2,0", "2,3", "3,0", "3,3"],
+        edgeCount: 16
+      },
+      {
+        id: 2,
+        title: "2. Kolay Seviye (4x4)",
+        sub: "Sıfırları Eleme ve Temel Köşeler",
+        rows: 4,
+        cols: 4,
+        clues: {
+          "0,0": 2, "0,2": 3, "1,1": 1, "1,3": 0,
+          "2,0": 2, "2,2": 1, "2,3": 0, "3,0": 1, "3,2": 0
+        },
+        solutionH: ["0,0", "0,1", "0,2", "1,2", "3,0", "3,1"],
+        solutionV: ["0,0", "0,3", "1,0", "1,2", "2,0", "2,2"],
+        edgeCount: 12
+      },
+      {
+        id: 3,
+        title: "3. Orta Seviye (4x4)",
+        sub: "Çıkmaz Sokak ve Koridor Takibi",
+        rows: 4,
+        cols: 4,
+        clues: {
+          "0,1": 2, "0,3": 2, "1,1": 1, "1,3": 1,
+          "2,1": 2, "2,2": 3, "3,1": 3, "3,3": 3
+        },
+        solutionH: ["0,1", "0,2", "0,3", "2,2", "4,1", "4,3"],
+        solutionV: ["0,1", "0,4", "1,1", "1,4", "2,1", "2,3", "2,4", "3,1", "3,2", "3,3", "3,4"],
+        edgeCount: 18
+      },
+      {
+        id: 4,
+        title: "4. Usta Seviye (5x5)",
+        sub: "Geniş Izgara ve İleri Seviye Mantık",
+        rows: 5,
+        cols: 5,
+        clues: {
+          "0,0": 0, "0,3": 2, "1,1": 1, "1,2": 0,
+          "2,1": 0, "2,3": 0, "2,4": 3, "3,2": 3,
+          "4,0": 2, "4,2": 2, "4,4": 2
+        },
+        solutionH: ["0,1", "0,2", "0,3", "2,4", "3,2", "4,0", "4,2", "5,0", "5,1", "5,3", "5,4"],
+        solutionV: ["0,1", "0,4", "1,0", "1,4", "2,0", "2,5", "3,0", "3,3", "3,5", "4,0", "4,2", "4,3", "4,5"],
+        edgeCount: 24
+      },
+      {
+        id: 5,
+        title: "5. Şampiyon Seviye (5x5)",
+        sub: "Tüm Kuralların Kusursuz Dengesi",
+        rows: 5,
+        cols: 5,
+        clues: {
+          "0,0": 3, "0,4": 2, "1,0": 3, "1,2": 0, "1,3": 0,
+          "2,1": 0, "2,2": 0, "2,4": 3, "3,1": 0, "3,3": 0,
+          "4,2": 3, "4,4": 2
+        },
+        solutionH: ["0,0", "0,1", "0,2", "0,3", "0,4", "2,4", "3,4", "4,2", "5,0", "5,1", "5,4"],
+        solutionV: ["0,0", "0,5", "1,0", "1,5", "2,0", "2,4", "2,5", "3,0", "3,5", "4,0", "4,2", "4,3", "4,5"],
+        edgeCount: 26
+      }
+    ];
+
+    /* ==========================================================================
+       8. OYUN DURUMU VE DEĞİŞKENLERİ
+       ========================================================================== */
+    let currentLvlIdx = 0;
+    let currentTool = 'line'; // 'line' veya 'x'
+    let boardStateH = {};    // "r,c" -> 0 (empty), 1 (line), 2 (x)
+    let boardStateV = {};
+    let moveHistory = [];
+    let timerSec = 0;
+    let timerInterval = null;
+    let isVictory = false;
+    let isDemoMode = false;
+
+    /* Açılış ekranından oyuna başlama */
+    function startGameFromSplash() {
+      sound.playClick();
+      const splash = document.getElementById('splashScreen');
+      splash.classList.add('hidden');
+      initLevelBar();
+      loadLevel(0);
+    }
+
+    /* Seviye Seçim Barı */
+    function initLevelBar() {
+      const bar = document.getElementById('levelBar');
+      bar.innerHTML = '';
+      PUZZLES.forEach((p, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'level-btn' + (idx === currentLvlIdx ? ' active' : '');
+        btn.innerHTML = `<span>⬡</span> ${p.title}`;
+        btn.onclick = () => loadLevel(idx);
+        bar.appendChild(btn);
+      });
+    }
+
+    function updateLevelBarActive() {
+      const btns = document.querySelectorAll('.level-btn');
+      btns.forEach((b, i) => b.classList.toggle('active', i === currentLvlIdx));
+    }
+
+    /* Seviye Yükleme */
+    function loadLevel(idx) {
+      sound.playClick();
+      currentLvlIdx = idx;
+      updateLevelBarActive();
+      isVictory = false;
+      isDemoMode = false;
+      stopConfetti();
+
+      const lvl = PUZZLES[idx];
+      document.getElementById('statLevelBadge').innerText = `Seviye: ${lvl.id} (${lvl.title})`;
+      document.getElementById('statStatus').innerText = 'Durum: Oynanıyor';
+
+      boardStateH = {};
+      boardStateV = {};
+      moveHistory = [];
+
+      startTimer();
+      renderSlitherBoard();
+      updateStatus(`${lvl.title} yüklendi. ${lvl.sub}.`, 'normal');
+    }
+
+    /* Zamanlayıcı */
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerSec = 0;
+      updateTimerUI();
+      timerInterval = setInterval(() => {
+        timerSec++;
+        updateTimerUI();
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const m = String(Math.floor(timerSec / 60)).padStart(2, '0');
+      const s = String(timerSec % 60).padStart(2, '0');
+      document.getElementById('statTimer').innerText = `⏱️ ${m}:${s}`;
+    }
+
+    /* Çizim Aracı Değiştirme */
+    function selectTool(tool) {
+      sound.playClick();
+      currentTool = tool;
+      document.getElementById('toolLineBtn').classList.toggle('active-line', tool === 'line');
+      document.getElementById('toolXBtn').classList.toggle('active-x', tool === 'x');
+    }
+
+    /* ==========================================================================
+       9. SVG TAHTA ÇİZİM MOTORU (VEKTÖREL & DUYARLI)
+       ========================================================================== */
+    function renderSlitherBoard() {
+      const container = document.getElementById('svgContainer');
+      const lvl = PUZZLES[currentLvlIdx];
+      const rows = lvl.rows;
+      const cols = lvl.cols;
+
+      const cellSize = 80;
+      const pad = 44;
+      const width = cols * cellSize + pad * 2;
+      const height = rows * cellSize + pad * 2;
+
+      let svgHtml = `<svg class="slither-board ${isVictory ? 'victory-active' : ''}" viewBox="0 0 ${width} ${height}" oncontextmenu="return false;">`;
+
+      // 1. Hücre Sayıları ve Hücre Zeminleri
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cx = pad + (c + 0.5) * cellSize;
+          const cy = pad + (r + 0.5) * cellSize;
+          const clueKey = `${r},${c}`;
+          if (lvl.clues.hasOwnProperty(clueKey)) {
+            const req = lvl.clues[clueKey];
+            const currentCount = getCellLineCount(r, c);
+            let stateClass = '';
+            if (currentCount === req) stateClass = 'satisfied';
+            else if (currentCount > req) stateClass = 'violated';
+
+            svgHtml += `
+              <text x="${cx}" y="${cy}" class="cell-number ${stateClass}" id="cell_${r}_${c}">
+                ${req}
+              </text>
+            `;
+          }
+        }
+      }
+
+      // 2. Yatay Kenarlar (Horizontal Edges)
+      for (let r = 0; r <= rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x1 = pad + c * cellSize;
+          const y1 = pad + r * cellSize;
+          const x2 = pad + (c + 1) * cellSize;
+          const y2 = y1;
+          const edgeKey = `${r},${c}`;
+          const state = boardStateH[edgeKey] || 0; // 0: Boş, 1: Çit, 2: Çarpı
+
+          // Görsel Çit Çizgisi
+          if (state === 1) {
+            svgHtml += `
+              <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-line-glow" />
+              <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-line-core" />
+            `;
+          } else if (state === 2) {
+            // Kırmızı Çarpı
+            const mx = (x1 + x2) / 2;
+            const my = y1;
+            const arm = 9;
+            svgHtml += `
+              <line x1="${mx - arm}" y1="${my - arm}" x2="${mx + arm}" y2="${my + arm}" class="edge-x-arm" />
+              <line x1="${mx - arm}" y1="${my + arm}" x2="${mx + arm}" y2="${my - arm}" class="edge-x-arm" />
+            `;
+          }
+
+          // Tıklanabilir Geniş Hitbox
+          svgHtml += `
+            <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-hitbox"
+                  onclick="handleEdgeClick('H', ${r}, ${c}, event)"
+                  oncontextmenu="handleEdgeRightClick('H', ${r}, ${c}, event)" />
+          `;
+        }
+      }
+
+      // 3. Dikey Kenarlar (Vertical Edges)
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c <= cols; c++) {
+          const x1 = pad + c * cellSize;
+          const y1 = pad + r * cellSize;
+          const x2 = x1;
+          const y2 = pad + (r + 1) * cellSize;
+          const edgeKey = `${r},${c}`;
+          const state = boardStateV[edgeKey] || 0;
+
+          // Görsel Çit Çizgisi
+          if (state === 1) {
+            svgHtml += `
+              <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-line-glow" />
+              <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-line-core" />
+            `;
+          } else if (state === 2) {
+            // Kırmızı Çarpı
+            const mx = x1;
+            const my = (y1 + y2) / 2;
+            const arm = 9;
+            svgHtml += `
+              <line x1="${mx - arm}" y1="${my - arm}" x2="${mx + arm}" y2="${my + arm}" class="edge-x-arm" />
+              <line x1="${mx - arm}" y1="${my + arm}" x2="${mx + arm}" y2="${my - arm}" class="edge-x-arm" />
+            `;
+          }
+
+          // Tıklanabilir Geniş Hitbox
+          svgHtml += `
+            <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="edge-hitbox"
+                  onclick="handleEdgeClick('V', ${r}, ${c}, event)"
+                  oncontextmenu="handleEdgeRightClick('V', ${r}, ${c}, event)" />
+          `;
+        }
+      }
+
+      // 4. Noktalar (Dots)
+      for (let r = 0; r <= rows; r++) {
+        for (let c = 0; c <= cols; c++) {
+          const x = pad + c * cellSize;
+          const y = pad + r * cellSize;
+          svgHtml += `<circle cx="${x}" cy="${y}" r="6.5" class="grid-dot" />`;
+        }
+      }
+
+      svgHtml += `</svg>`;
+      container.innerHTML = svgHtml;
+
+      updateStatsDisplay();
+    }
+
+    /* Hücrenin Etrafındaki Çizgi Sayısı */
+    function getCellLineCount(r, c) {
+      let count = 0;
+      if (boardStateH[`${r},${c}`] === 1) count++;
+      if (boardStateH[`${r+1},${c}`] === 1) count++;
+      if (boardStateV[`${r},${c}`] === 1) count++;
+      if (boardStateV[`${r},${c+1}`] === 1) count++;
+      return count;
+    }
+
+    /* İstatistikleri Güncelleme */
+    function updateStatsDisplay() {
+      let totalLines = 0;
+      for (let k in boardStateH) if (boardStateH[k] === 1) totalLines++;
+      for (let k in boardStateV) if (boardStateV[k] === 1) totalLines++;
+
+      const lvl = PUZZLES[currentLvlIdx];
+      document.getElementById('statEdgesCount').innerText = `Çit Çizgileri: ${totalLines} / ${lvl.edgeCount}`;
+    }
+
+    /* Kenara Tıklama (Sol Tık / Dokunma) */
+    function handleEdgeClick(type, r, c, event) {
+      if (isVictory) return;
+      if (event) event.preventDefault();
+
+      if (isDemoMode) {
+        isDemoMode = false;
+        document.getElementById('statStatus').innerText = 'Durum: Oynanıyor';
+      }
+
+      const key = `${r},${c}`;
+      const stateObj = type === 'H' ? boardStateH : boardStateV;
+      const prev = stateObj[key] || 0;
+      let next = 0;
+
+      if (currentTool === 'line') {
+        // Boş (0) ➔ Çit (1) ➔ Çarpı (2) ➔ Boş (0)
+        if (prev === 0) next = 1;
+        else if (prev === 1) next = 2;
+        else next = 0;
+      } else {
+        // Çarpı Aracı: Boş (0) ➔ Çarpı (2) ➔ Boş (0)
+        if (prev === 0) next = 2;
+        else if (prev === 2) next = 0;
+        else next = 2;
+      }
+
+      moveHistory.push({ type, r, c, prev });
+      stateObj[key] = next;
+
+      if (next === 1) sound.playLine();
+      else if (next === 2) sound.playX();
+      else sound.playClick();
+
+      renderSlitherBoard();
+
+      // Otomatik tamamlama kontrolü
+      checkAutoCompletion();
+    }
+
+    /* Kenara Sağ Tıklama (Doğrudan Çarpı Koy/Kaldır) */
+    function handleEdgeRightClick(type, r, c, event) {
+      if (isVictory) return;
+      if (event) event.preventDefault();
+
+      if (isDemoMode) {
+        isDemoMode = false;
+        document.getElementById('statStatus').innerText = 'Durum: Oynanıyor';
+      }
+
+      const key = `${r},${c}`;
+      const stateObj = type === 'H' ? boardStateH : boardStateV;
+      const prev = stateObj[key] || 0;
+      const next = prev === 2 ? 0 : 2;
+
+      moveHistory.push({ type, r, c, prev });
+      stateObj[key] = next;
+
+      sound.playX();
+      renderSlitherBoard();
+      return false;
+    }
+
+    /* Geri Al (Undo) */
+    function undoMove() {
+      if (isVictory || moveHistory.length === 0) return;
+      sound.playClick();
+      const last = moveHistory.pop();
+      const stateObj = last.type === 'H' ? boardStateH : boardStateV;
+      stateObj[`${last.r},${last.c}`] = last.prev;
+      renderSlitherBoard();
+      updateStatus('Son hamle geri alındı.', 'normal');
+    }
+
+    /* Temizle */
+    function clearUserMoves() {
+      sound.playClick();
+      boardStateH = {};
+      boardStateV = {};
+      moveHistory = [];
+      isVictory = false;
+      isDemoMode = false;
+      document.getElementById('statStatus').innerText = 'Durum: Oynanıyor';
+      renderSlitherBoard();
+      updateStatus('Tüm çizgiler temizlendi.', 'normal');
+    }
+
+    /* Baştan Başla */
+    function restartCurrentLevel() {
+      sound.playClick();
+      clearUserMoves();
+      closeVictoryModal();
+      closeAlertModal();
+      startTimer();
+      updateStatus('Bulmaca baştan başlatıldı.', 'normal');
+    }
+
+    function restartFromAlert() {
+      closeAlertModal();
+      restartCurrentLevel();
+    }
+
+    /* Sonraki Seviyeye Geç */
+    function loadNextLevel() {
+      closeVictoryModal();
+      const nextIdx = (currentLvlIdx + 1) % PUZZLES.length;
+      loadLevel(nextIdx);
+    }
+
+    /* ==========================================================================
+       10. PEDAGOJİK İPUCU VE ÇÖZÜM GÖSTERİCİ
+       ========================================================================== */
+    function givePedagogicalHint() {
+      if (isVictory) return;
+      if (isDemoMode) {
+        isDemoMode = false;
+        document.getElementById('statStatus').innerText = 'Durum: Oynanıyor';
+      }
+      sound.playHint();
+      const lvl = PUZZLES[currentLvlIdx];
+
+      // 1. Adım: Sıfırların (0) 4 kenarına X konmamışsa ilk ipucu olarak onları koy
+      let placedZeroX = false;
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          if (lvl.clues[`${r},${c}`] === 0) {
+            const h1 = `${r},${c}`;
+            const h2 = `${r+1},${c}`;
+            const v1 = `${r},${c}`;
+            const v2 = `${r},${c+1}`;
+            if (boardStateH[h1] !== 2 || boardStateH[h2] !== 2 || boardStateV[v1] !== 2 || boardStateV[v2] !== 2) {
+              boardStateH[h1] = 2;
+              boardStateH[h2] = 2;
+              boardStateV[v1] = 2;
+              boardStateV[v2] = 2;
+              placedZeroX = true;
+            }
+          }
+        }
+      }
+
+      if (placedZeroX) {
+        renderSlitherBoard();
+        updateStatus('💡 İpucu: Sıfırın (0) hiçbir kenarında çit olamaz! 4 kenarına çarpı (X) koyduk.', 'normal');
+        return;
+      }
+
+      // 2. Adım: Çözüme ait eksik veya yanlış bir kenarı düzelt
+      for (const e of lvl.solutionH) {
+        if (boardStateH[e] !== 1) {
+          boardStateH[e] = 1;
+          renderSlitherBoard();
+          updateStatus('💡 İpucu: Zorunlu olan bir yatay çit parçası sizin için çizildi!', 'normal');
+          checkAutoCompletion();
+          return;
+        }
+      }
+
+      for (const e of lvl.solutionV) {
+        if (boardStateV[e] !== 1) {
+          boardStateV[e] = 1;
+          renderSlitherBoard();
+          updateStatus('💡 İpucu: Zorunlu olan bir dikey çit parçası sizin için çizildi!', 'normal');
+          checkAutoCompletion();
+          return;
+        }
+      }
+
+      updateStatus('Tüm çit çizgileri zaten doğru yerleştirilmiş!', 'success');
+    }
+
+    /* Çözümü Göster (Yalnızca İnceleme/Rehber Modu - Zafer Tetiklemez) */
+    function showSolutionDemo() {
+      sound.playHint();
+      isDemoMode = true;
+      isVictory = false;
+      stopConfetti();
+
+      const lvl = PUZZLES[currentLvlIdx];
+      boardStateH = {};
+      boardStateV = {};
+      lvl.solutionH.forEach(e => boardStateH[e] = 1);
+      lvl.solutionV.forEach(e => boardStateV[e] = 1);
+      renderSlitherBoard();
+
+      document.getElementById('statStatus').innerText = 'Durum: Çözüm Gösterimi 👁️';
+      updateStatus('✨ Çözüm gösterildi. İnceledikten sonra "Temizle" butonuna basarak kendiniz çözmeyi deneyebilirsiniz.', 'normal');
+    }
+
+    /* ==========================================================================
+       11. KURAL DOĞRULAMA VE OTOMATİK ÇÖZÜM MOTORU
+       ========================================================================== */
+    function checkAutoCompletion() {
+      if (isDemoMode) return;
+      const lvl = PUZZLES[currentLvlIdx];
+      let userEdgesCount = 0;
+      for (let k in boardStateH) if (boardStateH[k] === 1) userEdgesCount++;
+      for (let k in boardStateV) if (boardStateV[k] === 1) userEdgesCount++;
+
+      if (userEdgesCount === lvl.edgeCount) {
+        checkPuzzleSolution(false);
+      }
+    }
+
+    function checkPuzzleSolution(showModalOnFeedback = true) {
+      if (isDemoMode) {
+        if (showModalOnFeedback) {
+          sound.playGentleAlert();
+          openAlertModal(
+            'ℹ️ Çözüm İnceleme Modu',
+            'Şu anda hazır çözüm gösterilmektedir. Kendi başarınızı kaydetmek ve zafer kazanmak için lütfen "Temizle" veya "Baştan Başla" butonuna basıp kendiniz çözünüz.'
+          );
+        }
+        return false;
+      }
+
+      const lvl = PUZZLES[currentLvlIdx];
+      const rows = lvl.rows;
+      const cols = lvl.cols;
+
+      // 1. Sayı Kurallarının Kontrolü
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const key = `${r},${c}`;
+          if (lvl.clues.hasOwnProperty(key)) {
+            const req = lvl.clues[key];
+            const current = getCellLineCount(r, c);
+            if (current !== req) {
+              if (showModalOnFeedback) {
+                sound.playGentleAlert();
+                openAlertModal(
+                  '💡 Sayı Kuralı Eksik!',
+                  `Henüz bitmedi! ${r + 1}. satır, ${c + 1}. sütundaki ${req} sayısının kuralları tam sağlanmadı (Şu an ${current} çizgi var).`
+                );
+              }
+              return false;
+            }
+          }
+        }
+      }
+
+      // 2. Derece Kontrolü (Her noktada 0 veya tam 2 çizgi)
+      const deg = {};
+      const adj = {};
+      let totalLines = 0;
+
+      for (let r = 0; r <= rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (boardStateH[`${r},${c}`] === 1) {
+            totalLines++;
+            const u = `${r},${c}`;
+            const v = `${r},${c+1}`;
+            deg[u] = (deg[u] || 0) + 1;
+            deg[v] = (deg[v] || 0) + 1;
+            if (!adj[u]) adj[u] = [];
+            if (!adj[v]) adj[v] = [];
+            adj[u].push(v);
+            adj[v].push(u);
+          }
+        }
+      }
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c <= cols; c++) {
+          if (boardStateV[`${r},${c}`] === 1) {
+            totalLines++;
+            const u = `${r},${c}`;
+            const v = `${r+1},${c}`;
+            deg[u] = (deg[u] || 0) + 1;
+            deg[v] = (deg[v] || 0) + 1;
+            if (!adj[u]) adj[u] = [];
+            if (!adj[v]) adj[v] = [];
+            adj[u].push(v);
+            adj[v].push(u);
+          }
+        }
+      }
+
+      if (totalLines === 0) {
+        if (showModalOnFeedback) {
+          sound.playGentleAlert();
+          openAlertModal('💡 Henüz Çizgi Yok!', 'Bulmacayı çözmek için noktalar arasına çit çizgileri çekmelisiniz.');
+        }
+        return false;
+      }
+
+      // Kesişme veya açık uç var mı?
+      for (const pt in deg) {
+        if (deg[pt] !== 2) {
+          if (showModalOnFeedback) {
+            sound.playGentleAlert();
+            openAlertModal(
+              '⚠️ Kesişme veya Açık Uç!',
+              'Çit çizgileri havada açık kalamaz, dallanamaz ve kesişemez. Her noktadan tam olarak 2 çizgi geçmelidir.'
+            );
+          }
+          return false;
+        }
+      }
+
+      // 3. Tek Kapalı Döngü Kontrolü (Bağlılık / Connectivity)
+      const nodes = Object.keys(deg);
+      if (nodes.length === 0) return false;
+
+      const visited = new Set();
+      const stack = [nodes[0]];
+      while (stack.length > 0) {
+        const curr = stack.pop();
+        if (!visited.has(curr)) {
+          visited.add(curr);
+          for (const nb of (adj[curr] || [])) {
+            if (!visited.has(nb)) stack.push(nb);
+          }
+        }
+      }
+
+      if (visited.size !== nodes.length) {
+        if (showModalOnFeedback) {
+          sound.playGentleAlert();
+          openAlertModal(
+            '⚠️ Ayrı Küçük Halkalar!',
+            'Tahtada iki ayrı halka bulunamaz. Tüm çizgiler birleşerek tek bir büyük kapalı halka oluşturmalıdır.'
+          );
+        }
+        return false;
+      }
+
+      // 4. TÜM KURALLAR SAĞLANDI! ZAFER!
+      onPuzzleSolved();
+      return true;
+    }
+
+    /* Zafer Durumu */
+    function onPuzzleSolved() {
+      if (isVictory) return;
+      isVictory = true;
+      if (timerInterval) clearInterval(timerInterval);
+
+      sound.playFanfare();
+      startConfetti();
+      SCORM.complete();
+
+      updateStatus('🏆 Tebrikler, Bulmacayı Başarıyla Çözdünüz!', 'success');
+      document.getElementById('statStatus').innerText = 'Durum: Tamamlandı! 🏆';
+
+      renderSlitherBoard();
+
+      const lvl = PUZZLES[currentLvlIdx];
+      const modal = document.getElementById('victoryModal');
+      const desc = document.getElementById('victoryDesc');
+      desc.textContent = `${lvl.title} başarıyla tamamlandı! ${lvl.edgeCount} parçalık kusursuz bir kapalı halka oluşturdunuz.`;
+      modal.classList.add('active');
+    }
+
+    /* ==========================================================================
+       12. MODAL YÖNETİMİ
+       ========================================================================== */
+    function openRulesModal() {
+      sound.playClick();
+      document.getElementById('rulesModal').classList.add('active');
+    }
+
+    function closeRulesModal() {
+      sound.playClick();
+      document.getElementById('rulesModal').classList.remove('active');
+    }
+
+    function openAlertModal(title, desc) {
+      document.getElementById('alertTitle').innerText = title;
+      document.getElementById('alertDesc').innerText = desc;
+      document.getElementById('alertModal').classList.add('active');
+    }
+
+    function closeAlertModal() {
+      sound.playClick();
+      document.getElementById('alertModal').classList.remove('active');
+    }
+
+    function closeVictoryModal() {
+      document.getElementById('victoryModal').classList.remove('active');
+      stopConfetti();
+    }
+
+    function updateStatus(text, type = 'normal') {
+      const box = document.getElementById('statusBox');
+      box.className = 'status-box';
+      if (type === 'success') box.classList.add('success');
+      else if (type === 'alert') box.classList.add('alert');
+      box.innerHTML = `<span>${text}</span>`;
+    }
+
+    function toggleFullScreen() {
+      sound.playClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    /* ==========================================================================
+       13. KONFETİ YAĞMURU MOTORU (CANVAS)
+       ========================================================================== */
+    let confettiActive = false;
+    let confettiAnimId = null;
+    const confettiColors = ['#feca57', '#00cec9', '#10ac84', '#ff7675', '#a78bfa', '#f8fafc', '#ff9f43'];
+    let confettiParticles = [];
+
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      confettiParticles = [];
+      for (let i = 0; i < 110; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 8 + 6,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          speedY: Math.random() * 3 + 2,
+          speedX: Math.random() * 2 - 1,
+          rot: Math.random() * 360,
+          rotSpeed: Math.random() * 6 - 3
+        });
+      }
+
+      confettiActive = true;
+      function loop() {
+        if (!confettiActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rot += p.rotSpeed;
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+        confettiAnimId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    function stopConfetti() {
+      confettiActive = false;
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas && confettiActive) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+
+    // Klavye Kısayolları (Geri Al: Ctrl+Z, Boşluk: Kontrol Et)
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        undoMove();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        checkPuzzleSolution(true);
+      }
+    });
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

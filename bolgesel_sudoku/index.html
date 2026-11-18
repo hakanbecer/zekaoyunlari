@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BÖLGESEL SUDOKU | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE VİDEO UYUMLU RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f141d;
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --gold-primary: #feca57;
+      --gold-dark: #f5b041;
+      --cyan-accent: #00cec9;
+      --cyan-light: #38bdf8;
+      --emerald-accent: #10ac84;
+      --emerald-light: #34d399;
+      --coral-accent: #ff5252;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-bg: #18212f;
+      --cell-grid-line: rgba(51, 65, 85, 0.65);
+      --thick-border: #f8fafc;
+
+      /* 6 Farklı Bölgenin Pastel Tonları */
+      --reg-0: rgba(56, 189, 248, 0.18);
+      --reg-1: rgba(52, 211, 153, 0.18);
+      --reg-2: rgba(251, 191, 36, 0.20);
+      --reg-3: rgba(167, 139, 250, 0.20);
+      --reg-4: rgba(244, 114, 182, 0.20);
+      --reg-5: rgba(251, 146, 60, 0.20);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, #1a253a 0%, #0c1119 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 10px;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (SPLASH SCREEN)
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--bg-card);
+      border: 2px solid rgba(254, 202, 87, 0.45);
+      border-radius: 32px;
+      padding: 46px 40px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75), 0 0 50px rgba(254, 202, 87, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #feca57, #34d399, #f472b6);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(25px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid rgba(254, 202, 87, 0.38);
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .splash-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 15%, var(--gold-primary) 65%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      text-shadow: 0 4px 24px rgba(254, 202, 87, 0.35);
+      line-height: 1.15;
+    }
+
+    /* 3B Önizleme Elemanları */
+    .splash-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .preview-block {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.45), inset 0 2px 4px rgba(255,255,255,0.4);
+      border: 2px solid rgba(255,255,255,0.7);
+      animation: floatBlock 3s ease-in-out infinite alternate;
+    }
+    .preview-block:nth-child(1) { background: linear-gradient(135deg, #38bdf8, #0284c7); animation-delay: 0s; }
+    .preview-block:nth-child(2) { background: linear-gradient(135deg, #34d399, #059669); animation-delay: 0.3s; }
+    .preview-block:nth-child(3) { background: linear-gradient(135deg, #feca57, #d97706); animation-delay: 0.6s; }
+    .preview-block:nth-child(4) { background: linear-gradient(135deg, #a78bfa, #7c3aed); animation-delay: 0.9s; }
+    .preview-block:nth-child(5) { background: linear-gradient(135deg, #f472b6, #db2777); animation-delay: 1.2s; }
+    .preview-block:nth-child(6) { background: linear-gradient(135deg, #fb923c, #ea580c); animation-delay: 1.5s; }
+
+    @keyframes floatBlock {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-8px) rotate(2deg); }
+    }
+
+    /* Mini Yönerge Kutusu */
+    .splash-instructions {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 18px 24px;
+      text-align: left;
+      margin-bottom: 22px;
+      width: 100%;
+    }
+
+    .instructions-header {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .instructions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .instructions-list li {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .step-num {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 16px 48px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 172, 132, 0.45);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 206, 201, 0.55);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================================
+       3. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */
+    .top-header {
+      width: 100%;
+      max-width: 1180px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 12px 22px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(254, 202, 87, 0.12);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      padding: 8px 18px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .status-box {
+      flex: 1;
+      min-width: 200px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cyan-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .status-box.success {
+      border-color: var(--emerald-accent);
+      color: var(--emerald-light);
+      background: rgba(16, 172, 132, 0.15);
+    }
+
+    .status-box.alert {
+      border-color: var(--coral-accent);
+      color: #ff7675;
+      background: rgba(255, 82, 82, 0.15);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 14px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-header:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      transform: translateY(-1px);
+    }
+
+    .btn-header:active {
+      transform: translateY(1px);
+    }
+
+    .btn-header.icon-only {
+      padding: 9px 13px;
+      font-size: 16px;
+    }
+
+    /* ==========================================================================
+       4. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ========================================================================== */
+    .level-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(22, 32, 50, 0.75);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 8px 16px;
+      margin-bottom: 16px;
+      max-width: 1180px;
+      flex-wrap: wrap;
+    }
+
+    .level-btn {
+      background: transparent;
+      border: 1.5px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .level-btn:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .level-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--cyan-light);
+      color: var(--cyan-light);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    /* ==========================================================================
+       5. MERKEZİ OYUN ALANI VE TAHTA
+       ========================================================================== */
+    .game-main {
+      width: 100%;
+      max-width: 1180px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      margin: 0 auto;
+    }
+
+    .board-wrapper {
+      position: relative;
+      background: var(--board-bg);
+      border: 3.5px solid #475569;
+      border-radius: 26px;
+      padding: 26px 22px 22px 26px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 0 24px rgba(0, 0, 0, 0.4);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* Koordinat Etiketleri */
+    .col-coords {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-size, 6), 1fr);
+      margin-bottom: 8px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--cyan-light);
+      letter-spacing: 0.5px;
+    }
+
+    .row-coords {
+      position: absolute;
+      left: 8px;
+      top: 52px;
+      bottom: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+    }
+
+    /* Izgara */
+    .sudoku-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-size, 6), 1fr);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2.5px solid #334155;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.55);
+      touch-action: manipulation;
+    }
+
+    .cell {
+      width: 86px;
+      height: 86px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: 800;
+      border: 1px solid var(--cell-grid-line);
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    }
+
+    /* 4x4 Mini Bölgesel İçin Özel Büyütme */
+    .sudoku-grid.size-4 .cell {
+      width: 110px;
+      height: 110px;
+      font-size: 52px;
+    }
+
+    /* Bölge Renkleri */
+    .cell.reg-0 { background-color: var(--reg-0); }
+    .cell.reg-1 { background-color: var(--reg-1); }
+    .cell.reg-2 { background-color: var(--reg-2); }
+    .cell.reg-3 { background-color: var(--reg-3); }
+    .cell.reg-4 { background-color: var(--reg-4); }
+    .cell.reg-5 { background-color: var(--reg-5); }
+
+    /* Kalın Bölge Sınırları (4.5px Beyaz) */
+    .cell.border-t-thick { border-top: 4.5px solid var(--thick-border) !important; }
+    .cell.border-b-thick { border-bottom: 4.5px solid var(--thick-border) !important; }
+    .cell.border-l-thick { border-left: 4.5px solid var(--thick-border) !important; }
+    .cell.border-r-thick { border-right: 4.5px solid var(--thick-border) !important; }
+
+    /* Rakam Tipleri */
+    .cell.clue {
+      color: #ffffff;
+      font-weight: 900;
+      cursor: default;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .cell.user-placed {
+      color: var(--gold-primary);
+      font-weight: 800;
+      text-shadow: 0 0 10px rgba(254, 202, 87, 0.4);
+    }
+
+    /* Vurgular ve Seçim */
+    .cell.selected {
+      background-color: rgba(56, 189, 248, 0.35) !important;
+      box-shadow: inset 0 0 0 3px var(--cyan-light), 0 0 16px rgba(56, 189, 248, 0.5);
+      z-index: 2;
+    }
+
+    .cell.related {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .cell.same-number {
+      box-shadow: inset 0 0 0 2.5px var(--gold-primary), 0 0 10px rgba(254, 202, 87, 0.35);
+    }
+
+    .cell.conflict {
+      background-color: rgba(244, 63, 94, 0.45) !important;
+      color: #ffe4e6 !important;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    /* ==========================================================================
+       6. YAN KONTROL VE RAKAM PANELİ (SIDE PANEL)
+       ========================================================================== */
+    .side-panel {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 26px;
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 24px rgba(0, 0, 0, 0.25);
+      min-width: 290px;
+      max-width: 320px;
+      flex-shrink: 0;
+    }
+
+    .panel-section-header {
+      width: 100%;
+      text-align: center;
+    }
+
+    .panel-section-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--cyan-light);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 16px;
+      border-radius: 16px;
+      display: inline-block;
+    }
+
+    .panel-divider {
+      width: 100%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    }
+
+    /* Rakam Seçim Paneli (Number Pad) */
+    .numpad-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    .numpad-container.size-4 {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 180px;
+      margin: 0 auto;
+    }
+
+    .num-btn {
+      width: 100%;
+      height: 64px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid var(--border-color);
+      color: var(--text-light);
+      font-size: 30px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      transition: all 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .num-btn:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 22px rgba(254, 202, 87, 0.35);
+      background: rgba(254, 202, 87, 0.12);
+    }
+
+    .num-btn:active {
+      transform: translateY(1px);
+    }
+
+    .num-btn.erase-btn {
+      grid-column: 1 / -1;
+      height: 50px;
+      font-size: 16px;
+      font-weight: 800;
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.4);
+      background: rgba(248, 113, 113, 0.08);
+      gap: 8px;
+    }
+
+    .num-btn.erase-btn:hover {
+      background: rgba(248, 113, 113, 0.2);
+      border-color: #f87171;
+      color: #fff;
+    }
+
+    /* Aksiyon Butonları (Kontrol Et, İpucu, Temizle) */
+    .actions-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      width: 100%;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .action-btn.btn-check {
+      background: linear-gradient(135deg, rgba(16, 172, 132, 0.28), rgba(0, 206, 201, 0.28));
+      border-color: var(--emerald-accent);
+      color: var(--emerald-light);
+    }
+    .action-btn.btn-check:hover {
+      background: linear-gradient(135deg, #10ac84, #00cec9);
+      color: #0f141d;
+      box-shadow: 0 6px 20px rgba(16, 172, 132, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .action-btn.btn-hint {
+      border-color: rgba(254, 202, 87, 0.4);
+      color: var(--gold-primary);
+      background: rgba(254, 202, 87, 0.08);
+    }
+    .action-btn.btn-hint:hover {
+      background: rgba(254, 202, 87, 0.22);
+      border-color: var(--gold-primary);
+      transform: translateY(-2px);
+    }
+
+    .action-btn.btn-clear {
+      border-color: var(--border-color);
+      color: var(--text-muted);
+    }
+    .action-btn.btn-clear:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-light);
+      transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       RESPONSIVE KURALLARI (FARKLI ÇÖZÜNÜRLÜK VE EKRAN BOYUTLARI)
+       ========================================================================== */
+    /* Orta Yükseklikli Ekranlar (768p vb. max-height: 780px) */
+    @media (max-height: 780px) and (min-width: 769px) {
+      body {
+        padding: 6px 10px;
+      }
+      .top-header {
+        padding: 8px 16px;
+        margin-bottom: 8px;
+      }
+      .brand-badge {
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+      .status-box {
+        padding: 6px 14px;
+        font-size: 13.5px;
+      }
+      .level-bar {
+        padding: 5px 10px;
+        margin-bottom: 10px;
+      }
+      .level-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      .board-wrapper {
+        padding: 20px 16px 16px 20px;
+        border-radius: 20px;
+      }
+      .row-coords {
+        top: 40px;
+        bottom: 16px;
+        font-size: 13px;
+      }
+      .col-coords {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .cell {
+        width: 74px;
+        height: 74px;
+        font-size: 34px;
+      }
+      .sudoku-grid.size-4 .cell {
+        width: 95px;
+        height: 95px;
+        font-size: 44px;
+      }
+      .side-panel {
+        padding: 16px 14px;
+        border-radius: 20px;
+        gap: 12px;
+        min-width: 250px;
+        max-width: 270px;
+      }
+      .num-btn {
+        height: 54px;
+        font-size: 26px;
+        border-radius: 13px;
+      }
+      .num-btn.erase-btn {
+        height: 44px;
+        font-size: 14.5px;
+      }
+      .action-btn {
+        padding: 10px 14px;
+        font-size: 13.5px;
+      }
+    }
+
+    /* Çok Düşük Dikey Yükseklik (max-height: 650px) */
+    @media (max-height: 650px) and (min-width: 769px) {
+      .cell {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+      }
+      .sudoku-grid.size-4 .cell {
+        width: 78px;
+        height: 78px;
+        font-size: 38px;
+      }
+      .num-btn {
+        height: 48px;
+        font-size: 22px;
+      }
+      .num-btn.erase-btn {
+        height: 40px;
+        font-size: 13px;
+      }
+      .action-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* Mobil Dikey Ekranlar (Dar Cihazlar) */
+    @media (max-width: 768px) {
+      .game-main {
+        flex-direction: column;
+        gap: 14px;
+      }
+      .board-wrapper {
+        padding: 16px 12px 12px 18px;
+      }
+      .cell {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+      .side-panel {
+        min-width: auto;
+        max-width: 100%;
+        width: 100%;
+        padding: 14px;
+      }
+      .numpad-container {
+        max-width: 260px;
+      }
+      .actions-bar {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .action-btn {
+        flex: 1;
+        min-width: 90px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .cell {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+      }
+      .num-btn {
+        height: 44px;
+        font-size: 20px;
+      }
+    }
+
+    /* ==========================================================================
+       7. KUTLAMA VE MODAL PANELLERİ
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 2px solid rgba(254, 202, 87, 0.5);
+      border-radius: 28px;
+      padding: 36px 32px;
+      max-width: 540px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(254, 202, 87, 0.2);
+      animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.9) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 64px;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: bounce 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+
+    .modal-title {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--gold-primary);
+      margin-bottom: 10px;
+    }
+
+    .modal-desc {
+      font-size: 15px;
+      color: #cbd5e1;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-modal-primary {
+      background: linear-gradient(135deg, #10ac84, #00cec9);
+      color: #0f141d;
+      font-weight: 800;
+      font-size: 16px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(16, 172, 132, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-modal-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0, 206, 201, 0.5);
+    }
+
+    .btn-modal-secondary {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 12px 24px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-modal-secondary:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: var(--gold-primary);
+      border-color: var(--gold-primary);
+    }
+
+    /* Konfeti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. GİRİŞ EKRANI (SPLASH SCREEN)
+       ========================================================================== -->
+  <div id="splashScreen" class="screen-overlay">
+    <div class="splash-card">
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h1 class="splash-title">BÖLGESEL SUDOKU OYUNU</h1>
+
+      <!-- 3B Renkli Bölge Parçaları Önizlemesi -->
+      <div class="splash-preview">
+        <div class="preview-block">1</div>
+        <div class="preview-block">2</div>
+        <div class="preview-block">3</div>
+        <div class="preview-block">4</div>
+        <div class="preview-block">5</div>
+        <div class="preview-block">6</div>
+      </div>
+
+      <!-- Kısa Oynayış Yönergesi Kutusu -->
+      <div class="splash-instructions">
+        <div class="instructions-header">
+          <span>📌 Kısa Oynayış Yönergesi</span>
+        </div>
+        <ul class="instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            <span>Boş bir kareye dokunun ve yandaki panelden bir rakam seçerek yerleştirin.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span>Her satırda, her sütunda ve kalın çizgilerle ayrılmış her renkli bölgede her rakam tam bir kez yer almalıdır.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span>Hiçbir satır, sütun veya bölgede aynı rakamı tekrarlamadan tüm tabloyu eksiksiz doldurun.</span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="splash-prompt">Bölgesel Sudoku oyununu oynamak için etkinliğe başla</p>
+      <button class="btn-start" onclick="startGame()">
+        <span>▶ ETKİNLİĞE BAŞLA</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span>🧩 BÖLGESEL SUDOKU</span>
+      </div>
+    </div>
+
+    <div id="statusBox" class="status-box">
+      <span>Boş bir kareye dokun ve rakam yerleştir...</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header" onclick="resetCurrentPuzzle()" title="Bulmacayı baştan başlat">
+        <span>🔄 Baştan Başla</span>
+      </button>
+      <button class="btn-header icon-only" onclick="toggleRulesModal(true)" title="Nasıl Oynanır?">
+        <span>ℹ️</span>
+      </button>
+      <button id="soundBtn" class="btn-header icon-only" onclick="toggleSound()" title="Sesi Aç/Kapat">
+        <span>🔊</span>
+      </button>
+      <button class="btn-header icon-only" onclick="toggleFullScreen()" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       3. SEVİYE SEÇİM ŞERİDİ
+       ========================================================================== */ -->
+  <nav class="level-bar">
+    <button class="level-btn active" onclick="loadLevel(0)">
+      <span>⭐ 1. Video Dersi Örneği (6x6)</span>
+    </button>
+    <button class="level-btn" onclick="loadLevel(1)">
+      <span>🌟 2. Mini Bölgesel (4x4)</span>
+    </button>
+    <button class="level-btn" onclick="loadLevel(2)">
+      <span>🎯 3. Orta Seviye (6x6)</span>
+    </button>
+    <button class="level-btn" onclick="loadLevel(3)">
+      <span>👑 4. Usta Seviye (6x6)</span>
+    </button>
+  </nav>
+
+  <!-- ==========================================================================
+       4. MERKEZİ OYUN ALANI VE TAHTA
+       ========================================================================== -->
+  <main class="game-main">
+    <!-- Sol / Merkez: Oyun Tablası -->
+    <div class="board-wrapper">
+      <!-- Sütun Koordinatları (1..6) -->
+      <div id="colCoords" class="col-coords"></div>
+
+      <!-- Satır Koordinatları (1..6) -->
+      <div id="rowCoords" class="row-coords"></div>
+
+      <!-- Izgara -->
+      <div id="sudokuGrid" class="sudoku-grid"></div>
+    </div>
+
+    <!-- Sağ: Rakam Seçim ve Kontrol Konsolu (Yan Panel) -->
+    <aside class="side-panel">
+      <div class="panel-section-header">
+        <span class="panel-section-title">🔢 Rakam Seçin</span>
+      </div>
+
+      <!-- Rakam Seçim Paneli (Number Pad) -->
+      <div id="numpad" class="numpad-container"></div>
+
+      <div class="panel-divider"></div>
+
+      <div class="panel-section-header">
+        <span class="panel-section-title">⚙️ İşlemler</span>
+      </div>
+
+      <!-- Aksiyon Butonları -->
+      <div class="actions-bar">
+        <button class="action-btn btn-check" onclick="checkPuzzle()" title="Çözümünü denetle">
+          <span>✨ Kontrol Et</span>
+        </button>
+        <button class="action-btn btn-hint" onclick="giveHint()" title="Doğru bir kare ipucu al">
+          <span>💡 İpucu</span>
+        </button>
+        <button class="action-btn btn-clear" onclick="clearUserInputs()" title="Yazdığın tüm rakamları sil">
+          <span>🧹 Temizle</span>
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ==========================================================================
+       5. ZAFER KUTLAMA MODALI
+       ========================================================================== -->
+  <div id="victoryModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon">🏆</div>
+      <h2 class="modal-title">Tebrikler, Bulmacayı Çözdünüz!</h2>
+      <p id="victoryDesc" class="modal-desc">
+        Tüm satır, sütun ve kalın çizgili bölgeleri kurallara uygun biçimde eksiksiz tamamladınız. Harika bir zekâ performansı!
+      </p>
+      <div class="modal-buttons">
+        <button class="btn-modal-primary" onclick="nextLevel()">
+          <span>Sonraki Bulmaca ➔</span>
+        </button>
+        <button class="btn-modal-secondary" onclick="restartLevel()">
+          <span>🔄 Yeniden Oyna</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       6. YÖNERGE MODALI (BİLGİ REHBERİ)
+       ========================================================================== -->
+  <div id="rulesModal" class="modal-overlay" onclick="toggleRulesModal(false)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-icon" style="font-size: 48px;">ℹ️</div>
+      <h2 class="modal-title" style="font-size: 26px;">Bölgesel Sudoku Nasıl Oynanır?</h2>
+      <div class="splash-instructions" style="margin: 18px 0; background: rgba(15,23,42,0.9);">
+        <ul class="instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            <span><strong>Satır Kuralı:</strong> Her yatay satırda 1'den tablo boyutuna kadar (1-6) olan tüm rakamlar tam bir kez bulunmalıdır.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span><strong>Sütun Kuralı:</strong> Her dikey sütunda tüm rakamlar tam bir kez yer almalıdır.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span><strong>Bölge Kuralı:</strong> Kalın beyaz çizgilerle belirlenmiş her farklı renkli bölgede tüm rakamlar tam bir kez yer almalıdır. Rakam tekrarı yasaktır!</span>
+          </li>
+        </ul>
+      </div>
+      <button class="btn-modal-primary" onclick="toggleRulesModal(false)">
+        <span>Anladım, Oyuna Dön</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Konfeti Efekti -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ==========================================================================
+       7. JAVASCRIPT OYUN MOTORU & SCORM ENTEGRASYONU
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       SCORM 1.2 YÖNETİMİ
+       ========================================================================== */
+    const SCORM = {
+      api: null,
+      startTime: null,
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && attempts < 10) {
+          if (win.parent && win.parent !== win) {
+            win = win.parent;
+          } else if (win.opener) {
+            win = win.opener;
+          } else {
+            break;
+          }
+          attempts++;
+        }
+        return win ? win.API : null;
+      },
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (this.api && typeof this.api.LMSInitialize === "function") {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM başlatılamadı (Bağımsız mod):", e);
+        }
+        this.startTime = new Date();
+      },
+      complete() {
+        try {
+          if (this.api && typeof this.api.LMSSetValue === "function") {
+            this.api.LMSSetValue("cmi.core.score.raw", "100");
+            this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+            if (this.startTime) {
+              const diff = Math.floor((new Date() - this.startTime) / 1000);
+              const hh = String(Math.floor(diff / 3600)).padStart(2, '0');
+              const mm = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+              const ss = String(diff % 60).padStart(2, '0');
+              this.api.LMSSetValue("cmi.core.session_time", `${hh}:${mm}:${ss}`);
+            }
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM tamamlanma hatası:", e);
+        }
+      },
+      finish() {
+        try {
+          if (this.api && typeof this.api.LMSFinish === "function") {
+            this.api.LMSFinish("");
+          }
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => SCORM.init());
+    window.addEventListener("beforeunload", () => SCORM.finish());
+
+    /* ==========================================================================
+       WEB AUDIO API MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+      playPlace() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(780, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.22, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+      playErase() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(380, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+      playGentleAlert() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.12;
+          gain.gain.setValueAtTime(0.25, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.45);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    function toggleSound() {
+      sound.muted = !sound.muted;
+      document.getElementById('soundBtn').innerHTML = sound.muted ? '<span>🔇</span>' : '<span>🔊</span>';
+    }
+
+    /* ==========================================================================
+       BULMACA VERİLERİ (100% ÇÖZÜMLÜ, DOĞRULANMIŞ & EŞSİZ)
+       ========================================================================== */
+    const PUZZLES = [
+      {
+        id: "level_video",
+        name: "1. Video Dersi Örneği (6x6)",
+        size: 6,
+        sub: "Eğitim Videosundaki Orijinal Maç",
+        regionMap: [
+          [2, 0, 0, 0, 4, 4],
+          [2, 0, 0, 0, 4, 3],
+          [2, 2, 4, 4, 4, 3],
+          [2, 5, 5, 5, 3, 3],
+          [2, 5, 1, 1, 1, 3],
+          [5, 5, 1, 1, 1, 3]
+        ],
+        initial: [
+          [4, 0, 1, 5, 0, 6],
+          [0, 0, 0, 0, 0, 0],
+          [0, 0, 3, 1, 0, 0],
+          [0, 0, 4, 3, 0, 0],
+          [0, 0, 0, 0, 0, 0],
+          [5, 0, 2, 6, 0, 4]
+        ],
+        solution: [
+          [4, 3, 1, 5, 2, 6],
+          [3, 4, 6, 2, 5, 1],
+          [6, 5, 3, 1, 4, 2],
+          [1, 2, 4, 3, 6, 5],
+          [2, 6, 5, 4, 1, 3],
+          [5, 1, 2, 6, 3, 4]
+        ]
+      },
+      {
+        id: "level_mini",
+        name: "2. Mini Bölgesel (4x4)",
+        size: 4,
+        sub: "Başlangıç ve Isınma (1'den 4'e)",
+        regionMap: [
+          [0, 0, 1, 1],
+          [0, 2, 1, 1],
+          [0, 2, 2, 3],
+          [3, 2, 3, 3]
+        ],
+        initial: [
+          [1, 0, 3, 4],
+          [0, 4, 0, 2],
+          [4, 0, 2, 0],
+          [2, 3, 0, 1]
+        ],
+        solution: [
+          [1, 2, 3, 4],
+          [3, 4, 1, 2],
+          [4, 1, 2, 3],
+          [2, 3, 4, 1]
+        ]
+      },
+      {
+        id: "level_medium",
+        name: "3. Orta Seviye (6x6)",
+        size: 6,
+        sub: "Kesişim ve Eleme Alıştırması",
+        regionMap: [
+          [0, 0, 0, 1, 1, 1],
+          [0, 0, 2, 2, 1, 1],
+          [0, 2, 2, 3, 3, 1],
+          [4, 2, 2, 3, 3, 5],
+          [4, 4, 3, 3, 5, 5],
+          [4, 4, 4, 5, 5, 5]
+        ],
+        initial: [
+          [1, 0, 3, 4, 0, 6],
+          [0, 5, 6, 0, 1, 3],
+          [6, 1, 0, 5, 3, 0],
+          [2, 0, 5, 6, 0, 1],
+          [0, 4, 2, 0, 6, 5],
+          [5, 6, 0, 3, 2, 0]
+        ],
+        solution: [
+          [1, 2, 3, 4, 5, 6],
+          [4, 5, 6, 2, 1, 3],
+          [6, 1, 4, 5, 3, 2],
+          [2, 3, 5, 6, 4, 1],
+          [3, 4, 2, 1, 6, 5],
+          [5, 6, 1, 3, 2, 4]
+        ]
+      },
+      {
+        id: "level_hard",
+        name: "4. Usta Seviye (6x6)",
+        size: 6,
+        sub: "Zekâ ve Mantık Meydan Okuması",
+        regionMap: [
+          [0, 0, 0, 1, 1, 1],
+          [0, 0, 2, 2, 1, 1],
+          [0, 2, 2, 3, 3, 1],
+          [4, 2, 2, 3, 3, 5],
+          [4, 4, 3, 3, 5, 5],
+          [4, 4, 4, 5, 5, 5]
+        ],
+        initial: [
+          [1, 0, 3, 0, 5, 0],
+          [0, 5, 0, 2, 0, 3],
+          [6, 0, 4, 0, 3, 0],
+          [0, 3, 0, 6, 0, 1],
+          [3, 0, 2, 0, 6, 0],
+          [0, 6, 0, 3, 0, 4]
+        ],
+        solution: [
+          [1, 2, 3, 4, 5, 6],
+          [4, 5, 6, 2, 1, 3],
+          [6, 1, 4, 5, 3, 2],
+          [2, 3, 5, 6, 4, 1],
+          [3, 4, 2, 1, 6, 5],
+          [5, 6, 1, 3, 2, 4]
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       OYUN DURUMU VE DEĞİŞKENLERİ
+       ========================================================================== */
+    let currentLevel = 0;
+    let currentSize = 6;
+    let boardState = [];
+    let selectedCell = null; // { r, c }
+    let isGameActive = false;
+
+    function startGame() {
+      sound.playClick();
+      const splash = document.getElementById('splashScreen');
+      splash.classList.add('hidden');
+      isGameActive = true;
+      loadLevel(0);
+    }
+
+    function loadLevel(idx) {
+      sound.playClick();
+      currentLevel = idx;
+      const p = PUZZLES[idx];
+      currentSize = p.size;
+
+      // Seviye Butonlarını Güncelle
+      document.querySelectorAll('.level-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === idx);
+      });
+
+      // Durum Bildirimi
+      updateStatus(`Seviye ${idx + 1}: ${p.sub}`, 'normal');
+
+      // CSS Grid Ayarı
+      document.documentElement.style.setProperty('--grid-size', currentSize);
+
+      // Tahta Durumunu Kopyala
+      boardState = p.initial.map(row => [...row]);
+      selectedCell = null;
+
+      // Koordinatları Çiz
+      renderCoordinates();
+
+      // Tahtayı Çiz
+      renderBoard();
+
+      // Numpad Çiz
+      renderNumpad();
+    }
+
+    function renderCoordinates() {
+      const colDiv = document.getElementById('colCoords');
+      const rowDiv = document.getElementById('rowCoords');
+
+      colDiv.innerHTML = '';
+      rowDiv.innerHTML = '';
+
+      for (let c = 1; c <= currentSize; c++) {
+        const span = document.createElement('span');
+        span.textContent = c;
+        colDiv.appendChild(span);
+      }
+
+      for (let r = 1; r <= currentSize; r++) {
+        const span = document.createElement('span');
+        span.textContent = r;
+        rowDiv.appendChild(span);
+      }
+    }
+
+    function renderBoard() {
+      const gridElem = document.getElementById('sudokuGrid');
+      gridElem.innerHTML = '';
+      if (currentSize === 4) {
+        gridElem.classList.add('size-4');
+      } else {
+        gridElem.classList.remove('size-4');
+      }
+
+      const p = PUZZLES[currentLevel];
+      const rMap = p.regionMap;
+
+      for (let r = 0; r < currentSize; r++) {
+        for (let c = 0; c < currentSize; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+
+          const reg = rMap[r][c];
+          cell.classList.add(`reg-${reg}`);
+
+          // Kalın Sınırlar (Farklı Bölge veya Tahta Kenarı)
+          if (r === 0 || rMap[r - 1][c] !== reg) cell.classList.add('border-t-thick');
+          if (r === currentSize - 1 || rMap[r + 1][c] !== reg) cell.classList.add('border-b-thick');
+          if (c === 0 || rMap[r][c - 1] !== reg) cell.classList.add('border-l-thick');
+          if (c === currentSize - 1 || rMap[r][c + 1] !== reg) cell.classList.add('border-r-thick');
+
+          // Rakam Değeri
+          const val = boardState[r][c];
+          const isClue = p.initial[r][c] !== 0;
+
+          if (val !== 0) {
+            cell.textContent = val;
+            cell.classList.add(isClue ? 'clue' : 'user-placed');
+          }
+
+          // Seçim Olayı
+          cell.addEventListener('click', () => onCellClick(r, c));
+
+          gridElem.appendChild(cell);
+        }
+      }
+
+      updateHighlights();
+    }
+
+    function renderNumpad() {
+      const pad = document.getElementById('numpad');
+      pad.innerHTML = '';
+      if (currentSize === 4) {
+        pad.classList.add('size-4');
+      } else {
+        pad.classList.remove('size-4');
+      }
+
+      for (let n = 1; n <= currentSize; n++) {
+        const btn = document.createElement('button');
+        btn.className = 'num-btn';
+        btn.textContent = n;
+        btn.title = `${n} rakamını yerleştir`;
+        btn.addEventListener('click', () => applyNumber(n));
+        pad.appendChild(btn);
+      }
+
+      const eraseBtn = document.createElement('button');
+      eraseBtn.className = 'num-btn erase-btn';
+      eraseBtn.innerHTML = '<span>⌫</span><span>Sil</span>';
+      eraseBtn.title = 'Seçili karedeki rakamı sil';
+      eraseBtn.addEventListener('click', () => applyNumber(0));
+      pad.appendChild(eraseBtn);
+    }
+
+    function onCellClick(r, c) {
+      sound.playClick();
+      selectedCell = { r, c };
+      updateHighlights();
+
+      const p = PUZZLES[currentLevel];
+      const isClue = p.initial[r][c] !== 0;
+      if (isClue) {
+        updateStatus(`İpucu karesi (${r + 1}. Satır, ${c + 1}. Sütun). Değiştirilemez.`, 'normal');
+      } else {
+        updateStatus(`${r + 1}. Satır, ${c + 1}. Sütun seçildi. Yandaki panelden rakam seçin.`, 'normal');
+      }
+    }
+
+    function updateHighlights() {
+      const cells = document.querySelectorAll('.cell');
+      const p = PUZZLES[currentLevel];
+
+      let selVal = 0;
+      let selReg = -1;
+
+      if (selectedCell) {
+        selVal = boardState[selectedCell.r][selectedCell.c];
+        selReg = p.regionMap[selectedCell.r][selectedCell.c];
+      }
+
+      cells.forEach(cell => {
+        const r = parseInt(cell.dataset.r);
+        const c = parseInt(cell.dataset.c);
+        const val = boardState[r][c];
+        const reg = p.regionMap[r][c];
+
+        cell.classList.remove('selected', 'related', 'same-number', 'conflict');
+
+        if (selectedCell) {
+          if (r === selectedCell.r && c === selectedCell.c) {
+            cell.classList.add('selected');
+          } else if (r === selectedCell.r || c === selectedCell.c || reg === selReg) {
+            cell.classList.add('related');
+          }
+
+          if (val !== 0 && val === selVal) {
+            cell.classList.add('same-number');
+          }
+        }
+      });
+    }
+
+    function applyNumber(num) {
+      if (!selectedCell) {
+        updateStatus('Lütfen önce tahtada bir kare seçin!', 'alert');
+        sound.playGentleAlert();
+        return;
+      }
+
+      const { r, c } = selectedCell;
+      const p = PUZZLES[currentLevel];
+
+      // İpucu hücreleri değiştirilemez
+      if (p.initial[r][c] !== 0) {
+        updateStatus('Başlangıç ipucu kareleri değiştirilemez!', 'alert');
+        sound.playGentleAlert();
+        return;
+      }
+
+      if (num === 0) {
+        // Silme
+        boardState[r][c] = 0;
+        sound.playErase();
+        updateStatus('Rakam silindi.', 'normal');
+      } else {
+        boardState[r][c] = num;
+        sound.playPlace();
+        updateStatus(`${num} rakamı yerleştirildi.`, 'normal');
+      }
+
+      renderBoard();
+
+      // Otomatik tamamlama kontrolü
+      checkAutoCompletion();
+    }
+
+    /* Klavye Desteği */
+    window.addEventListener('keydown', (e) => {
+      if (!isGameActive) return;
+
+      if (e.key >= '1' && e.key <= String(currentSize)) {
+        applyNumber(parseInt(e.key));
+      } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+        applyNumber(0);
+      } else if (e.key.startsWith('Arrow') && selectedCell) {
+        let { r, c } = selectedCell;
+        if (e.key === 'ArrowUp' && r > 0) r--;
+        else if (e.key === 'ArrowDown' && r < currentSize - 1) r++;
+        else if (e.key === 'ArrowLeft' && c > 0) c--;
+        else if (e.key === 'ArrowRight' && c < currentSize - 1) c++;
+        onCellClick(r, c);
+      }
+    });
+
+    /* ==========================================================================
+       KONTROL VE İPUCU MOTORU
+       ========================================================================== */
+    function checkPuzzle() {
+      sound.playClick();
+      const p = PUZZLES[currentLevel];
+      let hasError = false;
+      let hasBlank = false;
+      const conflictCells = new Set();
+
+      // 1. Satır Çakışmaları
+      for (let r = 0; r < currentSize; r++) {
+        const seen = {};
+        for (let c = 0; c < currentSize; c++) {
+          const val = boardState[r][c];
+          if (val === 0) hasBlank = true;
+          else {
+            if (seen[val] !== undefined) {
+              conflictCells.add(`${r},${c}`);
+              conflictCells.add(`${r},${seen[val]}`);
+              hasError = true;
+            } else {
+              seen[val] = c;
+            }
+          }
+        }
+      }
+
+      // 2. Sütun Çakışmaları
+      for (let c = 0; c < currentSize; c++) {
+        const seen = {};
+        for (let r = 0; r < currentSize; r++) {
+          const val = boardState[r][c];
+          if (val !== 0) {
+            if (seen[val] !== undefined) {
+              conflictCells.add(`${r},${c}`);
+              conflictCells.add(`${seen[val]},${c}`);
+              hasError = true;
+            } else {
+              seen[val] = r;
+            }
+          }
+        }
+      }
+
+      // 3. Bölge Çakışmaları
+      for (let reg = 0; reg < currentSize; reg++) {
+        const seen = {};
+        for (let r = 0; r < currentSize; r++) {
+          for (let c = 0; c < currentSize; c++) {
+            if (p.regionMap[r][c] === reg) {
+              const val = boardState[r][c];
+              if (val !== 0) {
+                if (seen[val] !== undefined) {
+                  conflictCells.add(`${r},${c}`);
+                  conflictCells.add(`${seen[val].r},${seen[val].c}`);
+                  hasError = true;
+                } else {
+                  seen[val] = { r, c };
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Vurgula
+      document.querySelectorAll('.cell').forEach(cell => {
+        const key = `${cell.dataset.r},${cell.dataset.c}`;
+        if (conflictCells.has(key)) {
+          cell.classList.add('conflict');
+        }
+      });
+
+      if (hasError) {
+        sound.playGentleAlert();
+        updateStatus('Tekrarlanan rakamlar var! Kırmızı kareleri inceleyin.', 'alert');
+      } else if (hasBlank) {
+        updateStatus('Henüz tamamlanmadı, kurallara uygun devam ediyorsunuz!', 'normal');
+      } else {
+        // Eksiksiz ve doğru!
+        onPuzzleSolved();
+      }
+    }
+
+    function checkAutoCompletion() {
+      const p = PUZZLES[currentLevel];
+      for (let r = 0; r < currentSize; r++) {
+        for (let c = 0; c < currentSize; c++) {
+          if (boardState[r][c] !== p.solution[r][c]) {
+            return; // Henüz tam çözülmedi
+          }
+        }
+      }
+      onPuzzleSolved();
+    }
+
+    function onPuzzleSolved() {
+      sound.playFanfare();
+      startConfetti();
+      SCORM.complete();
+
+      updateStatus('🏆 Tebrikler, Bulmacayı Başarıyla Çözdünüz!', 'success');
+
+      const modal = document.getElementById('victoryModal');
+      const desc = document.getElementById('victoryDesc');
+      desc.textContent = `${PUZZLES[currentLevel].name} başarıyla tamamlandı. Zihninizi harika çalıştırdınız!`;
+      modal.classList.add('active');
+    }
+
+    function giveHint() {
+      sound.playClick();
+      const p = PUZZLES[currentLevel];
+      const emptyCells = [];
+
+      for (let r = 0; r < currentSize; r++) {
+        for (let c = 0; c < currentSize; c++) {
+          if (boardState[r][c] === 0 || boardState[r][c] !== p.solution[r][c]) {
+            emptyCells.push({ r, c });
+          }
+        }
+      }
+
+      if (emptyCells.length === 0) {
+        updateStatus('Tüm kareler zaten doğru!', 'success');
+        return;
+      }
+
+      // Rastgele veya ilk boş hücreye doğru sayıyı yerleştir
+      const target = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      boardState[target.r][target.c] = p.solution[target.r][target.c];
+      selectedCell = { r: target.r, c: target.c };
+
+      sound.playPlace();
+      renderBoard();
+      updateStatus(`💡 İpucu: ${target.r + 1}. Satır, ${target.c + 1}. Sütuna ${p.solution[target.r][target.c]} yazıldı!`, 'normal');
+
+      checkAutoCompletion();
+    }
+
+    function clearUserInputs() {
+      sound.playErase();
+      const p = PUZZLES[currentLevel];
+      for (let r = 0; r < currentSize; r++) {
+        for (let c = 0; c < currentSize; c++) {
+          if (p.initial[r][c] === 0) {
+            boardState[r][c] = 0;
+          }
+        }
+      }
+      selectedCell = null;
+      renderBoard();
+      updateStatus('Tüm hamleleriniz temizlendi.', 'normal');
+    }
+
+    function resetCurrentPuzzle() {
+      sound.playClick();
+      clearUserInputs();
+      closeVictoryModal();
+      updateStatus('Bulmaca baştan başlatıldı.', 'normal');
+    }
+
+    function restartLevel() {
+      closeVictoryModal();
+      resetCurrentPuzzle();
+    }
+
+    function nextLevel() {
+      closeVictoryModal();
+      const nextIdx = (currentLevel + 1) % PUZZLES.length;
+      loadLevel(nextIdx);
+    }
+
+    function closeVictoryModal() {
+      document.getElementById('victoryModal').classList.remove('active');
+      stopConfetti();
+    }
+
+    function toggleRulesModal(show) {
+      sound.playClick();
+      const modal = document.getElementById('rulesModal');
+      modal.classList.toggle('active', show);
+    }
+
+    function updateStatus(text, type = 'normal') {
+      const box = document.getElementById('statusBox');
+      box.className = 'status-box';
+      if (type === 'success') box.classList.add('success');
+      else if (type === 'alert') box.classList.add('alert');
+      box.innerHTML = `<span>${text}</span>`;
+    }
+
+    function toggleFullScreen() {
+      sound.playClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    /* ==========================================================================
+       KONFETİ MOTORU (CANVAS)
+       ========================================================================== */
+    let confettiActive = false;
+    let confettiAnimId = null;
+    const confettiColors = ['#feca57', '#00cec9', '#10ac84', '#ff7675', '#a78bfa', '#f8fafc'];
+    let confettiParticles = [];
+
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      confettiParticles = [];
+      for (let i = 0; i < 90; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 8 + 6,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          speedY: Math.random() * 3 + 2,
+          speedX: Math.random() * 2 - 1,
+          rot: Math.random() * 360,
+          rotSpeed: Math.random() * 6 - 3
+        });
+      }
+
+      confettiActive = true;
+      function loop() {
+        if (!confettiActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rot += p.rotSpeed;
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+        confettiAnimId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    function stopConfetti() {
+      confettiActive = false;
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas && confettiActive) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ABC BAĞLAMACA | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE VİDEO PROJELERİMİZLE %100 UYUMLU RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial-1: #1a253a;
+      --bg-radial-2: #0c1119;
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --border-light: rgba(254, 202, 87, 0.35);
+
+      --gold-primary: #feca57;
+      --gold-dark: #f5b041;
+      --cyan-accent: #00cec9;
+      --cyan-light: #38bdf8;
+      --emerald-accent: #10ac84;
+      --emerald-light: #34d399;
+      --coral-accent: #ff5252;
+      --coral-light: #ff7675;
+      --purple-accent: #9b59b6;
+      --amber-accent: #f39c12;
+
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-bg: #121829;
+      --grid-border: #1e2b48;
+      --dot-color: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, var(--bg-radial-1) 0%, var(--bg-radial-2) 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 8px 12px 20px 12px;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (AÇILIŞ / SPLASH SCREEN) STANDARTLARI
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-light);
+      border-radius: 32px;
+      padding: 46px 40px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(254, 202, 87, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #feca57, #10ac84, #ff5252);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(25px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid var(--gold-primary);
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .splash-title {
+      font-size: clamp(38px, 6vw, 56px);
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 30%, var(--gold-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 22px;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    /* 3B Parça / Bağlantı Önizlemesi */
+    .splash-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 16px 24px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .preview-node {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+
+    .preview-node.node-a {
+      background: radial-gradient(circle at 35% 35%, #00cec9, #006266);
+      border: 2px solid #55efc4;
+      box-shadow: 0 0 16px rgba(0, 206, 201, 0.6);
+    }
+
+    .preview-node.node-b {
+      background: radial-gradient(circle at 35% 35%, #10ac84, #03251e);
+      border: 2px solid #1dd1a1;
+      box-shadow: 0 0 16px rgba(16, 172, 132, 0.6);
+    }
+
+    .preview-node.node-c {
+      background: radial-gradient(circle at 35% 35%, #f39c12, #7d3c98);
+      border: 2px solid #feca57;
+      box-shadow: 0 0 16px rgba(243, 156, 18, 0.6);
+    }
+
+    .preview-line {
+      width: 44px;
+      height: 8px;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .preview-line.line-a {
+      background: #00cec9;
+      box-shadow: 0 0 12px #00cec9;
+    }
+
+    .preview-line.line-b {
+      background: #10ac84;
+      box-shadow: 0 0 12px #10ac84;
+    }
+
+    /* 3 Adımlı Kısa Yönerge Kutusu */
+    .splash-instructions {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .splash-instructions-title {
+      color: var(--gold-primary);
+      font-size: 14.5px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .splash-instructions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .splash-instructions-list li {
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .splash-instructions-list li span.step-num {
+      background: rgba(0, 206, 201, 0.18);
+      color: var(--cyan-accent);
+      border: 1px solid var(--cyan-accent);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .btn-splash-start {
+      background: linear-gradient(135deg, var(--emerald-accent), var(--cyan-accent));
+      color: #032018;
+      border: none;
+      padding: 18px 46px;
+      border-radius: 18px;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 206, 201, 0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-splash-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 16px 36px rgba(0, 206, 201, 0.55);
+    }
+
+    .btn-splash-start:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================================
+       3. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */
+    .top-header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 18px;
+      padding: 10px 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      margin-bottom: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    .header-badge span.logo-box {
+      background: linear-gradient(135deg, var(--cyan-accent), var(--emerald-accent));
+      color: #032018;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .status-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .status-badge.info {
+      border-color: var(--cyan-accent);
+      color: var(--cyan-light);
+      background: rgba(0, 206, 201, 0.12);
+    }
+
+    .status-badge.success {
+      border-color: var(--emerald-accent);
+      color: var(--emerald-light);
+      background: rgba(16, 172, 132, 0.15);
+    }
+
+    .status-badge.warn {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      background: rgba(254, 202, 87, 0.15);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid var(--border-color);
+      color: #e2e8f0;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--cyan-accent);
+      color: #fff;
+      background: rgba(0, 206, 201, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn-icon:active {
+      transform: translateY(1px);
+    }
+
+    .btn-icon.btn-reset {
+      border-color: rgba(254, 202, 87, 0.4);
+      color: var(--gold-primary);
+    }
+
+    .btn-icon.btn-reset:hover {
+      border-color: var(--gold-primary);
+      background: rgba(254, 202, 87, 0.15);
+    }
+
+    /* ==========================================================================
+       4. SEVİYE SEÇİCİ VE HUD / İSTATİSTİK ŞERİDİ
+       ========================================================================== */
+    .controls-panel {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .level-pills {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 0;
+      scrollbar-width: none;
+    }
+
+    .level-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .pill-btn {
+      background: rgba(22, 32, 50, 0.8);
+      border: 1.5px solid var(--border-color);
+      color: #94a3b8;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pill-btn:hover {
+      color: #fff;
+      border-color: var(--cyan-accent);
+    }
+
+    .pill-btn.active {
+      background: linear-gradient(135deg, rgba(0, 206, 201, 0.25), rgba(16, 172, 132, 0.25));
+      border-color: var(--cyan-accent);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(0, 206, 201, 0.35);
+    }
+
+    .pill-btn.solved::after {
+      content: '✓';
+      color: var(--emerald-accent);
+      font-weight: 900;
+      margin-left: 2px;
+    }
+
+    .stats-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px 16px;
+      font-size: 13px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-item span.label {
+      color: var(--text-muted);
+    }
+
+    .stat-item span.value {
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-item span.value.highlight-cyan {
+      color: var(--cyan-accent);
+    }
+
+    .stat-item span.value.highlight-gold {
+      color: var(--gold-primary);
+    }
+
+    /* ==========================================================================
+       5. MERKEZÎ OYUN TAHTASI (GRID & SVG WRAPPER)
+       ========================================================================== */
+    .board-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .board-box {
+      width: min(580px, 92vw);
+      height: min(580px, 92vw);
+      background: var(--board-bg);
+      border: 3px solid #2a3b5c;
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(0, 0, 0, 0.5);
+      position: relative;
+      touch-action: none; /* Mobilde çizim yaparken sayfanın kaymasını önler */
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    .board-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* SVG Stilleri */
+    .grid-cell {
+      fill: transparent;
+      stroke: var(--grid-border);
+      stroke-width: 1.2;
+      transition: fill 0.15s ease;
+    }
+
+    .grid-cell:hover {
+      fill: rgba(255, 255, 255, 0.03);
+    }
+
+    .grid-dot {
+      fill: var(--dot-color);
+    }
+
+    .path-glow {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.45;
+    }
+
+    .path-main {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke-width 0.1s ease;
+    }
+
+    .path-core {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.7);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.8;
+    }
+
+    .node-group {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .node-group:hover circle.node-outer {
+      transform-origin: center;
+      transform: scale(1.08);
+    }
+
+    /* ==========================================================================
+       6. ALT AKSİYON ŞERİDİ (ACTION TOOLBAR)
+       ========================================================================== */
+    .action-toolbar {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      color: #f1f5f9;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+    }
+
+    .btn-action.btn-hint {
+      border-color: rgba(254, 202, 87, 0.5);
+      color: var(--gold-primary);
+    }
+
+    .btn-action.btn-hint:hover {
+      background: rgba(254, 202, 87, 0.15);
+      border-color: var(--gold-primary);
+    }
+
+    .btn-action.btn-check {
+      background: linear-gradient(135deg, #10ac84, #00cec9);
+      color: #032018;
+      border-color: transparent;
+      box-shadow: 0 8px 24px rgba(0, 206, 201, 0.4);
+    }
+
+    .btn-action.btn-check:hover {
+      box-shadow: 0 12px 28px rgba(0, 206, 201, 0.6);
+    }
+
+    /* ==========================================================================
+       7. MODAL PENCERELER (YÖNERGE, İPUCU VE ZAFER KARTI)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1200;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-window {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 28px;
+      padding: 36px 32px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      position: relative;
+      animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.5px solid var(--border-color);
+      padding-bottom: 14px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-close-modal:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .rule-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+
+    .rule-box h4 {
+      color: var(--gold-primary);
+      margin-bottom: 4px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Zafer Modalı Özel Tasarımı */
+    .victory-card {
+      text-align: center;
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 60px rgba(254, 202, 87, 0.25);
+    }
+
+    .victory-badge {
+      display: inline-block;
+      font-size: 64px;
+      animation: victoryPulse 1.2s infinite alternate;
+      margin-bottom: 8px;
+    }
+
+    @keyframes victoryPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.12); }
+    }
+
+    .victory-title {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff, var(--gold-primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .victory-stats {
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-around;
+      margin: 14px 0 20px 0;
+    }
+
+    .victory-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .victory-stat-item .val {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--cyan-accent);
+    }
+
+    .victory-stat-item .lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .victory-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    /* Konfeti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1500;
+    }
+
+    /* ==========================================================================
+       8. TOAST BİLDİRİMİ
+       ========================================================================== */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      background: rgba(22, 32, 50, 0.96);
+      border: 1.5px solid var(--border-color);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 1300;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. GİRİŞ EKRANI (AÇILIŞ / SPLASH SCREEN)
+       ========================================================================== -->
+  <div class="screen-overlay" id="splashScreen">
+    <div class="splash-card">
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h1 class="splash-title">ABC BAĞLAMACA OYUNU</h1>
+
+      <!-- 3B Parça / Bağlantı Önizlemesi -->
+      <div class="splash-preview">
+        <div class="preview-node node-a">A</div>
+        <div class="preview-line line-a"></div>
+        <div class="preview-node node-a">A</div>
+        <div style="width: 12px;"></div>
+        <div class="preview-node node-b">B</div>
+        <div class="preview-line line-b"></div>
+        <div class="preview-node node-b">B</div>
+      </div>
+
+      <!-- 3 Adımlı Kısa Yönerge Kutusu -->
+      <div class="splash-instructions">
+        <div class="splash-instructions-title">📌 Kısa Oynayış Yönergesi</div>
+        <ul class="splash-instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            Aynı harfleri (A-A, B-B vb.) bul ve parmağınla ya da farenle sürükleyerek birbirine bağla.
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            Çizgiler yalnızca yatay ve dikey ilerler; asla çapraz çizilemez ve hatlar kesişemez.
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            Bulmacayı tamamlamak için tablodaki tüm kareleri doldurmalı ve %100 doluluğa ulaşmalısın.
+          </li>
+        </ul>
+      </div>
+
+      <div class="splash-prompt">ABC Bağlamaca oyununu oynamak için etkinliğe başla</div>
+      <button class="btn-splash-start" onclick="game.startFromSplash()">
+        ▶ ETKİNLİĞE BAŞLA
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="header-badge">
+        <span class="logo-box">🔤</span>
+        <span>ABC BAĞLAMACA</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="status-badge" id="statusBadge">
+        🎯 Harfleri sürükleyerek bağla ve tüm ızgarayı doldur!
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn-icon btn-reset" onclick="game.resetLevel()" title="Bu Seviyeyi Baştan Başlat">
+        🔄 Baştan Başla
+      </button>
+      <button class="btn-icon" onclick="game.openInstructions()" title="Nasıl Oynanır?">
+        ℹ️ Yönerge
+      </button>
+      <button class="btn-icon" id="btnSound" onclick="game.toggleSound()" title="Sesi Aç/Kapat">
+        🔊
+      </button>
+      <button class="btn-icon" onclick="game.toggleFullscreen()" title="Tam Ekran">
+        ⛶
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       3. SEVİYE SEÇİCİ VE HUD / İSTATİSTİK ŞERİDİ
+       ========================================================================== */
+  -->
+  <div class="controls-panel">
+    <div class="level-pills" id="levelPills">
+      <!-- Seviye hap butonları dinamik olarak üretilir -->
+    </div>
+
+    <div class="stats-card">
+      <div class="stat-item">
+        <span class="label">Bağlantı:</span>
+        <span class="value highlight-cyan" id="statPairs">0 / 0</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">Doluluk:</span>
+        <span class="value highlight-gold" id="statCoverage">0 / 0 (%0)</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">Süre:</span>
+        <span class="value" id="statTimer">00:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       4. MERKEZÎ OYUN TAHTASI (INTERACTIVE SVG GRID)
+       ========================================================================== -->
+  <main class="board-container">
+    <div class="board-box" id="boardBox">
+      <svg class="board-svg" id="boardSvg" viewBox="0 0 600 600">
+        <!-- SVG Hücreleri, yolları ve harf düğümleri dinamik çizilir -->
+      </svg>
+    </div>
+  </main>
+
+  <!-- ==========================================================================
+       5. ALT AKSİYON ŞERİDİ (ACTION TOOLBAR)
+       ========================================================================== -->
+  <div class="action-toolbar">
+    <button class="btn-action btn-hint" onclick="game.showHint()">
+      💡 İpucu
+    </button>
+    <button class="btn-action" onclick="game.undoMove()">
+      ↩️ Geri Al
+    </button>
+    <button class="btn-action" onclick="game.clearBoard()">
+      🧹 Temizle
+    </button>
+    <button class="btn-action btn-check" onclick="game.checkSolution()">
+      ✅ Kontrol Et
+    </button>
+  </div>
+
+  <!-- ==========================================================================
+       6. MODAL PENCERELER (YÖNERGE, İPUCU VE ZAFER)
+       ========================================================================== -->
+  <!-- Yönerge Modalı -->
+  <div class="modal-backdrop" id="modalInstructions">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">ℹ️ ABC Bağlamaca Oyun Kuralları</div>
+        <button class="btn-close-modal" onclick="game.closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="rule-box">
+          <h4>1. Harf Çiftlerini Eşleştir</h4>
+          Aynı harfleri (A ile A, B ile B vb.) aralıksız bir çizgi çekerek birbirine bağlayın. Farklı harfler asla temas edemez.
+        </div>
+        <div class="rule-box">
+          <h4>2. Yatay ve Dikey Yön (Çapraz Yasak)</h4>
+          Çizgiler yalnızca komşu karelere yatay veya dikey gidebilir. Köşegen/çapraz hareket kesinlikle yasaktır.
+        </div>
+        <div class="rule-box">
+          <h4>3. Kesişme ve Çatallanma Yasağı</h4>
+          Çizilen yollar asla birbirini kesemez, üst üste gelemez ve hiçbir hücreden iki farklı çizgi geçemez.
+        </div>
+        <div class="rule-box">
+          <h4>4. %100 Tam Doluluk Şartı</h4>
+          Bulmaca tamamlandığında tahtadaki hiçbir hücre boş kalamaz. Çözüm için tüm kareler bir harf çizgisiyle doldurulmalıdır.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- İpucu Modalı -->
+  <div class="modal-backdrop" id="modalHint">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">💡 Strateji ve İpucu</div>
+        <button class="btn-close-modal" onclick="game.closeModals()">✕</button>
+      </div>
+      <div class="modal-body" id="modalHintContent">
+        <!-- Dinamik ipucu metni -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Zafer Modalı -->
+  <div class="modal-backdrop" id="modalVictory">
+    <div class="modal-window victory-card">
+      <div class="victory-badge">🏆</div>
+      <h2 class="victory-title">TEBRİKLER! BULMACA ÇÖZÜLDÜ!</h2>
+      <div class="modal-body" id="victoryDesc">
+        Tüm harf çiftlerini kurallara tam uyarak bağladınız ve ızgaradaki tüm kareleri eksiksiz doldurdunuz!
+      </div>
+      <div class="victory-stats">
+        <div class="victory-stat-item">
+          <span class="val" id="vicStatLevel">1. Seviye</span>
+          <span class="lbl">Tamamlanan Bulmaca</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="val" id="vicStatCoverage">%100</span>
+          <span class="lbl">Hücre Doluluğu</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="val" id="vicStatTime">01:15</span>
+          <span class="lbl">Çözüm Süresi</span>
+        </div>
+      </div>
+      <div class="victory-actions">
+        <button class="btn-action" onclick="game.replayLevel()">
+          🔄 Yeniden Oyna
+        </button>
+        <button class="btn-action btn-check" id="btnNextLevel" onclick="game.nextLevel()">
+          ▶ Sonraki Seviye
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Bildirimi -->
+  <div class="toast-msg" id="toastMsg">Bildirim</div>
+
+  <!-- Konfeti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ==========================================================================
+       7. SCRİPT: SCORM 1.2, SES SENTEZLEYİCİ, BULMACALAR VE OYUN MOTORU
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       SCORM 1.2 ENTEGRASYONU (STANDART VE GÜVENLİ FALLBACK)
+       ========================================================================== */
+    const SCORM = {
+      api: null,
+      startTime: null,
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && attempts < 10) {
+          if (win.parent && win.parent !== win) {
+            win = win.parent;
+          } else if (win.opener) {
+            win = win.opener;
+          } else {
+            break;
+          }
+          attempts++;
+        }
+        return win ? win.API : null;
+      },
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (this.api && typeof this.api.LMSInitialize === "function") {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM bağımsız modda çalışıyor:", e);
+        }
+        this.startTime = new Date();
+      },
+      complete() {
+        try {
+          if (this.api && typeof this.api.LMSSetValue === "function") {
+            this.api.LMSSetValue("cmi.core.score.raw", "100");
+            this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+            if (this.startTime) {
+              const diff = Math.floor((new Date() - this.startTime) / 1000);
+              const hrs = String(Math.floor(diff / 3600)).padStart(2, "0");
+              const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+              const secs = String(diff % 60).padStart(2, "0");
+              this.api.LMSSetValue("cmi.core.session_time", `${hrs}:${mins}:${secs}`);
+            }
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM complete hatası:", e);
+        }
+      },
+      finish() {
+        try {
+          if (this.api && typeof this.api.LMSFinish === "function") {
+            this.api.LMSFinish("");
+          }
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => SCORM.init());
+    window.addEventListener("beforeunload", () => SCORM.finish());
+
+    /* ==========================================================================
+       WEB AUDIO API SES MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+      playStep(freq = 460) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.25, this.ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+      playConnect() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        [587.33, 880].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.07;
+          gain.gain.setValueAtTime(0.2, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.28);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.28);
+        });
+      }
+      playUndo() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(360, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+      playAlert() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.22);
+      }
+      playHint() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = f;
+          const st = this.ctx.currentTime + idx * 0.08;
+          gain.gain.setValueAtTime(0.18, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.22);
+        });
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.11;
+          gain.gain.setValueAtTime(0.24, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.42);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.42);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    /* ==========================================================================
+       KONFETİ SİSTEMİ (CANVAS TABANLI)
+       ========================================================================== */
+    class ConfettiManager {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.animId = null;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+      start(count = 100) {
+        this.resize();
+        this.particles = [];
+        const colors = ['#00cec9', '#10ac84', '#feca57', '#ff5252', '#9b59b6', '#38bdf8'];
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height * 0.3 - 50,
+            w: Math.random() * 10 + 6,
+            h: Math.random() * 6 + 4,
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 3 + 3,
+            rot: Math.random() * 360,
+            vRot: (Math.random() - 0.5) * 8,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1
+          });
+        }
+        if (!this.animId) this.loop();
+      }
+      loop() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        let alive = 0;
+        for (let p of this.particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vRot;
+          if (p.y < this.canvas.height + 20) {
+            alive++;
+            this.ctx.save();
+            this.ctx.translate(p.x, p.y);
+            this.ctx.rotate((p.rot * Math.PI) / 180);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            this.ctx.restore();
+          }
+        }
+        if (alive > 0) {
+          this.animId = requestAnimationFrame(() => this.loop());
+        } else {
+          this.animId = null;
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+    }
+
+    /* ==========================================================================
+       8. 5 FARKLI BULMACA SEVİYESİ VE ÇÖZÜMLERİ (%100 MATEMATİKSEL KAPSAMA)
+       ========================================================================== */
+    const LEVELS = [
+      {
+        name: "4x4 Isınma",
+        tag: "1. Seviye",
+        rows: 4,
+        cols: 4,
+        endpoints: {
+          'A': [[2, 1], [3, 0]],
+          'B': [[3, 3], [1, 0]],
+          'C': [[3, 1], [1, 1]]
+        },
+        hints: [
+          "B harfi (1,0) noktasından başlayıp tüm üst ve sağ kenarı dolaşarak (3,3) hedefine ulaşabilir.",
+          "C harfi iç çemberden dolaşarak (3,1) hedefine bağlanır.",
+          "A harfi kalan sol alt boşlukları doldurur."
+        ],
+        solution: {
+          'B': [[1, 0], [0, 0], [0, 1], [0, 2], [0, 3], [1, 3], [2, 3], [3, 3]],
+          'C': [[1, 1], [1, 2], [2, 2], [3, 2], [3, 1]],
+          'A': [[2, 1], [2, 0], [3, 0]]
+        }
+      },
+      {
+        name: "5x5 Başlangıç",
+        tag: "2. Seviye",
+        rows: 5,
+        cols: 5,
+        endpoints: {
+          'D': [[0, 0], [4, 0]],
+          'A': [[0, 1], [4, 4]],
+          'B': [[1, 1], [4, 3]],
+          'C': [[1, 2], [3, 3]]
+        },
+        hints: [
+          "D harfi sol duvar boyunca düz bir çizgiyle (0,0)'dan (4,0)'a doğrudan bağlanabilir.",
+          "A harfi üst ve sağ dış duvarı dolaşarak diğer harfleri hapsetmeden (4,4)'e iner.",
+          "B harfi orta koridordan aşağıya doğru akar ve tabanda eşiyle buluşur."
+        ],
+        solution: {
+          'D': [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
+          'A': [[0, 1], [0, 2], [0, 3], [0, 4], [1, 4], [2, 4], [3, 4], [4, 4]],
+          'B': [[1, 1], [2, 1], [3, 1], [4, 1], [4, 2], [4, 3]],
+          'C': [[1, 2], [1, 3], [2, 3], [2, 2], [3, 2], [3, 3]]
+        }
+      },
+      {
+        name: "6x6 Ders Sorusu",
+        tag: "3. Seviye",
+        rows: 6,
+        cols: 6,
+        endpoints: {
+          'A': [[0, 0], [4, 3]],
+          'B': [[0, 1], [2, 4]],
+          'C': [[0, 2], [5, 3]],
+          'D': [[1, 2], [1, 4]],
+          'E': [[4, 1], [4, 4]]
+        },
+        hints: [
+          "D harfleri (1,2) ve (1,4) arasında tek hücre var. Önce D harflerini yatay olarak bağlayın.",
+          "C harfini iç kısımları kapatmamak için üst ve sağ dış duvardan dolaştırın.",
+          "A harfini sol duvardan aşağıya indirip tabandaki boşlukları doldurarak eşine bağlayın.",
+          "Kalan orta koridoru E harfine ayırın; tüm 36 hücre tam dolacaktır."
+        ],
+        solution: {
+          'D': [[1, 2], [1, 3], [1, 4]],
+          'C': [[0, 2], [0, 3], [0, 4], [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5], [5, 4], [5, 3]],
+          'A': [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [5, 1], [5, 2], [4, 2], [4, 3]],
+          'B': [[0, 1], [1, 1], [2, 1], [2, 2], [2, 3], [2, 4]],
+          'E': [[4, 1], [3, 1], [3, 2], [3, 3], [3, 4], [4, 4]]
+        }
+      },
+      {
+        name: "6x6 Usta Seviye",
+        tag: "4. Seviye",
+        rows: 6,
+        cols: 6,
+        endpoints: {
+          'A': [[3, 3], [3, 5]],
+          'B': [[1, 4], [3, 2]],
+          'C': [[2, 3], [5, 5]],
+          'D': [[4, 3], [4, 5]],
+          'E': [[0, 0], [5, 1]]
+        },
+        hints: [
+          "A harfleri (3,3)-(3,5) ve D harfleri (4,3)-(4,5) yatay kısa hatlarla hemen bağlanabilir.",
+          "E harfi en sol duvardan inip tabandaki (5,1)'e rahatça ulaşır.",
+          "C harfi geniş dış koridoru dolaşarak tüm dış çeperi doldurur."
+        ],
+        solution: {
+          'A': [[3, 3], [3, 4], [3, 5]],
+          'D': [[4, 3], [4, 4], [4, 5]],
+          'B': [[1, 4], [1, 3], [1, 2], [2, 2], [3, 2]],
+          'C': [[2, 3], [2, 4], [2, 5], [1, 5], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [4, 2], [5, 2], [5, 3], [5, 4], [5, 5]],
+          'E': [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [5, 1]]
+        }
+      },
+      {
+        name: "7x7 Şampiyona",
+        tag: "5. Seviye",
+        rows: 7,
+        cols: 7,
+        endpoints: {
+          'F': [[6, 0], [0, 6]],
+          'A': [[5, 0], [0, 5]],
+          'E': [[1, 1], [1, 5]],
+          'D': [[1, 2], [1, 4]],
+          'B': [[2, 2], [4, 4]],
+          'C': [[2, 4], [2, 3]]
+        },
+        hints: [
+          "F harfi taban ve sağ duvar boyunca en dış sınırdan dolaşır.",
+          "A harfi sol duvar ve tavan boyunca ikinci dış halkayı oluşturur.",
+          "D harfi (1,2)-(1,4) arasında merkezden yatay bağlanır."
+        ],
+        solution: {
+          'F': [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [5, 6], [4, 6], [3, 6], [2, 6], [1, 6], [0, 6]],
+          'A': [[5, 0], [4, 0], [3, 0], [2, 0], [1, 0], [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5]],
+          'E': [[1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [4, 5], [3, 5], [2, 5], [1, 5]],
+          'D': [[1, 2], [1, 3], [1, 4]],
+          'B': [[2, 2], [3, 2], [4, 2], [4, 3], [4, 4]],
+          'C': [[2, 4], [3, 4], [3, 3], [2, 3]]
+        }
+      }
+    ];
+
+    const LETTER_COLORS = {
+      'A': '#00cec9', // Cyan
+      'B': '#10ac84', // Emerald Green
+      'C': '#f39c12', // Amber Orange
+      'D': '#9b59b6', // Amethyst Purple
+      'E': '#ff5252', // Coral Red
+      'F': '#38bdf8'  // Sky Blue
+    };
+
+    /* ==========================================================================
+       9. OYUN YÖNETİCİSİ VE ETKİLEŞİM MOTORU
+       ========================================================================== */
+    class GameEngine {
+      constructor() {
+        this.currentLevelIdx = 2; // Varsayılan: 6x6 Ders Sorusu
+        this.solvedLevels = new Set();
+        this.userPaths = {};      // letter -> [[r, c], ...]
+        this.moveHistory = [];    // stack for undo: { type: 'extend', letter, cell } or { type: 'clear', letter, oldPath }
+        this.activeDrawingLetter = null;
+        this.isInteracting = false;
+        this.timerSeconds = 0;
+        this.timerInterval = null;
+        this.confetti = new ConfettiManager(document.getElementById('confettiCanvas'));
+
+        this.initDOM();
+      }
+
+      initDOM() {
+        this.renderLevelPills();
+        this.setupBoardEvents();
+        this.loadLevel(this.currentLevelIdx);
+      }
+
+      startFromSplash() {
+        sound.init();
+        sound.playClick();
+        document.getElementById('splashScreen').classList.add('hidden');
+        this.startTimer();
+      }
+
+      renderLevelPills() {
+        const container = document.getElementById('levelPills');
+        container.innerHTML = '';
+        LEVELS.forEach((lvl, idx) => {
+          const btn = document.createElement('button');
+          btn.className = `pill-btn ${idx === this.currentLevelIdx ? 'active' : ''} ${this.solvedLevels.has(idx) ? 'solved' : ''}`;
+          btn.textContent = lvl.name;
+          btn.onclick = () => this.switchLevel(idx);
+          container.appendChild(btn);
+        });
+      }
+
+      switchLevel(idx) {
+        sound.playClick();
+        this.currentLevelIdx = idx;
+        this.renderLevelPills();
+        this.loadLevel(idx);
+      }
+
+      loadLevel(idx) {
+        this.userPaths = {};
+        this.moveHistory = [];
+        this.activeDrawingLetter = null;
+        this.isInteracting = false;
+
+        this.renderBoard();
+        this.updateHUD();
+        this.setStatus(`Seviye yüklendi: ${LEVELS[idx].name}. Harfleri eşleştirmeye başla!`, 'info');
+      }
+
+      startTimer() {
+        clearInterval(this.timerInterval);
+        this.timerSeconds = 0;
+        this.timerInterval = setInterval(() => {
+          this.timerSeconds++;
+          const m = String(Math.floor(this.timerSeconds / 60)).padStart(2, '0');
+          const s = String(this.timerSeconds % 60).padStart(2, '0');
+          document.getElementById('statTimer').textContent = `${m}:${s}`;
+        }, 1000);
+      }
+
+      setStatus(msg, type = 'info') {
+        const badge = document.getElementById('statusBadge');
+        badge.textContent = msg;
+        badge.className = `status-badge ${type}`;
+      }
+
+      showToast(text) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = text;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2600);
+      }
+
+      /* Tahta SVG Çizimi */
+      renderBoard() {
+        const svg = document.getElementById('boardSvg');
+        svg.innerHTML = '';
+        const level = LEVELS[this.currentLevelIdx];
+        const R = level.rows;
+        const C = level.cols;
+        const cellSize = 600 / C;
+
+        // 1. Hücre zeminleri ve merkez noktaları
+        for (let r = 0; r < R; r++) {
+          for (let c = 0; c < C; c++) {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', c * cellSize);
+            rect.setAttribute('y', r * cellSize);
+            rect.setAttribute('width', cellSize);
+            rect.setAttribute('height', cellSize);
+            rect.setAttribute('class', 'grid-cell');
+            rect.setAttribute('data-r', r);
+            rect.setAttribute('data-c', c);
+            svg.appendChild(rect);
+
+            const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dot.setAttribute('cx', c * cellSize + cellSize / 2);
+            dot.setAttribute('cy', r * cellSize + cellSize / 2);
+            dot.setAttribute('r', Math.max(3, cellSize * 0.04));
+            dot.setAttribute('class', 'grid-dot');
+            svg.appendChild(dot);
+          }
+        }
+
+        // 2. Kullanıcı Yolları (SVG Polylines)
+        for (const [ltr, path] of Object.entries(this.userPaths)) {
+          if (path.length > 1) {
+            const pts = path.map(p => `${p[1] * cellSize + cellSize / 2},${p[0] * cellSize + cellSize / 2}`).join(' ');
+            const color = LETTER_COLORS[ltr] || '#00cec9';
+
+            // Dış neon parlama
+            const glow = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            glow.setAttribute('points', pts);
+            glow.setAttribute('class', 'path-glow');
+            glow.setAttribute('stroke', color);
+            glow.setAttribute('stroke-width', cellSize * 0.38);
+            svg.appendChild(glow);
+
+            // Ana hat
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            line.setAttribute('points', pts);
+            line.setAttribute('class', 'path-main');
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', cellSize * 0.22);
+            svg.appendChild(line);
+
+            // Parlak çekirdek
+            const core = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            core.setAttribute('points', pts);
+            core.setAttribute('class', 'path-core');
+            core.setAttribute('stroke-width', cellSize * 0.08);
+            svg.appendChild(core);
+          }
+        }
+
+        // 3. Harf Düğümleri (Endpoints)
+        for (const [ltr, pts] of Object.entries(level.endpoints)) {
+          const color = LETTER_COLORS[ltr] || '#00cec9';
+          for (const pt of pts) {
+            const cx = pt[1] * cellSize + cellSize / 2;
+            const cy = pt[0] * cellSize + cellSize / 2;
+            const nodeRadius = cellSize * 0.32;
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'node-group');
+            g.setAttribute('data-letter', ltr);
+
+            // Dış Daire (Neon Halka)
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', cx);
+            circle.setAttribute('cy', cy);
+            circle.setAttribute('r', nodeRadius);
+            circle.setAttribute('class', 'node-outer');
+            circle.setAttribute('fill', '#121829');
+            circle.setAttribute('stroke', color);
+            circle.setAttribute('stroke-width', Math.max(3, cellSize * 0.055));
+            circle.style.filter = `drop-shadow(0 0 8px ${color})`;
+            g.appendChild(circle);
+
+            // Harf Metni
+            const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            txt.setAttribute('x', cx);
+            txt.setAttribute('y', cy + nodeRadius * 0.35);
+            txt.setAttribute('text-anchor', 'middle');
+            txt.setAttribute('fill', color);
+            txt.setAttribute('font-size', `${nodeRadius * 1.05}px`);
+            txt.setAttribute('font-weight', '900');
+            txt.textContent = ltr;
+            g.appendChild(txt);
+
+            svg.appendChild(g);
+          }
+        }
+      }
+
+      /* Dokunma ve Çizim Olayları */
+      setupBoardEvents() {
+        const box = document.getElementById('boardBox');
+
+        const getCoords = (clientX, clientY) => {
+          const rect = box.getBoundingClientRect();
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          if (x < 0 || y < 0 || x > rect.width || y > rect.height) return null;
+          const level = LEVELS[this.currentLevelIdx];
+          const cellW = rect.width / level.cols;
+          const cellH = rect.height / level.rows;
+          const c = Math.floor(x / cellW);
+          const r = Math.floor(y / cellH);
+          if (r >= 0 && r < level.rows && c >= 0 && c < level.cols) {
+            return [r, c];
+          }
+          return null;
+        };
+
+        const onPointerDown = (clientX, clientY) => {
+          const cell = getCoords(clientX, clientY);
+          if (!cell) return;
+          const [r, c] = cell;
+          const level = LEVELS[this.currentLevelIdx];
+
+          // 1. Bir harf noktasına mı tıklandı?
+          for (const [ltr, pts] of Object.entries(level.endpoints)) {
+            if (pts.some(p => p[0] === r && p[1] === c)) {
+              this.activeDrawingLetter = ltr;
+              this.isInteracting = true;
+
+              // Eski yolu temizle ve yeni yol başlat
+              this.userPaths[ltr] = [[r, c]];
+              this.moveHistory.push({ type: 'start', letter: ltr, cell: [r, c] });
+              sound.playStep(500);
+              this.renderBoard();
+              this.updateHUD();
+              return;
+            }
+          }
+
+          // 2. Halihazırda çizilmiş bir yolun ucuna mı tıklandı? (Devam etme desteği)
+          for (const [ltr, path] of Object.entries(this.userPaths)) {
+            if (path && path.length > 0) {
+              const tip = path[path.length - 1];
+              if (tip[0] === r && tip[1] === c) {
+                // Eğer zaten eşleştiyse tekrar çizmek için serbest bırak
+                const pts = level.endpoints[ltr];
+                const isMatched = (tip[0] === pts[0][0] && tip[1] === pts[0][1]) || (tip[0] === pts[1][0] && tip[1] === pts[1][1]);
+                if (!isMatched || path.length === 1) {
+                  this.activeDrawingLetter = ltr;
+                  this.isInteracting = true;
+                  sound.playClick();
+                  return;
+                }
+              }
+            }
+          }
+        };
+
+        const onPointerMove = (clientX, clientY) => {
+          if (!this.isInteracting || !this.activeDrawingLetter) return;
+          const cell = getCoords(clientX, clientY);
+          if (!cell) return;
+          const [r, c] = cell;
+
+          const path = this.userPaths[this.activeDrawingLetter];
+          if (!path) return;
+          const last = path[path.length - 1];
+          if (last[0] === r && last[1] === c) return; // Aynı hücre
+
+          // Sadece yatay veya dikey adım (Çapraz yasak!)
+          const dr = Math.abs(r - last[0]);
+          const dc = Math.abs(c - last[1]);
+          if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+            // Geri alma hamlesi mi? (Bir önceki hücreye geri sürüklendiyse)
+            if (path.length > 1 && path[path.length - 2][0] === r && path[path.length - 2][1] === c) {
+              path.pop();
+              this.moveHistory.push({ type: 'pop', letter: this.activeDrawingLetter });
+              sound.playUndo();
+              this.renderBoard();
+              this.updateHUD();
+              return;
+            }
+
+            const level = LEVELS[this.currentLevelIdx];
+            const targetEndpoints = level.endpoints[this.activeDrawingLetter];
+            const isTargetEndpoint = targetEndpoints.some(p => p[0] === r && p[1] === c);
+
+            // Başka bir harfin başlangıç/bitiş noktasına giremez!
+            for (const [otherLtr, otherPts] of Object.entries(level.endpoints)) {
+              if (otherLtr !== this.activeDrawingLetter) {
+                if (otherPts.some(p => p[0] === r && p[1] === c)) {
+                  sound.playAlert();
+                  return;
+                }
+              }
+            }
+
+            // Kendi yolunu kesemez
+            if (path.some(p => p[0] === r && p[1] === c) && !isTargetEndpoint) {
+              sound.playAlert();
+              return;
+            }
+
+            // Başka bir harfin yolunu kesemez
+            for (const [otherLtr, otherPath] of Object.entries(this.userPaths)) {
+              if (otherLtr !== this.activeDrawingLetter && otherPath) {
+                if (otherPath.some(p => p[0] === r && p[1] === c)) {
+                  sound.playAlert();
+                  return;
+                }
+              }
+            }
+
+            // Geçerli hamle: Yolu uzat
+            path.push([r, c]);
+            this.moveHistory.push({ type: 'extend', letter: this.activeDrawingLetter, cell: [r, c] });
+            sound.playStep(450 + path.length * 15);
+            this.renderBoard();
+            this.updateHUD();
+
+            // Hedefe ulaşıldı mı?
+            if (isTargetEndpoint && path.length > 1) {
+              sound.playConnect();
+              this.activeDrawingLetter = null;
+              this.isInteracting = false;
+              this.autoCheckVictory();
+            }
+          }
+        };
+
+        const onPointerUp = () => {
+          this.activeDrawingLetter = null;
+          this.isInteracting = false;
+        };
+
+        // Pointer Events (Mouse, Touch, Pen)
+        box.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          onPointerDown(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('pointermove', (e) => {
+          if (this.isInteracting) {
+            onPointerMove(e.clientX, e.clientY);
+          }
+        });
+
+        window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('pointercancel', onPointerUp);
+      }
+
+      updateHUD() {
+        const level = LEVELS[this.currentLevelIdx];
+        const totalPairs = Object.keys(level.endpoints).length;
+        let connectedPairs = 0;
+
+        for (const [ltr, pts] of Object.entries(level.endpoints)) {
+          const path = this.userPaths[ltr];
+          if (path && path.length > 1) {
+            const start = path[0];
+            const end = path[path.length - 1];
+            const hasStart = (start[0] === pts[0][0] && start[1] === pts[0][1]) || (start[0] === pts[1][0] && start[1] === pts[1][1]);
+            const hasEnd = (end[0] === pts[0][0] && end[1] === pts[0][1]) || (end[0] === pts[1][0] && end[1] === pts[1][1]);
+            if (hasStart && hasEnd && (start[0] !== end[0] || start[1] !== end[1])) {
+              connectedPairs++;
+            }
+          }
+        }
+
+        const usedCells = new Set();
+        for (const path of Object.values(this.userPaths)) {
+          if (path) {
+            for (const pt of path) {
+              usedCells.add(`${pt[0]},${pt[1]}`);
+            }
+          }
+        }
+
+        const totalCells = level.rows * level.cols;
+        const count = usedCells.size;
+        const pct = Math.round((count / totalCells) * 100);
+
+        document.getElementById('statPairs').textContent = `${connectedPairs} / ${totalPairs}`;
+        document.getElementById('statCoverage').textContent = `${count} / ${totalCells} (%${pct})`;
+
+        if (connectedPairs === totalPairs && count < totalCells) {
+          this.setStatus(`⚠️ Tüm harfler bağlandı fakat ${totalCells - count} kare boş kaldı! Tahtayı %100 doldurmalısın.`, 'warn');
+        } else if (connectedPairs === totalPairs && count === totalCells) {
+          this.setStatus('🎉 Harika! Tüm çiftler bağlandı ve ızgara %100 doldu!', 'success');
+        } else {
+          this.setStatus(`Bağlanan Çiftler: ${connectedPairs} / ${totalPairs} | Doluluk: %${pct}`, 'info');
+        }
+      }
+
+      autoCheckVictory() {
+        const level = LEVELS[this.currentLevelIdx];
+        const totalPairs = Object.keys(level.endpoints).length;
+        let connectedPairs = 0;
+
+        for (const [ltr, pts] of Object.entries(level.endpoints)) {
+          const path = this.userPaths[ltr];
+          if (path && path.length > 1) {
+            const start = path[0];
+            const end = path[path.length - 1];
+            const hasStart = (start[0] === pts[0][0] && start[1] === pts[0][1]) || (start[0] === pts[1][0] && start[1] === pts[1][1]);
+            const hasEnd = (end[0] === pts[0][0] && end[1] === pts[0][1]) || (end[0] === pts[1][0] && end[1] === pts[1][1]);
+            if (hasStart && hasEnd) connectedPairs++;
+          }
+        }
+
+        const usedCells = new Set();
+        for (const path of Object.values(this.userPaths)) {
+          if (path) {
+            for (const pt of path) usedCells.add(`${pt[0]},${pt[1]}`);
+          }
+        }
+
+        const totalCells = level.rows * level.cols;
+        if (connectedPairs === totalPairs && usedCells.size === totalCells) {
+          this.triggerVictory();
+        }
+      }
+
+      checkSolution() {
+        sound.init();
+        const level = LEVELS[this.currentLevelIdx];
+        const totalPairs = Object.keys(level.endpoints).length;
+        let connectedPairs = 0;
+
+        for (const [ltr, pts] of Object.entries(level.endpoints)) {
+          const path = this.userPaths[ltr];
+          if (path && path.length > 1) {
+            const start = path[0];
+            const end = path[path.length - 1];
+            const hasStart = (start[0] === pts[0][0] && start[1] === pts[0][1]) || (start[0] === pts[1][0] && start[1] === pts[1][1]);
+            const hasEnd = (end[0] === pts[0][0] && end[1] === pts[0][1]) || (end[0] === pts[1][0] && end[1] === pts[1][1]);
+            if (hasStart && hasEnd) connectedPairs++;
+          }
+        }
+
+        const usedCells = new Set();
+        for (const path of Object.values(this.userPaths)) {
+          if (path) {
+            for (const pt of path) usedCells.add(`${pt[0]},${pt[1]}`);
+          }
+        }
+
+        const totalCells = level.rows * level.cols;
+
+        if (connectedPairs === totalPairs && usedCells.size === totalCells) {
+          this.triggerVictory();
+        } else if (connectedPairs < totalPairs) {
+          sound.playAlert();
+          this.showToast(`Henüz tamamlanmadı! ${totalPairs - connectedPairs} harf çifti daha bağlanmalı.`);
+          this.setStatus(`Henüz tüm harfler bağlanmadı! Kalan harf çiftlerini eşleştirmeyi dene.`, 'warn');
+        } else {
+          sound.playAlert();
+          this.showToast(`Tüm harfler bağlandı fakat ${totalCells - usedCells.size} hücre boş kaldı!`);
+          this.setStatus(`Boş hücreler var! Kural 3: Tahtanın tamamı doldurulmalıdır (%100 Doluluk).`, 'warn');
+        }
+      }
+
+      triggerVictory() {
+        sound.playFanfare();
+        this.confetti.start(120);
+        SCORM.complete();
+
+        this.solvedLevels.add(this.currentLevelIdx);
+        this.renderLevelPills();
+
+        const level = LEVELS[this.currentLevelIdx];
+        document.getElementById('vicStatLevel').textContent = level.name;
+        document.getElementById('vicStatCoverage').textContent = '%100';
+        document.getElementById('vicStatTime').textContent = document.getElementById('statTimer').textContent;
+
+        const nextBtn = document.getElementById('btnNextLevel');
+        if (this.currentLevelIdx < LEVELS.length - 1) {
+          nextBtn.style.display = 'inline-flex';
+        } else {
+          nextBtn.style.display = 'none';
+        }
+
+        document.getElementById('modalVictory').classList.add('active');
+        this.setStatus('🏆 TEBRİKLER! Bulmacayı kurallara tam uyarak eksiksiz çözdünüz!', 'success');
+      }
+
+      nextLevel() {
+        this.closeModals();
+        if (this.currentLevelIdx < LEVELS.length - 1) {
+          this.switchLevel(this.currentLevelIdx + 1);
+        }
+      }
+
+      replayLevel() {
+        this.closeModals();
+        this.loadLevel(this.currentLevelIdx);
+      }
+
+      resetLevel() {
+        sound.playClick();
+        this.loadLevel(this.currentLevelIdx);
+        this.showToast('Seviye sıfırlandı.');
+      }
+
+      clearBoard() {
+        sound.playUndo();
+        this.userPaths = {};
+        this.moveHistory = [];
+        this.renderBoard();
+        this.updateHUD();
+        this.showToast('Çizimler temizlendi.');
+      }
+
+      undoMove() {
+        if (this.moveHistory.length === 0) return;
+        sound.playUndo();
+        const lastAction = this.moveHistory.pop();
+
+        if (lastAction.type === 'extend') {
+          const path = this.userPaths[lastAction.letter];
+          if (path && path.length > 1) {
+            path.pop();
+          }
+        } else if (lastAction.type === 'start') {
+          delete this.userPaths[lastAction.letter];
+        }
+
+        this.renderBoard();
+        this.updateHUD();
+      }
+
+      showHint() {
+        sound.playHint();
+        const level = LEVELS[this.currentLevelIdx];
+        const content = document.getElementById('modalHintContent');
+
+        let html = '';
+        if (level.hints && level.hints.length > 0) {
+          html = level.hints.map((h, i) => `
+            <div class="rule-box">
+              <h4>İpucu ${i + 1}</h4>
+              <p>${h}</p>
+            </div>
+          `).join('');
+        } else {
+          html = `
+            <div class="rule-box">
+              <h4>Usta Stratejisi: Dış Çeperi Dolaşma</h4>
+              <p>Tahtanın en dış kenarındaki boş hücreleri ve köşeleri bir hatla kapatın. İçerideki harfler daralmadan çözülecektir.</p>
+            </div>
+          `;
+        }
+
+        html += `
+          <div style="margin-top: 14px; text-align: center;">
+            <button class="btn-action" style="font-size: 13px; padding: 8px 16px;" onclick="game.revealOnePath()">
+              🔍 Bir Hattı Göster
+            </button>
+          </div>
+        `;
+
+        content.innerHTML = html;
+        document.getElementById('modalHint').classList.add('active');
+      }
+
+      revealOnePath() {
+        this.closeModals();
+        const level = LEVELS[this.currentLevelIdx];
+        if (!level.solution) {
+          this.showToast("Bu seviye için çözüm rehberi yok.");
+          return;
+        }
+
+        // Henüz bağlanmamış ilk harfi bul
+        for (const [ltr, solPath] of Object.entries(level.solution)) {
+          const curPath = this.userPaths[ltr];
+          const isSolved = curPath && curPath.length === solPath.length;
+          if (!isSolved) {
+            this.userPaths[ltr] = JSON.parse(JSON.stringify(solPath));
+            sound.playConnect();
+            this.renderBoard();
+            this.updateHUD();
+            this.showToast(`[${ltr}] harfinin çözümü yerleştirildi!`);
+            this.autoCheckVictory();
+            return;
+          }
+        }
+        this.showToast("Tüm hatlar zaten doğru yerleştirilmiş!");
+      }
+
+      openInstructions() {
+        sound.playClick();
+        document.getElementById('modalInstructions').classList.add('active');
+      }
+
+      closeModals() {
+        sound.playClick();
+        document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+      }
+
+      toggleSound() {
+        sound.muted = !sound.muted;
+        const btn = document.getElementById('btnSound');
+        btn.textContent = sound.muted ? '🔇' : '🔊';
+        this.showToast(sound.muted ? 'Ses Kapatıldı' : 'Ses Açıldı');
+      }
+
+      toggleFullscreen() {
+        sound.playClick();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
+    // Klavye Kısayolları (Space: Kontrol, Z: Geri Al, R: Sıfırla, M: Ses)
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (window.game) window.game.checkSolution();
+      } else if (e.key === 'z' || e.key === 'Z') {
+        if (window.game) window.game.undoMove();
+      } else if (e.key === 'r' || e.key === 'R') {
+        if (window.game) window.game.resetLevel();
+      } else if (e.key === 'm' || e.key === 'M') {
+        if (window.game) window.game.toggleSound();
+      } else if (e.key === 'h' || e.key === 'H') {
+        if (window.game) window.game.showHint();
+      }
+    });
+
+    // Başlangıç Yüklemesi
+    window.game = new GameEngine();
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

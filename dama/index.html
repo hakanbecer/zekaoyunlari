@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TÜRK DAMASI OYUNU | Akıl ve Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       GÖRSEL TEMA VE DEĞİŞKENLER (VİDEO TEMASIYLA %100 UYUMLU)
+       ========================================================================== */
+    :root {
+      --bg-radial: radial-gradient(circle at 50% 30%, #1a253a 0%, #0f141d 100%);
+      --card-bg: rgba(22, 32, 50, 0.92);
+      --card-border: #273852;
+      --gold-accent: #f5b041;
+      --gold-light: #feca57;
+      --emerald-accent: #10ac84;
+      --cyan-accent: #00cec9;
+      --crimson-accent: #ff5252;
+      --crimson-glow: rgba(255, 82, 82, 0.45);
+      --blue-accent: #3867d6;
+      --blue-glow: rgba(56, 103, 214, 0.45);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+
+      /* Tahta Renkleri */
+      --board-wood: #2c1b10;
+      --board-border: #c39150;
+      --sq-light: #f3dfbf;
+      --sq-dark: #b8865a;
+      --sq-highlight: rgba(245, 176, 65, 0.4);
+      --sq-valid: rgba(16, 172, 132, 0.45);
+      --sq-capture: rgba(255, 82, 82, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-radial);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */
+    header.header-bar {
+      width: 100%;
+      max-width: 1100px;
+      padding: 10px 18px;
+      margin: 8px auto 6px auto;
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 10;
+      flex-wrap: wrap;
+    }
+
+    .title-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #feca57, #ff9f43);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-badge .icon {
+      font-size: 24px;
+      -webkit-text-fill-color: initial;
+    }
+
+    /* Dinamik Durum Bildirim Kutusu */
+    .status-box {
+      flex: 1;
+      min-width: 250px;
+      text-align: center;
+      background: rgba(15, 20, 29, 0.7);
+      border: 1.5px solid var(--card-border);
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .status-box.student-turn {
+      border-color: var(--crimson-accent);
+      color: #ff7675;
+      box-shadow: 0 0 14px var(--crimson-glow);
+    }
+
+    .status-box.computer-turn {
+      border-color: var(--blue-accent);
+      color: #74b9ff;
+      box-shadow: 0 0 14px var(--blue-glow);
+    }
+
+    .status-box.warn-turn {
+      border-color: var(--gold-accent);
+      color: var(--gold-light);
+      box-shadow: 0 0 14px rgba(245, 176, 65, 0.4);
+      animation: pulseWarn 1.2s infinite;
+    }
+
+    @keyframes pulseWarn {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    /* Üst Butonlar */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 40px;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--gold-accent);
+      transform: translateY(-1px);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+    }
+
+    .btn-reset {
+      background: rgba(255, 82, 82, 0.15);
+      border-color: rgba(255, 82, 82, 0.4);
+      color: #ff7675;
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 82, 82, 0.28);
+      border-color: var(--crimson-accent);
+    }
+
+    /* ==========================================================================
+       MERKEZÎ OYUN ARENASI
+       ========================================================================== */
+    main.game-arena {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 6px 12px;
+      flex: 1;
+    }
+
+    /* Oyuncu Panelleri */
+    .player-card {
+      width: 200px;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: all 0.3s ease;
+    }
+
+    .player-card.active-turn {
+      border-color: var(--gold-accent);
+      box-shadow: 0 0 20px rgba(245, 176, 65, 0.35);
+      transform: scale(1.02);
+    }
+
+    .p-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .p-badge-turn {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .player-card.active-turn .p-badge-turn {
+      background: var(--gold-accent);
+      color: #0f141d;
+    }
+
+    .p-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .p-stat-val {
+      font-weight: 800;
+      color: var(--text-main);
+      font-size: 15px;
+    }
+
+    .p-stone-preview {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 3px 6px rgba(0,0,0,0.6);
+    }
+
+    .p-stone-red {
+      background: radial-gradient(circle at 35% 35%, #ff7675 0%, #d63031 60%, #851414 100%);
+      border: 1.5px solid #ff7675;
+    }
+
+    .p-stone-blue {
+      background: radial-gradient(circle at 35% 35%, #74b9ff 0%, #0984e3 60%, #0c2461 100%);
+      border: 1.5px solid #74b9ff;
+    }
+
+    /* 8x8 DAMA TAHTASI */
+    .board-container {
+      position: relative;
+      background: var(--board-wood);
+      padding: 26px;
+      border-radius: 18px;
+      border: 4px solid var(--board-border);
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.8), 0 16px 40px rgba(0,0,0,0.7);
+    }
+
+    .dama-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 64px);
+      grid-template-rows: repeat(8, 64px);
+      border: 2px solid var(--board-border);
+      background: #000;
+    }
+
+    .cell {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .cell.light {
+      background-color: var(--sq-light);
+    }
+
+    .cell.dark {
+      background-color: var(--sq-dark);
+    }
+
+    .cell.selected {
+      background-color: var(--sq-highlight) !important;
+      box-shadow: inset 0 0 0 3px var(--gold-accent);
+    }
+
+    .cell.valid-move::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--emerald-accent);
+      opacity: 0.85;
+      box-shadow: 0 0 10px var(--emerald-accent);
+      animation: pulseDot 1s infinite alternate;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .cell.valid-capture {
+      background-color: var(--sq-capture) !important;
+    }
+
+    .cell.valid-capture::after {
+      content: '⚔️';
+      font-size: 22px;
+      position: absolute;
+      z-index: 4;
+      animation: pulseWarn 0.8s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulseDot {
+      from { transform: scale(0.85); opacity: 0.6; }
+      to { transform: scale(1.15); opacity: 1; }
+    }
+
+    /* 3B DAMA TAŞI (PUL) */
+    .piece {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 3;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    }
+
+    .piece:hover {
+      transform: scale(1.1);
+    }
+
+    .piece.selected {
+      transform: scale(1.15) translateY(-2px);
+      box-shadow: 0 0 18px var(--gold-accent), 0 8px 16px rgba(0,0,0,0.6) !important;
+    }
+
+    .piece.must-capture {
+      animation: pulseCaptureRing 1s infinite alternate;
+    }
+
+    @keyframes pulseCaptureRing {
+      0% { box-shadow: 0 0 6px var(--crimson-accent), 0 4px 8px rgba(0,0,0,0.5); }
+      100% { box-shadow: 0 0 18px #ff7675, 0 6px 12px rgba(255,82,82,0.8); }
+    }
+
+    /* Öğrenci Taşı (Kırmızı 🔴) */
+    .piece.student {
+      background: radial-gradient(circle at 35% 30%, #ff8a80 0%, #e53935 45%, #b71c1c 85%, #6a0b0b 100%);
+      border: 2px solid #ffcdd2;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.6), inset 0 -3px 6px rgba(0,0,0,0.5);
+    }
+
+    /* Bilgisayar Taşı (Mavi 🔵) */
+    .piece.computer {
+      background: radial-gradient(circle at 35% 30%, #90caf9 0%, #1e88e5 45%, #0d47a1 85%, #061c47 100%);
+      border: 2px solid #bbdefb;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.6), inset 0 -3px 6px rgba(0,0,0,0.5);
+    }
+
+    /* DAMA TACI (👑) */
+    .piece.is-dama::after {
+      content: '👑';
+      font-size: 26px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 10px #ffeaa7;
+      animation: crownGlow 2s infinite alternate;
+    }
+
+    @keyframes crownGlow {
+      0% { filter: drop-shadow(0 0 2px gold); }
+      100% { filter: drop-shadow(0 0 8px #feca57); }
+    }
+
+    /* Koordinat Şeritleri */
+    .coord-x-top, .coord-x-bottom {
+      display: grid;
+      grid-template-columns: repeat(8, 64px);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--board-border);
+      padding: 3px 0;
+    }
+
+    .coord-y-left, .coord-y-right {
+      position: absolute;
+      top: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      height: calc(100% - 52px);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--board-border);
+    }
+
+    .coord-y-left { left: 9px; }
+    .coord-y-right { right: 9px; }
+
+    /* ==========================================================================
+       GİRİŞ EKRANI (SPLASH SCREEN)
+       ========================================================================== */
+    .splash-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 14, 23, 0.95);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .splash-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 780px;
+      padding: 46px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(245, 176, 65, 0.15);
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 20px;
+      background: rgba(245, 176, 65, 0.15);
+      border: 1px solid var(--gold-accent);
+      color: var(--gold-light);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .splash-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #ffffff 30%, #feca57 70%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 20px rgba(245, 176, 65, 0.25);
+    }
+
+    /* Parçalar Önizlemesi */
+    .splash-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 10px 0;
+    }
+
+    .preview-stone {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.6);
+      transition: transform 0.3s;
+    }
+
+    .preview-stone:hover {
+      transform: translateY(-4px) scale(1.08);
+    }
+
+    /* Kısa Oynayış Yönergesi Kutusu */
+    .splash-rules-box {
+      width: 100%;
+      background: rgba(15, 20, 29, 0.75);
+      border: 1.5px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px 24px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .splash-rules-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .splash-rules-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .splash-rules-list li {
+      font-size: 14px;
+      line-height: 1.45;
+      color: #e2e8f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .rule-num {
+      background: var(--gold-accent);
+      color: #0f141d;
+      font-weight: 900;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      border: none;
+      color: #09201a;
+      padding: 16px 48px;
+      border-radius: 14px;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 206, 201, 0.45);
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 14px 36px rgba(0, 206, 201, 0.6);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px);
+    }
+
+    /* ==========================================================================
+       YÖNERGE MODALI (BİLGİ PANELİ)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 900;
+      padding: 16px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .info-modal-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.8);
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.5px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .modal-head h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .btn-close-modal:hover {
+      color: var(--text-main);
+    }
+
+    .info-modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .rule-card {
+      background: rgba(15, 20, 29, 0.6);
+      border-left: 4px solid var(--gold-accent);
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .rule-card strong {
+      color: var(--gold-light);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ==========================================================================
+       OYUN SONU SENARYO KARTLARI (KAZANDIN / BİR DAHA DENE)
+       ========================================================================== */
+    .gameover-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 14, 23, 0.9);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 950;
+      padding: 16px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .gameover-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .gameover-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 480px;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .gameover-icon {
+      font-size: 64px;
+      line-height: 1;
+    }
+
+    .gameover-title {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    .gameover-title.win {
+      color: var(--gold-light);
+      text-shadow: 0 0 16px rgba(254, 202, 87, 0.4);
+    }
+
+    .gameover-title.lose {
+      color: #74b9ff;
+    }
+
+    .gameover-title.draw {
+      color: #a4b0be;
+    }
+
+    .gameover-desc {
+      font-size: 15px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .btn-gameover {
+      padding: 14px 36px;
+      font-size: 17px;
+      font-weight: 800;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      margin-top: 6px;
+    }
+
+    .btn-win-replay {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0b1f1a;
+      box-shadow: 0 8px 24px rgba(0, 206, 201, 0.4);
+    }
+
+    .btn-lose-retry {
+      background: linear-gradient(135deg, #f5b041 0%, #ff9f43 100%);
+      color: #1a1505;
+      box-shadow: 0 8px 24px rgba(245, 176, 65, 0.4);
+    }
+
+    /* Konfeti Canvas */
+    canvas#confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Responsive İnce Ayarlar */
+    @media (max-width: 900px) {
+      main.game-arena {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .player-card {
+        width: 100%;
+        max-width: 536px;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 8px 14px;
+      }
+      .player-card .p-stats-box {
+        display: flex;
+        gap: 16px;
+      }
+      .board-container {
+        padding: 18px;
+      }
+      .dama-grid {
+        grid-template-columns: repeat(8, 52px);
+        grid-template-rows: repeat(8, 52px);
+      }
+      .cell {
+        width: 52px;
+        height: 52px;
+      }
+      .piece {
+        width: 42px;
+        height: 42px;
+      }
+      .coord-x-top, .coord-x-bottom {
+        grid-template-columns: repeat(8, 52px);
+      }
+      .splash-card {
+        padding: 30px 20px;
+      }
+      .splash-title {
+        font-size: 38px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .dama-grid {
+        grid-template-columns: repeat(8, 38px);
+        grid-template-rows: repeat(8, 38px);
+      }
+      .cell {
+        width: 38px;
+        height: 38px;
+      }
+      .piece {
+        width: 30px;
+        height: 30px;
+      }
+      .piece.is-dama::after {
+        font-size: 18px;
+      }
+      .coord-x-top, .coord-x-bottom {
+        grid-template-columns: repeat(8, 38px);
+        font-size: 10px;
+      }
+      .coord-y-left, .coord-y-right {
+        font-size: 10px;
+      }
+      .board-container {
+        padding: 14px;
+      }
+      .splash-title {
+        font-size: 30px;
+      }
+      .splash-rules-box {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================= -->
+  <header class="header-bar">
+    <div class="title-badge">
+      <span class="icon">👑</span>
+      <span>TÜRK DAMASI</span>
+    </div>
+
+    <!-- Dinamik Sıra & Durum Bildirimi -->
+    <div class="status-box student-turn" id="statusBox">
+      <span id="statusIcon">🔴</span>
+      <span id="statusText">Sıra Sende: Taşını seç ve hamleni yap</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-action btn-reset" onclick="confirmReset()" title="Oyunu Yeniden Başlat">
+        <span>🔄</span>
+        <span>Baştan Başla</span>
+      </button>
+
+      <button class="btn-action" onclick="openInfoModal()" title="Kısa Oynayış Yönergesi">
+        <span>ℹ️</span>
+        <span>Yönerge</span>
+      </button>
+
+      <button class="btn-action" id="btnSound" onclick="toggleSound()" title="Sesi Aç/Kapat">
+        <span id="soundIcon">🔊</span>
+      </button>
+
+      <button class="btn-action" onclick="toggleFullScreen()" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MERKEZÎ OYUN ARENASI
+       ========================================================================= -->
+  <main class="game-arena">
+
+    <!-- SOL / ALT: 🔴 ÖĞRENCİ (1. OYUNCU) -->
+    <div class="player-card active-turn" id="cardStudent">
+      <div class="p-head">
+        <span class="p-stone-preview p-stone-red"></span>
+        <div>
+          <div style="color: #ff7675; font-size:14px;">ÖĞRENCİ</div>
+          <div style="font-size:11px; color:var(--text-muted);">(1. Oyuncu - Kırmızı)</div>
+        </div>
+      </div>
+      <div class="p-badge-turn" id="badgeStudent">HAMLE SIRASINDA</div>
+      <div class="p-stats-box">
+        <div class="p-stat-row">
+          <span>Kalan Taş:</span>
+          <span class="p-stat-val" id="statStudentStones">16</span>
+        </div>
+        <div class="p-stat-row">
+          <span>Alınan Taş:</span>
+          <span class="p-stat-val" id="statStudentCaptured">0</span>
+        </div>
+        <div class="p-stat-row">
+          <span>Dama Sayısı:</span>
+          <span class="p-stat-val" id="statStudentDamas">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORTA: 8x8 DAMA TAHTASI -->
+    <div class="board-container">
+      <!-- Üst Yatay Koordinatlar (A-H) -->
+      <div class="coord-x-top">
+        <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+      </div>
+
+      <!-- Sol Dikey Koordinatlar (8-1) -->
+      <div class="coord-y-left">
+        <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+      </div>
+
+      <!-- 8x8 Hücre Izgarası -->
+      <div class="dama-grid" id="damaGrid"></div>
+
+      <!-- Sağ Dikey Koordinatlar (8-1) -->
+      <div class="coord-y-right">
+        <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+      </div>
+
+      <!-- Alt Yatay Koordinatlar (A-H) -->
+      <div class="coord-x-bottom">
+        <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+      </div>
+    </div>
+
+    <!-- SAĞ / ÜST: 🔵 BİLGİSAYAR (2. OYUNCU) -->
+    <div class="player-card" id="cardComputer">
+      <div class="p-head">
+        <span class="p-stone-preview p-stone-blue"></span>
+        <div>
+          <div style="color: #74b9ff; font-size:14px;">BİLGİSAYAR</div>
+          <div style="font-size:11px; color:var(--text-muted);">(2. Oyuncu - Mavi)</div>
+        </div>
+      </div>
+      <div class="p-badge-turn" id="badgeComputer">BEKLİYOR</div>
+      <div class="p-stats-box">
+        <div class="p-stat-row">
+          <span>Kalan Taş:</span>
+          <span class="p-stat-val" id="statComputerStones">16</span>
+        </div>
+        <div class="p-stat-row">
+          <span>Alınan Taş:</span>
+          <span class="p-stat-val" id="statComputerCaptured">0</span>
+        </div>
+        <div class="p-stat-row">
+          <span>Dama Sayısı:</span>
+          <span class="p-stat-val" id="statComputerDamas">0</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- =========================================================================
+       GİRİŞ EKRANI (AÇILIŞ / SPLASH SCREEN)
+       ========================================================================= -->
+  <div class="splash-overlay" id="splashScreen">
+    <div class="splash-card">
+      <!-- 1. Üst Rozet -->
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+
+      <!-- 2. Ana Başlık -->
+      <h1 class="splash-title">TÜRK DAMASI OYUNU</h1>
+
+      <!-- 3. Parçalar Önizlemesi -->
+      <div class="splash-preview">
+        <div class="preview-stone p-stone-red" title="Öğrenci Pulu (Kırmızı)">🔴</div>
+        <div class="preview-stone" style="background: radial-gradient(circle at 35% 30%, #ffd700, #b8860b); border: 2px solid #fff;" title="Dama Pulu">👑</div>
+        <div class="preview-stone p-stone-blue" title="Bilgisayar Pulu (Mavi)">🔵</div>
+      </div>
+
+      <!-- 4. Kısa Oynayış Yönergesi Kutusu -->
+      <div class="splash-rules-box">
+        <div class="splash-rules-title">📌 Kısa Oynayış Yönergesi</div>
+        <ul class="splash-rules-list">
+          <li>
+            <span class="rule-num">1</span>
+            <span>Yoz taşlar düz ileri, sağa veya sola bir kare ilerler; asla geriye veya çapraz gidemez.</span>
+          </li>
+          <li>
+            <span class="rule-num">2</span>
+            <span>Rakip taşın arkasındaki kare boşsa üzerinden atlayarak taşı alırsın; taş almak zorunludur.</span>
+          </li>
+          <li>
+            <span class="rule-num">3</span>
+            <span>Rakibin en son sırasına ulaşan taş Dama olur ve her yöne uçar; rakibin tüm taşlarını bitiren kazanır.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 5. Başlama Yönerge Metni -->
+      <p class="splash-prompt">Dama oyununu oynamak için etkinliğe başla</p>
+
+      <!-- 6. Başlat Butonu -->
+      <button class="btn-start" onclick="startGameFromSplash()">
+        <span>▶</span>
+        <span>ETKİNLİĞE BAŞLA</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       YÖNERGE MODALI (BİLGİ PENCERESİ)
+       ========================================================================= -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="info-modal-card">
+      <div class="modal-head">
+        <h3><span>ℹ️</span> <span>Türk Daması Oynayış Rehberi</span></h3>
+        <button class="btn-close-modal" onclick="closeInfoModal()">✕</button>
+      </div>
+      <div class="info-modal-body">
+        <div class="rule-card">
+          <strong>1. Hareket Kuralları</strong>
+          Yoz taşlar düz ileri, sağa veya sola 1 kare gidebilir. Asla geriye veya çapraz yürüyemezler.
+        </div>
+        <div class="rule-card">
+          <strong>2. Zorunlu Taş Alma ve Çoklu Atlama</strong>
+          Bitişik rakip taşın hemen arkasındaki kare boşsa atlayarak taşı alırsın. Taş alma imkânı varken taş almak zorunludur. Birden fazla taş alma fırsatı varsa durmadan peş peşe alınır.
+        </div>
+        <div class="rule-card">
+          <strong>3. Dama Taşı Gücü</strong>
+          Karşı tarafın en arka sırasına basan taş 👑 Dama olur. Dama taşı boş olan hat boyunca ileri, geri, sağa ve sola istediği kadar kare uçabilir ve uzaktaki taşları atlayarak devirebilir.
+        </div>
+        <div class="rule-card">
+          <strong>4. Kazanma Koşulu</strong>
+          Rakibinin tüm taşlarını alan veya rakibinin yapacak hamlesi kalmayacak şekilde kilitleyen oyuncu maçı kazanır.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       OYUN SONU MODALI (KAZANDINIZ / BİR DAHA DENE / BERABERE)
+       ========================================================================= -->
+  <div class="gameover-overlay" id="gameOverModal">
+    <div class="gameover-card">
+      <div class="gameover-icon" id="goIcon">🏆</div>
+      <h2 class="gameover-title" id="goTitle">Tebrikler, Kazandınız!</h2>
+      <p class="gameover-desc" id="goDesc">Harika bir stratejiyle bilgisayarın tüm taşlarını aldınız.</p>
+      <button class="btn-gameover" id="goBtn" onclick="onGameOverAction()">
+        <span id="goBtnIcon">🔄</span>
+        <span id="goBtnText">Yeniden Oyna</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Konfeti Çizim Alanı -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- =========================================================================
+       JAVASCRIPT: OYUN MOTORU, YAPAY ZEKÂ, SES EFEKTLERİ VE SCORM 1.2
+       ========================================================================= -->
+  <script>
+    /* ==========================================================================
+       1. SCORM 1.2 MOTORU (LMS & STANDALONE UYUMLU)
+       ========================================================================== */
+    const ScormAPI = {
+      api: null,
+      isInitialized: false,
+      startTime: null,
+
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && win.parent && win.parent !== win && attempts < 10) {
+          attempts++;
+          win = win.parent;
+        }
+        return win ? win.API : null;
+      },
+
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (!this.api && window.opener) {
+            this.api = this.findAPI(window.opener);
+          }
+          if (this.api) {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+            this.isInitialized = true;
+          }
+        } catch (e) {
+          console.log("SCORM bağımsız modda çalışıyor.");
+        }
+        this.startTime = new Date();
+      },
+
+      recordWin() {
+        if (!this.api || !this.isInitialized) return;
+        try {
+          this.api.LMSSetValue("cmi.core.score.raw", "100");
+          this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+          this.recordSessionTime();
+          this.api.LMSCommit("");
+        } catch (e) {
+          console.warn("SCORM Win Hatası:", e);
+        }
+      },
+
+      recordLose() {
+        if (!this.api || !this.isInitialized) return;
+        try {
+          this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+          this.recordSessionTime();
+          this.api.LMSCommit("");
+        } catch (e) {
+          console.warn("SCORM Lose Hatası:", e);
+        }
+      },
+
+      recordSessionTime() {
+        if (!this.api || !this.startTime) return;
+        try {
+          const now = new Date();
+          const elapsedSec = Math.floor((now - this.startTime) / 1000);
+          const hh = String(Math.floor(elapsedSec / 3600)).padStart(2, '0');
+          const mm = String(Math.floor((elapsedSec % 3600) / 60)).padStart(2, '0');
+          const ss = String(elapsedSec % 60).padStart(2, '0');
+          this.api.LMSSetValue("cmi.core.session_time", `${hh}:${mm}:${ss}`);
+        } catch (e) {}
+      },
+
+      finish() {
+        if (!this.api || !this.isInitialized) return;
+        try {
+          this.recordSessionTime();
+          this.api.LMSCommit("");
+          this.api.LMSFinish("");
+          this.isInitialized = false;
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => ScormAPI.init());
+    window.addEventListener("beforeunload", () => ScormAPI.finish());
+
+    /* ==========================================================================
+       2. WEB AUDIO API SES MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type, duration, gainLevel = 0.15) {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+        gain.gain.setValueAtTime(gainLevel, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      }
+
+      // Parça seçme / tıklama
+      playSelect() {
+        this.playTone(520, "triangle", 0.08, 0.12);
+      }
+
+      // Parça kaydırma / normal hamle
+      playMove() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(480, this.ctx.currentTime + 0.12);
+
+        gain.gain.setValueAtTime(0.14, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.14);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.14);
+      }
+
+      // Taş alma (Tok çift vuruş)
+      playCapture() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // 1. Tok bas vuruş
+        const osc1 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        osc1.type = "triangle";
+        osc1.frequency.setValueAtTime(180, now);
+        osc1.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+        gain1.gain.setValueAtTime(0.25, now);
+        gain1.gain.linearRampToValueAtTime(0.001, now + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(this.ctx.destination);
+        osc1.start();
+        osc1.stop(now + 0.15);
+
+        // 2. Çınlama
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(740, now + 0.05);
+        gain2.gain.setValueAtTime(0.18, now + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(now + 0.05);
+        osc2.stop(now + 0.22);
+      }
+
+      // Dama olma (Parıltılı akor)
+      playDamaPromotion() {
+        if (!this.enabled) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, "sine", 0.35, 0.16);
+          }, idx * 75);
+        });
+      }
+
+      // Zafer Fanfarı
+      playVictory() {
+        if (!this.enabled) return;
+        const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, "triangle", 0.45, 0.22);
+          }, idx * 110);
+        });
+      }
+
+      // Yenilgi / Tekrar dene tonu (Nazik ve pedagojik)
+      playLose() {
+        if (!this.enabled) return;
+        const notes = [392, 349.23, 311.13, 261.63]; // G4, F4, D#4, C4
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, "sine", 0.35, 0.14);
+          }, idx * 130);
+        });
+      }
+
+      // Hata / Yasak hamle tıkırtısı
+      playInvalid() {
+        this.playTone(180, "sawtooth", 0.1, 0.1);
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    function toggleSound() {
+      sound.enabled = !sound.enabled;
+      const icon = document.getElementById("soundIcon");
+      icon.textContent = sound.enabled ? "🔊" : "🔇";
+      if (sound.enabled) sound.playSelect();
+    }
+
+    /* ==========================================================================
+       3. TÜRK DAMASI KURALLARI VE OYUN MOTORU
+       ==========================================================================
+       Tahta: 8x8 (Satırlar: 0..7, Sütunlar: 0..7)
+       Değerler:
+          0 : Boş kare
+          1 : Öğrenci Yoz Taş (🔴 Kırmızı)
+          2 : Öğrenci DAMA Taş (🔴👑)
+         -1 : Bilgisayar Yoz Taş (🔵 Mavi)
+         -2 : Bilgisayar DAMA Taş (🔵👑)
+
+       Dizilim:
+       Satır 0: Boş (Bilgisayar arka sırası)
+       Satır 1: Bilgisayar taşları (-1)
+       Satır 2: Bilgisayar taşları (-1)
+       Satır 3: Boş
+       Satır 4: Boş
+       Satır 5: Öğrenci taşları (1)
+       Satır 6: Öğrenci taşları (1)
+       Satır 7: Boş (Öğrenci arka sırası)
+       ========================================================================== */
+
+    const PLAYER_STUDENT = 1;     // Öğrenci (🔴)
+    const PLAYER_COMPUTER = -1;   // Bilgisayar (🔵)
+
+    let board = [];
+    let currentTurn = PLAYER_STUDENT;
+    let selectedCell = null;      // {r, c}
+    let validMoves = [];          // [{toR, toC, captured: [{r,c}]}]
+    let mustContinueCapture = null; // {r, c} Zincirleme taş alma durumunda kilitli taş
+    let isGameOver = false;
+    let isComputerThinking = false;
+
+    // Skor ve İstatistikler
+    let studentCaptured = 0;
+    let computerCaptured = 0;
+    let studentDamas = 0;
+    let computerDamas = 0;
+
+    // Tahtayı Başlangıç Durumuna Getir
+    function initBoard() {
+      board = [];
+      for (let r = 0; r < 8; r++) {
+        const row = [];
+        for (let c = 0; c < 8; c++) {
+          if (r === 1 || r === 2) {
+            row.push(-1); // Bilgisayar
+          } else if (r === 5 || r === 6) {
+            row.push(1);  // Öğrenci
+          } else {
+            row.push(0);  // Boş
+          }
+        }
+        board.push(row);
+      }
+      currentTurn = PLAYER_STUDENT;
+      selectedCell = null;
+      validMoves = [];
+      mustContinueCapture = null;
+      isGameOver = false;
+      isComputerThinking = false;
+
+      studentCaptured = 0;
+      computerCaptured = 0;
+      studentDamas = 0;
+      computerDamas = 0;
+
+      updateStatsUI();
+      renderBoard();
+      updateTurnStatusUI();
+    }
+
+    // Tahtada kalan taşları say
+    function countPieces() {
+      let student = 0, computer = 0;
+      let sDama = 0, cDama = 0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const val = board[r][c];
+          if (val > 0) {
+            student++;
+            if (val === 2) sDama++;
+          } else if (val < 0) {
+            computer++;
+            if (val === -2) cDama++;
+          }
+        }
+      }
+      return { student, computer, sDama, cDama };
+    }
+
+    function updateStatsUI() {
+      const counts = countPieces();
+      document.getElementById("statStudentStones").textContent = counts.student;
+      document.getElementById("statComputerStones").textContent = counts.computer;
+      document.getElementById("statStudentCaptured").textContent = 16 - counts.computer;
+      document.getElementById("statComputerCaptured").textContent = 16 - counts.student;
+      document.getElementById("statStudentDamas").textContent = counts.sDama;
+      document.getElementById("statComputerDamas").textContent = counts.cDama;
+    }
+
+    /* --------------------------------------------------------------------------
+       HAMLE HESAPLAMA MOTORU (TÜRK DAMASI)
+       -------------------------------------------------------------------------- */
+
+    // Geçerli koordinat kontrolü
+    function inBounds(r, c) {
+      return r >= 0 && r < 8 && c >= 0 && c < 8;
+    }
+
+    // Bir taşın yapabileceği tüm hamleleri (normal ve taş alma) bulur
+    function getPieceMoves(r, c, b = board) {
+      const val = b[r][c];
+      if (val === 0) return { moves: [], captures: [] };
+
+      const isStudent = val > 0;
+      const isDama = Math.abs(val) === 2;
+      const moves = [];
+      const captures = [];
+
+      // 1. YOZ TAŞ HAMLELERİ
+      if (!isDama) {
+        // İleri, Sol, Sağ yönleri (Asla geri ve çapraz yok)
+        const forwardRow = isStudent ? r - 1 : r + 1;
+        const forwardJumpRow = isStudent ? r - 2 : r + 2;
+
+        const orthogonalDirs = [
+          { dr: isStudent ? -1 : 1, dc: 0 },  // İleri
+          { dr: 0, dc: -1 },                  // Sol
+          { dr: 0, dc: 1 }                    // Sağ
+        ];
+
+        for (const dir of orthogonalDirs) {
+          const nr = r + dir.dr;
+          const nc = c + dir.dc;
+
+          if (inBounds(nr, nc)) {
+            // Normal ilerleme (Boş kare)
+            if (b[nr][nc] === 0) {
+              moves.push({ fromR: r, fromC: c, toR: nr, toC: nc, captured: null });
+            }
+            // Taş alma kontrolü (Bitişikte rakip ve arkası boş)
+            else if ((isStudent && b[nr][nc] < 0) || (!isStudent && b[nr][nc] > 0)) {
+              const landR = r + dir.dr * 2;
+              const landC = c + dir.dc * 2;
+              if (inBounds(landR, landC) && b[landR][landC] === 0) {
+                captures.push({
+                  fromR: r, fromC: c,
+                  toR: landR, toC: landC,
+                  captured: [{ r: nr, c: nc }]
+                });
+              }
+            }
+          }
+        }
+      }
+      // 2. DAMA TAŞI HAMLELERİ (Uçan Dama: 4 dikey ve yatay yön)
+      else {
+        const damaDirs = [
+          { dr: -1, dc: 0 }, // Yukarı
+          { dr: 1, dc: 0 },  // Aşağı
+          { dr: 0, dc: -1 }, // Sol
+          { dr: 0, dc: 1 }   // Sağ
+        ];
+
+        for (const dir of damaDirs) {
+          let step = 1;
+          let enemyFound = null;
+
+          while (true) {
+            const tr = r + dir.dr * step;
+            const tc = c + dir.dc * step;
+            if (!inBounds(tr, tc)) break;
+
+            const targetVal = b[tr][tc];
+
+            if (enemyFound === null) {
+              if (targetVal === 0) {
+                // Önündeki boş karelere normal uçuş
+                moves.push({ fromR: r, fromC: c, toR: tr, toC: tc, captured: null });
+              } else if ((isStudent && targetVal < 0) || (!isStudent && targetVal > 0)) {
+                // Rakip taş bulundu, arkasındaki boş karelere atlayabilir mi?
+                enemyFound = { r: tr, c: tc };
+              } else {
+                // Kendi taşı, bu yönde hareket bitti
+                break;
+              }
+            } else {
+              // Rakip taşın arkasındayız
+              if (targetVal === 0) {
+                // Rakip taşın arkasındaki her boş kareye konabilir ve o taşı alır
+                captures.push({
+                  fromR: r, fromC: c,
+                  toR: tr, toC: tc,
+                  captured: [enemyFound]
+                });
+              } else {
+                // Başka bir taşa rastlandı, atlama menzili bitti
+                break;
+              }
+            }
+            step++;
+          }
+        }
+      }
+
+      return { moves, captures };
+    }
+
+    // Aktif oyuncunun tüm yasal hamlelerini getirir (Taş alma zorunluluğunu uygular)
+    function getAllLegalMoves(player, b = board) {
+      const allCaptures = [];
+      const allNormals = [];
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const val = b[r][c];
+          if ((player === PLAYER_STUDENT && val > 0) || (player === PLAYER_COMPUTER && val < 0)) {
+            const { moves, captures } = getPieceMoves(r, c, b);
+            if (captures.length > 0) {
+              allCaptures.push(...captures);
+            }
+            if (moves.length > 0) {
+              allNormals.push(...moves);
+            }
+          }
+        }
+      }
+
+      // ZORUNLU TAŞ ALMA KURALI: Eğer taş alma fırsatı varsa, sadece taş alma hamleleri yapılabilir!
+      if (allCaptures.length > 0) {
+        return { moves: allCaptures, isCaptureMandatory: true };
+      }
+      return { moves: allNormals, isCaptureMandatory: false };
+    }
+
+    // Seçilen hücredeki taşın geçerli hamlelerini listele
+    function getValidMovesForSelected(r, c) {
+      if (mustContinueCapture) {
+        // Zincirleme taş almada sadece bu taşın capture hamleleri geçerlidir
+        if (mustContinueCapture.r !== r || mustContinueCapture.c !== c) return [];
+        const { captures } = getPieceMoves(r, c);
+        return captures;
+      }
+
+      const { moves, isCaptureMandatory } = getAllLegalMoves(currentTurn);
+      return moves.filter(m => m.fromR === r && m.fromC === c);
+    }
+
+    // Tahtayı Ekrana Çiz (Render)
+    function renderBoard() {
+      const grid = document.getElementById("damaGrid");
+      grid.innerHTML = "";
+
+      const legalState = getAllLegalMoves(currentTurn);
+      const captureCells = new Set();
+      if (legalState.isCaptureMandatory) {
+        legalState.moves.forEach(m => captureCells.add(`${m.fromR},${m.fromC}`));
+      }
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cell = document.createElement("div");
+          cell.className = `cell ${(r + c) % 2 === 0 ? "light" : "dark"}`;
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+
+          // Seçili kare vurgusu
+          if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
+            cell.classList.add("selected");
+          }
+
+          // Hedef kare vurgusu (Yeşil nokta veya Kırmızı kılıç)
+          const moveOption = validMoves.find(m => m.toR === r && m.toC === c);
+          if (moveOption) {
+            if (moveOption.captured) {
+              cell.classList.add("valid-capture");
+            } else {
+              cell.classList.add("valid-move");
+            }
+          }
+
+          // Taş varsa pulu yerleştir
+          const val = board[r][c];
+          if (val !== 0) {
+            const piece = document.createElement("div");
+            piece.className = "piece";
+
+            if (val > 0) {
+              piece.classList.add("student");
+            } else {
+              piece.classList.add("computer");
+            }
+
+            if (Math.abs(val) === 2) {
+              piece.classList.add("is-dama");
+            }
+
+            if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
+              piece.classList.add("selected");
+            }
+
+            // Taş alma zorunluluğu olan taşı parlat
+            if (captureCells.has(`${r},${c}`)) {
+              piece.classList.add("must-capture");
+            }
+
+            cell.appendChild(piece);
+          }
+
+          cell.addEventListener("click", () => handleCellClick(r, c));
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    // Dinamik Durum ve Başlık Güncellemesi
+    function updateTurnStatusUI() {
+      const box = document.getElementById("statusBox");
+      const icon = document.getElementById("statusIcon");
+      const text = document.getElementById("statusText");
+
+      const cardS = document.getElementById("cardStudent");
+      const cardC = document.getElementById("cardComputer");
+      const badgeS = document.getElementById("badgeStudent");
+      const badgeC = document.getElementById("badgeComputer");
+
+      if (isGameOver) return;
+
+      if (currentTurn === PLAYER_STUDENT) {
+        cardS.classList.add("active-turn");
+        cardC.classList.remove("active-turn");
+        badgeS.textContent = "HAMLE SIRASINDA";
+        badgeC.textContent = "BEKLİYOR";
+
+        const legal = getAllLegalMoves(PLAYER_STUDENT);
+        if (legal.isCaptureMandatory) {
+          box.className = "status-box warn-turn";
+          icon.textContent = "⚠️";
+          text.textContent = "Taş almak zorunludur! Hamleni yap.";
+        } else {
+          box.className = "status-box student-turn";
+          icon.textContent = "🔴";
+          text.textContent = "Sıra Sende: Taşını seç ve hamleni yap";
+        }
+      } else {
+        cardS.classList.remove("active-turn");
+        cardC.classList.add("active-turn");
+        badgeS.textContent = "BEKLİYOR";
+        badgeC.textContent = "DÜŞÜNÜYOR...";
+
+        box.className = "status-box computer-turn";
+        icon.textContent = "🔵";
+        text.textContent = "Bilgisayar Düşünüyor...";
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       ÖĞRENCİ ETKİLEŞİMİ (CLICK HANDLER)
+       -------------------------------------------------------------------------- */
+    function handleCellClick(r, c) {
+      if (isGameOver || isComputerThinking || currentTurn !== PLAYER_STUDENT) return;
+
+      const val = board[r][c];
+
+      // 1. Taş Seçimi
+      if (val > 0) {
+        // Eğer zincirleme taş almada isek başka taşa tıklayamaz
+        if (mustContinueCapture && (mustContinueCapture.r !== r || mustContinueCapture.c !== c)) {
+          sound.playInvalid();
+          return;
+        }
+
+        const moves = getValidMovesForSelected(r, c);
+        if (moves.length === 0) {
+          const legal = getAllLegalMoves(PLAYER_STUDENT);
+          if (legal.isCaptureMandatory) {
+            // Başka bir taşın taş alma zorunluluğu var
+            sound.playInvalid();
+            return;
+          }
+          sound.playInvalid();
+          return;
+        }
+
+        selectedCell = { r, c };
+        validMoves = moves;
+        sound.playSelect();
+        renderBoard();
+        return;
+      }
+
+      // 2. Hedef Kareye Hamle Yapma
+      if (selectedCell) {
+        const chosenMove = validMoves.find(m => m.toR === r && m.toC === c);
+        if (chosenMove) {
+          executeMove(chosenMove);
+        } else {
+          // Geçersiz kareye tıklandı
+          if (!mustContinueCapture) {
+            selectedCell = null;
+            validMoves = [];
+            renderBoard();
+          } else {
+            sound.playInvalid();
+          }
+        }
+      }
+    }
+
+    // Bir hamleyi tahtada uygula
+    function executeMove(move) {
+      const { fromR, fromC, toR, toC, captured } = move;
+      let pieceVal = board[fromR][fromC];
+
+      board[fromR][fromC] = 0;
+      board[toR][toC] = pieceVal;
+
+      let isCapture = false;
+      if (captured && captured.length > 0) {
+        isCapture = true;
+        for (const cap of captured) {
+          board[cap.r][cap.c] = 0;
+        }
+        sound.playCapture();
+      } else {
+        sound.playMove();
+      }
+
+      // DAMA OLMA KONTROLÜ (Son sıraya ulaşıldı mı?)
+      let promotedToDama = false;
+      if (pieceVal === 1 && toR === 0) {
+        board[toR][toC] = 2; // Öğrenci Dama oldu
+        promotedToDama = true;
+        sound.playDamaPromotion();
+      } else if (pieceVal === -1 && toR === 7) {
+        board[toR][toC] = -2; // Bilgisayar Dama oldu
+        promotedToDama = true;
+        sound.playDamaPromotion();
+      }
+
+      updateStatsUI();
+
+      // ZİNCİRLEME TAŞ ALMA KONTROLÜ (Multi-jump)
+      if (isCapture) {
+        const { captures } = getPieceMoves(toR, toC);
+        if (captures.length > 0) {
+          // Hamle devam ediyor! Aynı taşla taş almaya devam edilmeli
+          mustContinueCapture = { r: toR, c: toC };
+          selectedCell = { r: toR, c: toC };
+          validMoves = captures;
+          renderBoard();
+          updateTurnStatusUI();
+
+          // Bilgisayar ise zincirleme hamleyi de gecikmeyle yapsın
+          if (currentTurn === PLAYER_COMPUTER) {
+            setTimeout(() => playComputerTurn(), 550);
+          }
+          return;
+        }
+      }
+
+      // Hamle tamamlandı
+      mustContinueCapture = null;
+      selectedCell = null;
+      validMoves = [];
+      renderBoard();
+
+      // Oyun Bitiş Kontrolü
+      if (checkGameOver()) return;
+
+      // Sırayı Diğer Oyuncuya Geçir
+      currentTurn = (currentTurn === PLAYER_STUDENT) ? PLAYER_COMPUTER : PLAYER_STUDENT;
+      updateTurnStatusUI();
+
+      if (currentTurn === PLAYER_COMPUTER) {
+        isComputerThinking = true;
+        setTimeout(() => playComputerTurn(), 550 + Math.random() * 100);
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       4. DENGELİ VE PEDAGOJİK YAPAY ZEKÂ MOTORU (BİLGİSAYAR)
+       --------------------------------------------------------------------------
+       - Bilgisayar robot gibi kusursuz değildir.
+       - %30 - %40 oranında doğal hata payı (blunder / bloğu kaçırma) uygular.
+       - 500-650 ms doğal düşünme gecikmesiyle hamle yapar.
+       -------------------------------------------------------------------------- */
+    function playComputerTurn() {
+      if (isGameOver) return;
+
+      let legalMoves = [];
+      if (mustContinueCapture) {
+        const { captures } = getPieceMoves(mustContinueCapture.r, mustContinueCapture.c);
+        legalMoves = captures;
+      } else {
+        const legalState = getAllLegalMoves(PLAYER_COMPUTER);
+        legalMoves = legalState.moves;
+      }
+
+      if (legalMoves.length === 0) {
+        // Bilgisayarın hamlesi kalmadı: Öğrenci Kazandı!
+        endGame("win");
+        return;
+      }
+
+      // Hamleleri puanla
+      const scoredMoves = legalMoves.map(m => {
+        let score = 0;
+
+        // 1. Taş alma puanı
+        if (m.captured && m.captured.length > 0) {
+          score += 150 * m.captured.length;
+          // Öğrencinin damasını alıyorsa ek puan
+          for (const cap of m.captured) {
+            if (board[cap.r][cap.c] === 2) score += 200;
+          }
+        }
+
+        // 2. Dama olma hedefi (Son sıraya yaklaşma / ulaşma)
+        if (m.toR === 7) score += 120;
+        else score += (m.toR * 5);
+
+        // 3. Merkeze doğru kontrol
+        if (m.toC >= 2 && m.toC <= 5) score += 10;
+
+        return { move: m, score };
+      });
+
+      // Puanlara göre sırala
+      scoredMoves.sort((a, b) => b.score - a.score);
+
+      // PEDAGOJİK HATA PAYI (%35 Blunder / Fırsat Tanıma)
+      let chosenMove = null;
+      const makeBlunder = Math.random() < 0.35;
+
+      if (makeBlunder && scoredMoves.length > 1) {
+        // En iyi yerine ikinci veya üçüncü hamleyi seçerek öğrenciye taktik fırsatı tanı
+        const subIndex = Math.min(scoredMoves.length - 1, 1 + Math.floor(Math.random() * (scoredMoves.length - 1)));
+        chosenMove = scoredMoves[subIndex].move;
+      } else {
+        // En iyi değerlendirilen hamle
+        chosenMove = scoredMoves[0].move;
+      }
+
+      isComputerThinking = false;
+      executeMove(chosenMove);
+    }
+
+    /* --------------------------------------------------------------------------
+       5. OYUN BİTİŞ KONTROLÜ VE SENARYO KARTLARI
+       -------------------------------------------------------------------------- */
+    function checkGameOver() {
+      const counts = countPieces();
+
+      // 1. Taşlar bitti mi?
+      if (counts.computer === 0) {
+        endGame("win");
+        return true;
+      }
+      if (counts.student === 0) {
+        endGame("lose");
+        return true;
+      }
+
+      // 2. Sıradaki oyuncunun hamlesi kaldı mı? (Pat / Kilitlenme)
+      const nextTurn = (currentTurn === PLAYER_STUDENT) ? PLAYER_COMPUTER : PLAYER_STUDENT;
+      const nextLegal = getAllLegalMoves(nextTurn);
+      if (nextLegal.moves.length === 0) {
+        if (nextTurn === PLAYER_STUDENT) {
+          // Öğrenci kilitlendi, Bilgisayar kazandı
+          endGame("lose");
+        } else {
+          // Bilgisayar kilitlendi, Öğrenci kazandı
+          endGame("win");
+        }
+        return true;
+      }
+
+      return false;
+    }
+
+    function endGame(result) {
+      isGameOver = true;
+      isComputerThinking = false;
+
+      const modal = document.getElementById("gameOverModal");
+      const icon = document.getElementById("goIcon");
+      const title = document.getElementById("goTitle");
+      const desc = document.getElementById("goDesc");
+      const btn = document.getElementById("goBtn");
+      const btnIcon = document.getElementById("goBtnIcon");
+      const btnText = document.getElementById("goBtnText");
+
+      if (result === "win") {
+        // 🏆 Öğrenci Kazanınca
+        icon.textContent = "🏆";
+        title.textContent = "Tebrikler, Kazandınız!";
+        title.className = "gameover-title win";
+        desc.textContent = "Muhteşem bir strateji sergilediniz ve Türk Daması maçını zaferle tamamladınız!";
+        btn.className = "btn-gameover btn-win-replay";
+        btnIcon.textContent = "🔄";
+        btnText.textContent = "Yeniden Oyna";
+
+        sound.playVictory();
+        launchConfetti();
+        ScormAPI.recordWin();
+      } else if (result === "lose") {
+        // 💡 Rakip (Bilgisayar) Kazanınca: KESİNLİKLE "🔁 Tekrar Başla"
+        icon.textContent = "💡";
+        title.textContent = "Bir Daha Dene!";
+        title.className = "gameover-title lose";
+        desc.textContent = "Bu kez bilgisayar kazandı. Taşlarını daha dikkatli savunarak tekrar dene!";
+        btn.className = "btn-gameover btn-lose-retry";
+        btnIcon.textContent = "🔁";
+        btnText.textContent = "Tekrar Başla";
+
+        sound.playLose();
+        ScormAPI.recordLose();
+      } else {
+        // 🤝 Beraberlik
+        icon.textContent = "🤝";
+        title.textContent = "Oyun Berabere!";
+        title.className = "gameover-title draw";
+        desc.textContent = "İki taraf da tahtada eşit mücadele etti.";
+        btn.className = "btn-gameover btn-lose-retry";
+        btnIcon.textContent = "🔁";
+        btnText.textContent = "Tekrar Başla";
+
+        sound.playLose();
+      }
+
+      modal.classList.add("active");
+    }
+
+    function onGameOverAction() {
+      document.getElementById("gameOverModal").classList.remove("active");
+      stopConfetti();
+      initBoard();
+    }
+
+    function confirmReset() {
+      sound.playSelect();
+      initBoard();
+    }
+
+    /* --------------------------------------------------------------------------
+       6. KONFETİ ANİMASYONU (ZAFER KUTLAMASI)
+       -------------------------------------------------------------------------- */
+    let confettiAnimId = null;
+    const confettiCanvas = document.getElementById("confettiCanvas");
+    const confettiCtx = confettiCanvas.getContext("2d");
+    let confettiParticles = [];
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeConfetti);
+
+    function launchConfetti() {
+      resizeConfetti();
+      confettiParticles = [];
+      const colors = ["#feca57", "#ff9f43", "#ff5252", "#10ac84", "#00cec9", "#3867d6", "#ffffff"];
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * -confettiCanvas.height * 0.5,
+          w: Math.random() * 9 + 5,
+          h: Math.random() * 6 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 4,
+          vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360,
+          vrot: (Math.random() - 0.5) * 8
+        });
+      }
+
+      function renderConfetti() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        for (const p of confettiParticles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vrot;
+
+          confettiCtx.save();
+          confettiCtx.translate(p.x, p.y);
+          confettiCtx.rotate((p.rot * Math.PI) / 180);
+          confettiCtx.fillStyle = p.color;
+          confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          confettiCtx.restore();
+
+          if (p.y > confettiCanvas.height + 20) {
+            p.y = -20;
+            p.x = Math.random() * confettiCanvas.width;
+          }
+        }
+        confettiAnimId = requestAnimationFrame(renderConfetti);
+      }
+
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      renderConfetti();
+    }
+
+    function stopConfetti() {
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiParticles = [];
+    }
+
+    /* --------------------------------------------------------------------------
+       7. GİRİŞ EKRANI (SPLASH SCREEN) VE MODAL KONTROLLERİ
+       -------------------------------------------------------------------------- */
+    function startGameFromSplash() {
+      sound.playSelect();
+      const splash = document.getElementById("splashScreen");
+      splash.classList.add("hidden");
+      initBoard();
+    }
+
+    function openInfoModal() {
+      sound.playSelect();
+      document.getElementById("infoModal").classList.add("active");
+    }
+
+    function closeInfoModal() {
+      sound.playSelect();
+      document.getElementById("infoModal").classList.remove("active");
+    }
+
+    function toggleFullScreen() {
+      sound.playSelect();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // İlk yüklemede tahtayı hazırla
+    window.addEventListener("DOMContentLoaded", () => {
+      initBoard();
+    });
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

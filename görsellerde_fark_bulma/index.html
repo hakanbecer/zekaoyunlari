@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GÖRSELLERDE FARK BULMA | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE VİDEO UYUMLU RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial-1: #1a253a;
+      --bg-radial-2: #0c1119;
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --border-light: rgba(254, 202, 87, 0.35);
+
+      --gold-primary: #feca57;
+      --gold-dark: #f5b041;
+      --cyan-accent: #00cec9;
+      --cyan-light: #38bdf8;
+      --emerald-accent: #10ac84;
+      --emerald-light: #34d399;
+      --coral-accent: #ff5252;
+      --coral-light: #ff7675;
+
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-outer: #162035;
+      --board-inner: #1c2742;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, var(--bg-radial-1) 0%, var(--bg-radial-2) 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 10px 14px;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (SPLASH SCREEN / AÇILIŞ KARTI)
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-light);
+      border-radius: 32px;
+      padding: 46px 40px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(254, 202, 87, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #feca57, #10ac84, #ff5252);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(25px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid rgba(254, 202, 87, 0.45);
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .splash-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 15%, var(--gold-primary) 65%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      text-shadow: 0 4px 24px rgba(254, 202, 87, 0.35);
+      line-height: 1.15;
+    }
+
+    /* 3B Parça Önizlemesi */
+    .splash-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 14px 28px;
+    }
+
+    .preview-badge-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .preview-badge-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Kısa Oynayış Yönergesi Kutusu */
+    .splash-instructions {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 18px 24px;
+      text-align: left;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .instructions-header {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .instructions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .instructions-list li {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .step-num {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 16px 52px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 172, 132, 0.45);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 206, 201, 0.55);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================================
+       3. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */
+    .top-header {
+      width: 100%;
+      max-width: 1240px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 10px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(254, 202, 87, 0.12);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      padding: 7px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .status-box {
+      flex: 1;
+      min-width: 220px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 8px 18px;
+      text-align: center;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--cyan-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .status-box.success {
+      border-color: var(--emerald-accent);
+      color: var(--emerald-light);
+      background: rgba(16, 172, 132, 0.18);
+    }
+
+    .status-box.alert {
+      border-color: var(--coral-accent);
+      color: var(--coral-light);
+      background: rgba(255, 82, 82, 0.18);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-header:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      transform: translateY(-1px);
+    }
+
+    .btn-header:active {
+      transform: translateY(1px);
+    }
+
+    .btn-header.icon-only {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+
+    /* ==========================================================================
+       4. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ========================================================================== */
+    .level-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(22, 32, 50, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 6px 14px;
+      margin-bottom: 12px;
+      max-width: 1240px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .level-btn {
+      background: transparent;
+      border: 1.5px solid transparent;
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .level-btn:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .level-btn.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: var(--cyan-light);
+      color: var(--cyan-light);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .level-pill-count {
+      background: rgba(254, 202, 87, 0.2);
+      color: var(--gold-primary);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    /* ==========================================================================
+       5. OYUN ANA SAHNESİ VE İKİLİ GÖRSEL ALANI
+       ========================================================================== */
+    .game-stage {
+      width: 100%;
+      max-width: 1240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin: 0 auto;
+    }
+
+    /* Durum Hapları */
+    .stage-stats-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 16px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-pill.highlight {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      background: rgba(254, 202, 87, 0.1);
+    }
+
+    /* İkili Görsel Karşılaştırma Izgarası */
+    .images-grid {
+      width: 100%;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 16px;
+      position: relative;
+    }
+
+    @media (max-width: 900px) {
+      .images-grid {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    .scene-card {
+      flex: 1;
+      min-width: 280px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .scene-header {
+      background: rgba(15, 23, 42, 0.85);
+      border-bottom: 1.5px solid var(--border-color);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--cyan-light);
+      letter-spacing: 0.5px;
+    }
+
+    .scene-container {
+      width: 100%;
+      position: relative;
+      cursor: crosshair;
+      background: #000;
+      line-height: 0;
+      touch-action: manipulation;
+    }
+
+    .scene-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* İşaretleme ve Vurgu Katmanı */
+    .markers-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Fark Bulma Halka Efektleri */
+    .found-ring-glow {
+      fill: none;
+      stroke: var(--gold-primary);
+      stroke-width: 10px;
+      stroke-linecap: round;
+      opacity: 0.55;
+      filter: drop-shadow(0 0 10px rgba(254, 202, 87, 0.9));
+    }
+
+    .found-ring-core {
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 4px;
+      stroke-linecap: round;
+      animation: pulseFound 1.8s infinite;
+    }
+
+    .found-badge-bg {
+      fill: var(--gold-primary);
+      stroke: #ffffff;
+      stroke-width: 2px;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+    }
+
+    .found-badge-text {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      fill: #0f141d;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    @keyframes pulseFound {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.06); opacity: 0.8; }
+    }
+
+    /* İpucu Animasyonlu Çember */
+    .hint-circle {
+      fill: rgba(56, 189, 248, 0.2);
+      stroke: var(--cyan-light);
+      stroke-width: 4px;
+      stroke-dasharray: 8 6;
+      animation: rotateDash 4s linear infinite;
+    }
+
+    @keyframes rotateDash {
+      to { stroke-dashoffset: 70; }
+    }
+
+    /* Çözüm İnceleme Halka Stili */
+    .demo-ring-core {
+      fill: none;
+      stroke: #c084fc;
+      stroke-width: 3.5px;
+      stroke-dasharray: 6 4;
+    }
+
+    /* Ortadaki VS Ayracı */
+    .vs-divider-pill {
+      align-self: center;
+      background: linear-gradient(135deg, #feca57, #ff9f43);
+      color: #0f141d;
+      font-weight: 900;
+      font-size: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(254, 202, 87, 0.5);
+      border: 2px solid #ffffff;
+      flex-shrink: 0;
+      z-index: 5;
+    }
+
+    @media (max-width: 900px) {
+      .vs-divider-pill {
+        margin: -8px 0;
+      }
+    }
+
+    /* Alt Kontrol Butonları Şeridi */
+    .controls-bottom-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 12px 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--cyan-light);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active {
+      transform: translateY(1px);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      border: none;
+      font-size: 15px;
+      font-weight: 900;
+      box-shadow: 0 6px 18px rgba(16, 172, 132, 0.4);
+    }
+
+    .action-btn.primary:hover {
+      box-shadow: 0 8px 24px rgba(0, 206, 201, 0.55);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    /* Hata/Kaçırma Tıklama Dalgası */
+    .miss-ripple {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      border: 2.5px solid var(--coral-light);
+      animation: rippleAnim 0.5s ease-out forwards;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes rippleAnim {
+      0% { width: 10px; height: 10px; opacity: 1; }
+      100% { width: 50px; height: 50px; opacity: 0; }
+    }
+
+    /* ==========================================================================
+       6. DİYALOG VE GERİ BİLDİRİM MODALLARI
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 26px;
+      padding: 32px 36px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 52px;
+      line-height: 1;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    .modal-desc {
+      font-size: 14.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    /* Yönerge Listesi */
+    .rules-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .rule-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .rule-item-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .rule-item-text h4 {
+      font-size: 13.5px;
+      color: var(--gold-primary);
+      margin-bottom: 2px;
+    }
+
+    .rule-item-text p {
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* Konfeti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1500;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. GİRİŞ EKRANI (SPLASH SCREEN / AÇILIŞ KARTI)
+       ========================================================================== -->
+  <div class="screen-overlay" id="splashScreen">
+    <div class="splash-card">
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h1 class="splash-title">GÖRSELLERDE FARK BULMA OYUNU</h1>
+
+      <!-- 3B Parça Önizlemesi -->
+      <div class="splash-preview">
+        <div class="preview-badge-item">
+          <div class="preview-badge-icon">🔍</div>
+          <span>Dikkatli İncele</span>
+        </div>
+        <div class="preview-badge-item">
+          <div class="preview-badge-icon" style="background: linear-gradient(135deg, #feca57, #ea580c);">🎯</div>
+          <span>Farkı Yakala</span>
+        </div>
+        <div class="preview-badge-item">
+          <div class="preview-badge-icon" style="background: linear-gradient(135deg, #10ac84, #059669);">🏆</div>
+          <span>Tümünü Tamamla</span>
+        </div>
+      </div>
+
+      <!-- Kısa Oynayış Yönergesi Kutusu -->
+      <div class="splash-instructions">
+        <div class="instructions-header">
+          <span>📌</span> Kısa Oynayış Yönergesi
+        </div>
+        <ul class="instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            <span>İki görseli dikkatle incele ve aralarındaki detayları karşılaştır.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span>Fark gördüğün alana tıkla veya dokunarak farkı işaretle.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span>Belirtilen sayıdaki tüm farkları bularak seviyeyi tamamla.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="splash-prompt">Görsellerde fark bulma oyununu oynamak için etkinliğe başla</div>
+      <button class="btn-start" onclick="startGameFromSplash()">
+        <span>▶</span> ETKİNLİĞE BAŞLA
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span>🔍</span>
+        <span>GÖRSELLERDE FARK BULMA</span>
+      </div>
+    </div>
+
+    <div class="status-box" id="statusBox">
+      <span>İki görsel arasındaki gizli farkları dikkatle bulunuz.</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header" onclick="restartCurrentLevel()">
+        <span>🔄</span> Baştan Başla
+      </button>
+      <button class="btn-header" onclick="openRulesModal()">
+        <span>ℹ️</span> Yönerge
+      </button>
+      <button class="btn-header icon-only" id="soundBtn" onclick="toggleSound()" title="Sesi Aç/Kapat">
+        <span>🔊</span>
+      </button>
+      <button class="btn-header icon-only" onclick="toggleFullScreen()" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       3. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ========================================================================== -->
+  <nav class="level-bar" id="levelBar">
+    <!-- Seviye butonları JavaScript ile dinamik olarak oluşturulacak -->
+  </nav>
+
+  <!-- ==========================================================================
+       4. OYUN ANA SAHNESİ
+       ========================================================================== -->
+  <main class="game-stage">
+    
+    <!-- Üst İstatistik Şeridi -->
+    <div class="stage-stats-bar">
+      <div class="stat-pill" id="statLevelBadge">Seviye: 1 (Uzay Macerası)</div>
+      <div class="stat-pill highlight" id="statDifferencesCount">🎯 Bulunan Farklar: 0 / 3</div>
+      <div class="stat-pill" id="statTimer">⏱️ 00:00</div>
+      <div class="stat-pill" id="statStatus">Durum: Aranıyor</div>
+    </div>
+
+    <!-- İkili Görsel Karşılaştırma Izgarası -->
+    <div class="images-grid">
+      
+      <!-- Sol Görsel Kartı -->
+      <div class="scene-card">
+        <div class="scene-header">
+          <span>A GÖRSELİ (SOL)</span>
+          <span id="leftSceneSubtitle">Orijinal Sahne</span>
+        </div>
+        <div class="scene-container" id="leftSceneContainer" onclick="handleSceneClick(event, 'left')">
+          <div id="leftSceneSvgHost"></div>
+          <svg class="markers-svg" id="leftMarkersSvg" viewBox="0 0 800 600"></svg>
+        </div>
+      </div>
+
+      <!-- Ortadaki VS Ayracı -->
+      <div class="vs-divider-pill">VS</div>
+
+      <!-- Sağ Görsel Kartı -->
+      <div class="scene-card">
+        <div class="scene-header">
+          <span>B GÖRSELİ (SAĞ)</span>
+          <span id="rightSceneSubtitle">Farkları Karşılaştır</span>
+        </div>
+        <div class="scene-container" id="rightSceneContainer" onclick="handleSceneClick(event, 'right')">
+          <div id="rightSceneSvgHost"></div>
+          <svg class="markers-svg" id="rightMarkersSvg" viewBox="0 0 800 600"></svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Alt Kontrol Butonları -->
+    <div class="controls-bottom-bar">
+      <button class="action-btn primary" onclick="giveHint()">
+        <span>💡</span> İpucu Al
+      </button>
+      <button class="action-btn" onclick="showSolutionDemo()">
+        <span>👁️</span> Çözümü Gör
+      </button>
+      <button class="action-btn" onclick="restartCurrentLevel()">
+        <span>🗑️</span> Bu Seviyeyi Sıfırla
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       5. DİYALOG VE GERİ BİLDİRİM MODALLARI
+       ========================================================================== -->
+
+  <!-- Yönerge Modalı -->
+  <div class="modal-overlay" id="rulesModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-icon">📖</div>
+      <h2 class="modal-title">FARK BULMA KURALLARI</h2>
+      <div class="rules-grid">
+        <div class="rule-item">
+          <div class="rule-item-icon">1️⃣</div>
+          <div class="rule-item-text">
+            <h4>Detaylı İnceleme</h4>
+            <p>İki görseldeki şekilleri, nesne sayılarını ve çizgi detaylarını dikkatle karşılaştırın.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-item-icon">🎯</div>
+          <div class="rule-item-text">
+            <h4>Tıklayarak İşaretleme</h4>
+            <p>Fark gördüğün nesneye sol veya sağ görsel üzerinden tıkla; bulunan fark otomatik halka ile işaretlenir.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-item-icon">💡</div>
+          <div class="rule-item-text">
+            <h4>İpucu Desteği</h4>
+            <p>Göremediğin zor farklar için "İpucu Al" butonuna basarak rehber alabilirsin.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="action-btn primary" style="width: 100%;" onclick="closeRulesModal()">
+          Anladım, Oyuna Dön ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eksik / Bilgilendirme Modalı -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-card">
+      <div class="modal-icon" id="alertIcon">💡</div>
+      <h3 class="modal-title" id="alertTitle">Henüz Tüm Farklar Bulunmadı!</h3>
+      <p class="modal-desc" id="alertDesc">
+        Bu seviyede toplam bulunması gereken farkları tamamlamak için araştırmaya devam ediniz.
+      </p>
+      <div class="modal-actions">
+        <button class="action-btn primary" onclick="closeAlertModal()">
+          <span>✏️</span> Devam Et
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zafer Modalı (MOD B Solo Puzzle Zafer Kartı) -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card" style="border-color: var(--emerald-accent);">
+      <div class="modal-icon">🏆</div>
+      <h2 class="modal-title" style="color: var(--emerald-light);">Tebrikler, Tüm Farkları Buldunuz!</h2>
+      <p class="modal-desc" id="victoryDesc">
+        Harika bir dikkat ve gözlem yeteneği göstererek tüm gizli farkları eksiksiz tespit ettiniz!
+      </p>
+      <div class="modal-actions">
+        <button class="action-btn" onclick="restartCurrentLevel()">
+          <span>🔄</span> Yeniden Oyna
+        </button>
+        <button class="action-btn primary" onclick="loadNextLevel()">
+          <span>Sonraki Bulmaca ➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konfeti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ==========================================================================
+       6. SCORM 1.2 VE WEB AUDIO API MOTORU
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       SCORM 1.2 MOTORU (SIFIR HATA VE TAM UYUMLULUK)
+       ========================================================================== */
+    const SCORM = {
+      api: null,
+      startTime: null,
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && attempts < 10) {
+          if (win.parent && win.parent !== win) {
+            win = win.parent;
+          } else if (win.opener) {
+            win = win.opener;
+          } else {
+            break;
+          }
+          attempts++;
+        }
+        return win ? win.API : null;
+      },
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (this.api && typeof this.api.LMSInitialize === "function") {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM bağımsız modda çalışıyor:", e);
+        }
+        this.startTime = new Date();
+      },
+      complete() {
+        try {
+          if (this.api && typeof this.api.LMSSetValue === "function") {
+            this.api.LMSSetValue("cmi.core.score.raw", "100");
+            this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+            if (this.startTime) {
+              const diff = Math.floor((new Date() - this.startTime) / 1000);
+              const hrs = String(Math.floor(diff / 3600)).padStart(2, "0");
+              const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+              const secs = String(diff % 60).padStart(2, "0");
+              this.api.LMSSetValue("cmi.core.session_time", `${hrs}:${mins}:${secs}`);
+            }
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM complete hatası:", e);
+        }
+      },
+      finish() {
+        try {
+          if (this.api && typeof this.api.LMSFinish === "function") {
+            this.api.LMSFinish("");
+          }
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => SCORM.init());
+    window.addEventListener("beforeunload", () => SCORM.finish());
+
+    /* ==========================================================================
+       WEB AUDIO API SES MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playFound() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        // İki tonlu neşeli başarı çanı (E6 -> C7)
+        [1318.5, 2093.0].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.08;
+          gain.gain.setValueAtTime(0.22, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.35);
+        });
+      }
+      playMiss() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(480, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+      playHint() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        [880.0, 1174.6].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.1;
+          gain.gain.setValueAtTime(0.18, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.3);
+        });
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.12;
+          gain.gain.setValueAtTime(0.25, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.45);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    function toggleSound() {
+      sound.muted = !sound.muted;
+      document.getElementById('soundBtn').innerHTML = sound.muted ? '<span>🔇</span>' : '<span>🔊</span>';
+    }
+
+    /* ==========================================================================
+       7. SEVİYE VERİLERİ (5 PEDAGOJİK VE SADE VEKTÖREL SAHNE)
+       KURAL: Aynı görselde kırmızı, yeşil ve sarı renkleri bir arada bulunmaz!
+       ========================================================================== */
+    const LEVELS = [
+      {
+        id: 1,
+        name: "1. Uzay Macerası",
+        theme: "Uzay ve Gezegenler",
+        desc: "Sonsuz uzayın derinliklerinde süzülen roket, uydu ve halkalı gezegendeki 3 farkı bulun.",
+        differences: [
+          { id: 1, name: "Uydu Sinyal Dalgası", x: 140, y: 120, radius: 48, hint: "Sol üstteki uydunun yaydığı sinyal halkalarını sayın!" },
+          { id: 2, name: "Roket Lomboz Penceresi", x: 420, y: 310, radius: 48, hint: "Ortadaki roketin gövdesindeki dairesel cam pencerelere bakın!" },
+          { id: 3, name: "Halkalı Gezegen Krateri", x: 670, y: 440, radius: 48, hint: "Sağ alttaki mor halkalı gezegenin yüzeyindeki kraterleri inceleyin!" }
+        ]
+      },
+      {
+        id: 2,
+        name: "2. Derin Sualtı Dünyası",
+        theme: "Okyanus ve Deniz Canlıları",
+        desc: "Denizlerin derinliklerinde araştırma yapan denizaltı ve sevimli denizanasındaki 4 farkı yakalayın.",
+        differences: [
+          { id: 1, name: "Denizaltı Periskop Merceği", x: 380, y: 150, radius: 45, hint: "Denizaltının en üstündeki periskopun cam ucuna bakın!" },
+          { id: 2, name: "Hava Kabarcıkları", x: 540, y: 250, radius: 45, hint: "Denizaltının sağ tarafından yukarı doğru yükselen kabarcıkları sayın!" },
+          { id: 3, name: "Denizanası Dokunaçları", x: 680, y: 160, radius: 48, hint: "Sağ üstte yüzen pembe denizanasının altındaki bacakları/dokunaçları sayın!" },
+          { id: 4, name: "Deniz Kabuğu Deseni", x: 190, y: 500, radius: 45, hint: "Sol altta kumların üzerindeki deniz kabuğunun şekline odaklanın!" }
+        ]
+      },
+      {
+        id: 3,
+        name: "3. Masalsı Kış Şehri",
+        theme: "Kış ve Kar Manzarası",
+        desc: "Kar taneleri altındaki sevimli kardan adam ve sıcak kış evindeki 4 gizli farkı keşfedin.",
+        differences: [
+          { id: 1, name: "Kardan Adamın Şapkası", x: 230, y: 320, radius: 48, hint: "Kardan adamın başındaki şapkanın türüne ve şekline bakın!" },
+          { id: 2, name: "Kardan Adam Düğmeleri", x: 230, y: 440, radius: 45, hint: "Kardan adamın gövdesindeki siyah kömür düğmeleri sayın!" },
+          { id: 3, name: "Bacanın Duman Halkaları", x: 450, y: 130, radius: 46, hint: "Evin çatısındaki bacadan çıkan duman bulutlarını inceleyin!" },
+          { id: 4, name: "Çatı Penceresi", x: 490, y: 280, radius: 45, hint: "Tavan arasındaki aydınlık pencerenin kare mi yoksa yuvarlak mı olduğuna bakın!" }
+        ]
+      },
+      {
+        id: 4,
+        name: "4. Gece Çöl Kampı",
+        theme: "Çöl Gecesi ve Çadır",
+        desc: "Yıldızlı bir çöl gecesinde kurulan kamp çadırı ve fenerdeki 5 gizli farkı bulun.",
+        differences: [
+          { id: 1, name: "Çadır Tepe Flaması", x: 410, y: 220, radius: 45, hint: "Çadırın en tepe direğinde dalgalanan bayrağa/flamaya bakın!" },
+          { id: 2, name: "Asılı Kamp Feneri", x: 310, y: 390, radius: 45, hint: "Çadırın sol tarafında yere çakılı direkte asılı bir fener var mı?" },
+          { id: 3, name: "Gökyüzü Takımyıldızı", x: 640, y: 130, radius: 48, hint: "Sağ üst köşedeki yıldızların birbirine bağlı olup olmadığına bakın!" },
+          { id: 4, name: "Kanyon Çizgileri", x: 180, y: 250, radius: 48, hint: "Sol uzaktaki kanyon kayalığının üzerindeki yatay tabaka çizgilerini sayın!" },
+          { id: 5, name: "Çadır Önü Kamp Eşyası", x: 530, y: 440, radius: 45, hint: "Çadırın sağ önünde duran eşyaya dikkat edin: sırt çantası mı yoksa matara mı?" }
+        ]
+      },
+      {
+        id: 5,
+        name: "5. Robot Laboratuvarı",
+        theme: "Teknoloji ve Gelecek",
+        desc: "Geleceğin robot atölyesinde montaj yapan yardımcı robot ve güç bataryasındaki 5 farkı yakalayın.",
+        differences: [
+          { id: 1, name: "Robotun Anten Ucu", x: 400, y: 150, radius: 45, hint: "Ortadaki robotun başındaki antenin ucundaki parçaya bakın (küre mi çanak mı)!" },
+          { id: 2, name: "Göğüs Paneli Göstergesi", x: 400, y: 330, radius: 45, hint: "Robotun göğsündeki dijital ekranın yatay çizgilerine veya radarına odaklanın!" },
+          { id: 3, name: "Mekanik Montaj Kolu", x: 190, y: 220, radius: 48, hint: "Sol üstteki mekanik tutucu kolun kaç parmaklı olduğuna bakın!" },
+          { id: 4, name: "Enerji Bataryası Seviyesi", x: 620, y: 410, radius: 48, hint: "Sağ alttaki enerji bataryasının kaç bölmesinin dolu yandığını sayın!" },
+          { id: 5, name: "Masa Üstü Aleti", x: 220, y: 460, radius: 45, hint: "Masanın solundaki aletin ingiliz anahtarı mı tornavida mı olduğuna bakın!" }
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       8. VEKTÖREL SVG SAHNE ÇİZİM FONKSİYONLARI (SIFIR HARİCİ DOSYA)
+       Her sahne 800x600 çözünürlüğünde, son derece temiz ve pedagojiktir.
+       ========================================================================== */
+
+    // 1. SEVİYE: UZAY MACERASI (Renkler: Gece Mavisi, Mor, Cyan, Beyaz - ASLA kırmızı, sarı ve yeşil bir arada yok!)
+    function getSceneSvg_Level1(isRight) {
+      return `
+        <svg class="scene-svg" viewBox="0 0 800 600">
+          <defs>
+            <radialGradient id="l1_bg" cx="50%" cy="40%" r="70%">
+              <stop offset="0%" stop-color="#1e1b4b" />
+              <stop offset="100%" stop-color="#090d16" />
+            </radialGradient>
+            <linearGradient id="l1_planet" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7c3aed" />
+              <stop offset="100%" stop-color="#4c1d95" />
+            </linearGradient>
+            <linearGradient id="l1_rocket" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f8fafc" />
+              <stop offset="100%" stop-color="#cbd5e1" />
+            </linearGradient>
+          </defs>
+
+          <!-- Arka Plan -->
+          <rect width="800" height="600" fill="url(#l1_bg)" />
+
+          <!-- Arka Plan Yıldızları -->
+          <circle cx="80" cy="80" r="2.5" fill="#ffffff" opacity="0.8" />
+          <circle cx="280" cy="90" r="2" fill="#38bdf8" opacity="0.9" />
+          <circle cx="620" cy="70" r="3" fill="#ffffff" opacity="0.85" />
+          <circle cx="720" cy="180" r="2" fill="#c084fc" opacity="0.75" />
+          <circle cx="100" cy="380" r="2" fill="#ffffff" opacity="0.8" />
+          <circle cx="240" cy="490" r="3" fill="#38bdf8" opacity="0.85" />
+          <circle cx="480" cy="520" r="2.5" fill="#ffffff" opacity="0.7" />
+          <circle cx="730" cy="320" r="2" fill="#c084fc" opacity="0.8" />
+
+          <!-- Sol Üst Uydu (Satellite) -->
+          <g transform="translate(140, 120)">
+            <!-- Güneş Panelleri -->
+            <rect x="-46" y="-12" width="24" height="24" rx="3" fill="#0284c7" stroke="#38bdf8" stroke-width="2" />
+            <rect x="22" y="-12" width="24" height="24" rx="3" fill="#0284c7" stroke="#38bdf8" stroke-width="2" />
+            <!-- Uydu Gövdesi -->
+            <rect x="-18" y="-15" width="36" height="30" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="2" />
+            <circle cx="0" cy="0" r="6" fill="#38bdf8" />
+            <!-- Anten Çanağı -->
+            <path d="M 0 15 L 0 25" stroke="#94a3b8" stroke-width="2.5" />
+            <path d="M -12 25 Q 0 35 12 25" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+            
+            <!-- FARK 1 (x: 140, y: 120): Sinyal Dalgaları -->
+            ${!isRight ? `
+              <!-- Sol Resim: 3 Sinyal Dalgası -->
+              <path d="M -18 34 Q 0 46 18 34" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M -24 43 Q 0 57 24 43" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.8" />
+              <path d="M -30 52 Q 0 68 30 52" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" opacity="0.6" />
+            ` : `
+              <!-- Sağ Resim: Sadece 1 Sinyal Dalgası -->
+              <path d="M -18 34 Q 0 46 18 34" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
+            `}
+          </g>
+
+          <!-- Ortadaki Büyük Roket -->
+          <g transform="translate(420, 310)">
+            <!-- İtki Ateşi (Cyan/Beyaz) -->
+            <polygon points="-16,70 16,70 0,115" fill="#38bdf8" opacity="0.9" />
+            <polygon points="-8,70 8,70 0,95" fill="#ffffff" />
+            <!-- Yan Kanatçıklar -->
+            <polygon points="-28,45 -55,68 -28,68" fill="#2563eb" stroke="#1d4ed8" stroke-width="2" />
+            <polygon points="28,45 55,68 28,68" fill="#2563eb" stroke="#1d4ed8" stroke-width="2" />
+            <!-- Gövde -->
+            <path d="M 0 -85 Q -32 -20 -28 70 L 28 70 Q 32 -20 0 -85 Z" fill="url(#l1_rocket)" stroke="#94a3b8" stroke-width="3" />
+            <!-- Burun Ucu -->
+            <path d="M 0 -85 Q -18 -45 -22 -30 L 22 -30 Q 18 -45 0 -85 Z" fill="#6d28d9" />
+
+            <!-- FARK 2 (x: 420, y: 310): Pencereler -->
+            ${!isRight ? `
+              <!-- Sol Resim: 2 Lomboz Pencere -->
+              <circle cx="0" cy="-5" r="14" fill="#0284c7" stroke="#38bdf8" stroke-width="3" />
+              <circle cx="0" cy="-5" r="9" fill="#38bdf8" opacity="0.6" />
+              <circle cx="0" cy="35" r="14" fill="#0284c7" stroke="#38bdf8" stroke-width="3" />
+              <circle cx="0" cy="35" r="9" fill="#38bdf8" opacity="0.6" />
+            ` : `
+              <!-- Sağ Resim: 1 Tek Büyük Lomboz Pencere -->
+              <circle cx="0" cy="15" r="19" fill="#0284c7" stroke="#38bdf8" stroke-width="3.5" />
+              <circle cx="0" cy="15" r="13" fill="#38bdf8" opacity="0.6" />
+            `}
+          </g>
+
+          <!-- Sağ Alttaki Halkalı Gezegen -->
+          <g transform="translate(670, 440)">
+            <!-- Gezegen Küresi Arka Yarısı -->
+            <circle cx="0" cy="0" r="62" fill="url(#l1_planet)" stroke="#6d28d9" stroke-width="3" />
+            
+            <!-- FARK 3 (x: 670, y: 440): Kraterler -->
+            ${!isRight ? `
+              <!-- Sol Resim: 2 Krater -->
+              <ellipse cx="-20" cy="-15" rx="14" ry="9" fill="#3b0764" opacity="0.75" />
+              <ellipse cx="18" cy="22" rx="10" ry="6" fill="#3b0764" opacity="0.75" />
+            ` : `
+              <!-- Sağ Resim: Pürüzsüz Gezegen (Krater Yok) -->
+            `}
+
+            <!-- Çapraz Halka Sistemi -->
+            <ellipse cx="0" cy="0" rx="100" ry="24" fill="none" stroke="#38bdf8" stroke-width="7" transform="rotate(-22)" opacity="0.9" />
+            <ellipse cx="0" cy="0" rx="112" ry="28" fill="none" stroke="#818cf8" stroke-width="3" transform="rotate(-22)" opacity="0.6" />
+          </g>
+        </svg>
+      `;
+    }
+
+    // 2. SEVİYE: DERİN SUALTI DÜNYASI (Renkler: Okyanus Laciverti, Camgöbeği, Mercan Pembesi, Beyaz)
+    function getSceneSvg_Level2(isRight) {
+      return `
+        <svg class="scene-svg" viewBox="0 0 800 600">
+          <defs>
+            <linearGradient id="l2_bg" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#0c2d48" />
+              <stop offset="70%" stop-color="#071e3d" />
+              <stop offset="100%" stop-color="#041224" />
+            </linearGradient>
+            <linearGradient id="l2_sub" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00cec9" />
+              <stop offset="100%" stop-color="#0f766e" />
+            </linearGradient>
+          </defs>
+
+          <!-- Arka Plan -->
+          <rect width="800" height="600" fill="url(#l2_bg)" />
+
+          <!-- Işık Süzmeleri -->
+          <polygon points="120,0 240,0 320,600 180,600" fill="#22d3ee" opacity="0.06" />
+          <polygon points="460,0 580,0 680,600 540,600" fill="#22d3ee" opacity="0.06" />
+
+          <!-- Deniz Tabanı Kumu -->
+          <path d="M 0 530 Q 200 490 400 535 T 800 520 L 800 600 L 0 600 Z" fill="#0b2847" />
+
+          <!-- Denizaltı Gövdesi -->
+          <g transform="translate(380, 310)">
+            <!-- Pervane -->
+            <rect x="-185" y="-12" width="12" height="24" rx="3" fill="#cbd5e1" />
+            <ellipse cx="-190" cy="0" rx="5" ry="22" fill="#94a3b8" />
+            <!-- Ana Gövde -->
+            <ellipse cx="-10" cy="0" rx="160" ry="75" fill="url(#l2_sub)" stroke="#2dd4bf" stroke-width="3.5" />
+            <!-- Kule / Köprüüstü -->
+            <rect x="-35" y="-120" width="70" height="50" rx="12" fill="#0f766e" stroke="#2dd4bf" stroke-width="3" />
+            <!-- Cam Gözetleme Penceresi -->
+            <circle cx="70" cy="-5" r="28" fill="#e0f2fe" stroke="#041224" stroke-width="4" />
+            <circle cx="70" cy="-5" r="20" fill="#38bdf8" opacity="0.8" />
+            <circle cx="-30" cy="-5" r="16" fill="#38bdf8" stroke="#041224" stroke-width="3" />
+            <circle cx="-85" cy="-5" r="16" fill="#38bdf8" stroke="#041224" stroke-width="3" />
+
+            <!-- FARK 1 (x: 380, y: 150): Periskop Işığı / Mercek -->
+            <path d="M 0 -120 L 0 -155 L 30 -155" fill="none" stroke="#2dd4bf" stroke-width="6" stroke-linecap="round" />
+            ${!isRight ? `
+              <!-- Sol Resim: Çift Parlak Işık Halkası -->
+              <circle cx="34" cy="-155" r="9" fill="#e0f2fe" stroke="#0284c7" stroke-width="2" />
+              <circle cx="48" cy="-155" r="6" fill="#38bdf8" opacity="0.85" />
+            ` : `
+              <!-- Sağ Resim: Tek Düz Mercek -->
+              <rect x="28" y="-161" width="8" height="12" rx="2" fill="#64748b" stroke="#e0f2fe" stroke-width="2" />
+            `}
+          </g>
+
+          <!-- FARK 2 (x: 540, y: 250): Hava Kabarcıkları -->
+          <g transform="translate(540, 250)">
+            ${!isRight ? `
+              <!-- Sol Resim: 4 Kabarcık -->
+              <circle cx="-10" cy="30" r="12" fill="none" stroke="#e0f2fe" stroke-width="2.5" opacity="0.8" />
+              <circle cx="15" cy="0" r="16" fill="none" stroke="#e0f2fe" stroke-width="2.5" opacity="0.85" />
+              <circle cx="-5" cy="-35" r="10" fill="none" stroke="#e0f2fe" stroke-width="2" opacity="0.75" />
+              <circle cx="20" cy="-65" r="14" fill="none" stroke="#e0f2fe" stroke-width="2.5" opacity="0.9" />
+            ` : `
+              <!-- Sağ Resim: Sadece 2 Kabarcık -->
+              <circle cx="10" cy="15" r="12" fill="none" stroke="#e0f2fe" stroke-width="2.5" opacity="0.8" />
+              <circle cx="-5" cy="-40" r="11" fill="none" stroke="#e0f2fe" stroke-width="2" opacity="0.75" />
+            `}
+          </g>
+
+          <!-- FARK 3 (x: 680, y: 160): Sevimli Denizanası -->
+          <g transform="translate(680, 160)">
+            <path d="M -36 0 Q 0 -45 36 0 Z" fill="#f472b6" stroke="#db2777" stroke-width="2.5" />
+            ${!isRight ? `
+              <!-- Sol Resim: 5 Dalgalı Dokunaç -->
+              <path d="M -26 0 Q -30 25 -24 50" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+              <path d="M -13 0 Q -18 28 -11 55" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+              <path d="M 0 0 Q -4 30 3 60" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+              <path d="M 13 0 Q 8 28 15 55" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+              <path d="M 26 0 Q 22 25 28 50" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+            ` : `
+              <!-- Sağ Resim: Sadece 3 Dokunaç -->
+              <path d="M -22 0 Q -26 25 -20 50" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+              <path d="M 0 0 Q -4 30 2 60" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+              <path d="M 22 0 Q 18 25 24 50" fill="none" stroke="#f472b6" stroke-width="3" stroke-linecap="round" />
+            `}
+          </g>
+
+          <!-- FARK 4 (x: 190, y: 500): Deniz Kabuğu -->
+          <g transform="translate(190, 500)">
+            <!-- Mercan Dalları -->
+            <path d="M -35 25 Q -40 -10 -25 -25 Q -10 -10 -20 25" fill="#f472b6" opacity="0.8" />
+            <path d="M -20 25 Q -15 -35 0 -45 Q 10 -20 5 25" fill="#f472b6" opacity="0.9" />
+            ${!isRight ? `
+              <!-- Sol Resim: Çizgili Spiral Deniz Kabuğu -->
+              <path d="M 15 20 Q 30 -5 50 10 Q 40 30 15 20 Z" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2.5" />
+              <path d="M 25 15 L 35 23 M 35 7 L 43 18" stroke="#0284c7" stroke-width="2" stroke-linecap="round" />
+            ` : `
+              <!-- Sağ Resim: Düz Oval Deniz Taşı -->
+              <ellipse cx="32" cy="18" rx="22" ry="13" fill="#64748b" stroke="#94a3b8" stroke-width="2" />
+              <circle cx="28" cy="16" r="3" fill="#475569" />
+              <circle cx="38" cy="19" r="2.5" fill="#475569" />
+            `}
+          </g>
+        </svg>
+      `;
+    }
+
+    // 3. SEVİYE: MASALSI KIŞ ŞEHRİ (Renkler: Gece Mavisi, Buzul Cyan, Kar Beyazı, Mor)
+    function getSceneSvg_Level3(isRight) {
+      return `
+        <svg class="scene-svg" viewBox="0 0 800 600">
+          <defs>
+            <linearGradient id="l3_bg" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#1e1b4b" />
+              <stop offset="60%" stop-color="#172554" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+          </defs>
+
+          <!-- Arka Plan -->
+          <rect width="800" height="600" fill="url(#l3_bg)" />
+
+          <!-- Kar Taneleri -->
+          <circle cx="90" cy="90" r="3.5" fill="#ffffff" opacity="0.9" />
+          <circle cx="210" cy="140" r="2.5" fill="#ffffff" opacity="0.8" />
+          <circle cx="340" cy="70" r="3" fill="#e2e8f0" opacity="0.85" />
+          <circle cx="680" cy="110" r="3.5" fill="#ffffff" opacity="0.9" />
+          <circle cx="730" cy="220" r="2.5" fill="#ffffff" opacity="0.8" />
+
+          <!-- Karlı Tepeler -->
+          <path d="M 0 460 Q 240 380 480 440 T 800 420 L 800 600 L 0 600 Z" fill="#e2e8f0" />
+          <path d="M 0 500 Q 300 450 600 510 L 800 490 L 800 600 L 0 600 Z" fill="#f8fafc" />
+
+          <!-- Kış Evi (Cottage) -->
+          <g transform="translate(480, 360)">
+            <!-- Evin Taş Duvarları -->
+            <rect x="-80" y="-70" width="160" height="130" fill="#334155" stroke="#1e293b" stroke-width="3" />
+            <!-- Kapı -->
+            <rect x="-22" y="-10" width="44" height="70" rx="6" fill="#8b5cf6" stroke="#6d28d9" stroke-width="2.5" />
+            <circle cx="12" cy="25" r="3" fill="#ffffff" />
+            <!-- Çatı -->
+            <polygon points="0,-160 -105,-65 105,-65" fill="#6d28d9" stroke="#5b21b6" stroke-width="3" />
+            <!-- Çatı Üstü Kar Tabakası -->
+            <path d="M 0 -165 L -105 -65 Q -70 -55 -40 -62 Q 0 -50 40 -62 Q 70 -55 105 -65 Z" fill="#ffffff" />
+            
+            <!-- Baca -->
+            <rect x="35" y="-150" width="28" height="55" fill="#475569" stroke="#334155" stroke-width="2" />
+            <rect x="30" y="-155" width="38" height="10" rx="2" fill="#ffffff" />
+
+            <!-- FARK 3 (x: 450, y: 130): Baca Dumanı (480-30 = 450) -->
+            ${!isRight ? `
+              <!-- Sol Resim: 3 Duman Bulutu -->
+              <circle cx="50" cy="-175" r="12" fill="#ffffff" opacity="0.85" />
+              <circle cx="65" cy="-205" r="16" fill="#ffffff" opacity="0.75" />
+              <circle cx="45" cy="-240" r="20" fill="#ffffff" opacity="0.65" />
+            ` : `
+              <!-- Sağ Resim: Sadece 1 Duman Bulutu -->
+              <circle cx="50" cy="-175" r="13" fill="#ffffff" opacity="0.85" />
+            `}
+
+            <!-- FARK 4 (x: 490, y: 280): Çatı Penceresi (480+10 = 490) -->
+            ${!isRight ? `
+              <!-- Sol Resim: Kare 4 Bölmeli Aydınlık Pencere -->
+              <rect x="-16" y="-115" width="32" height="32" fill="#67e8f9" stroke="#1e293b" stroke-width="3" />
+              <line x1="0" y1="-115" x2="0" y2="-83" stroke="#1e293b" stroke-width="2.5" />
+              <line x1="-16" y1="-99" x2="16" y2="-99" stroke="#1e293b" stroke-width="2.5" />
+            ` : `
+              <!-- Sağ Resim: Dairesel Çapraz Pencere -->
+              <circle cx="0" cy="-99" r="17" fill="#67e8f9" stroke="#1e293b" stroke-width="3" />
+              <line x1="0" y1="-116" x2="0" y2="-82" stroke="#1e293b" stroke-width="2.5" />
+              <line x1="-17" y1="-99" x2="17" y2="-99" stroke="#1e293b" stroke-width="2.5" />
+            `}
+          </g>
+
+          <!-- Sevimli Kardan Adam -->
+          <g transform="translate(230, 420)">
+            <!-- Alt Kartopu -->
+            <circle cx="0" cy="70" r="55" fill="#f8fafc" stroke="#94a3b8" stroke-width="2.5" />
+            <!-- Orta Kartopu -->
+            <circle cx="0" cy="-10" r="42" fill="#f8fafc" stroke="#94a3b8" stroke-width="2.5" />
+            <!-- Kafa -->
+            <circle cx="0" cy="-70" r="30" fill="#f8fafc" stroke="#94a3b8" stroke-width="2.5" />
+            <!-- Gözler ve Gülümseme -->
+            <circle cx="-10" cy="-75" r="3.5" fill="#1e293b" />
+            <circle cx="10" cy="-75" r="3.5" fill="#1e293b" />
+            <polygon points="0,-68 18,-64 0,-60" fill="#f472b6" />
+            <!-- Atkı -->
+            <rect x="-24" y="-45" width="48" height="14" rx="4" fill="#8b5cf6" />
+            <rect x="8" y="-45" width="14" height="42" rx="4" fill="#8b5cf6" />
+
+            <!-- FARK 1 (x: 230, y: 320): Şapka (420-100 = 320) -->
+            ${!isRight ? `
+              <!-- Sol Resim: Mor Silindir Şapka -->
+              <rect x="-26" y="-128" width="52" height="34" fill="#6d28d9" stroke="#4c1d95" stroke-width="2" />
+              <rect x="-36" y="-96" width="72" height="8" rx="2" fill="#8b5cf6" />
+            ` : `
+              <!-- Sağ Resim: Ponponlu Kış Beresi -->
+              <path d="M -26 -92 Q 0 -130 26 -92 Z" fill="#6d28d9" stroke="#4c1d95" stroke-width="2" />
+              <circle cx="0" cy="-134" r="9" fill="#ffffff" stroke="#c084fc" stroke-width="2" />
+            `}
+
+            <!-- FARK 2 (x: 230, y: 440): Kömür Düğmeler (420+20 = 440) -->
+            ${!isRight ? `
+              <!-- Sol Resim: 3 Kömür Düğme -->
+              <circle cx="0" cy="-18" r="4" fill="#1e293b" />
+              <circle cx="0" cy="-2" r="4" fill="#1e293b" />
+              <circle cx="0" cy="14" r="4" fill="#1e293b" />
+            ` : `
+              <!-- Sağ Resim: 2 Kömür Düğme -->
+              <circle cx="0" cy="-12" r="4.5" fill="#1e293b" />
+              <circle cx="0" cy="8" r="4.5" fill="#1e293b" />
+            `}
+          </g>
+        </svg>
+      `;
+    }
+
+    // 4. SEVİYE: GECE ÇÖL KAMPI (Renkler: Gece İndigosu, Pişmiş Toprak / Amber, Şeftali, Beyaz)
+    function getSceneSvg_Level4(isRight) {
+      return `
+        <svg class="scene-svg" viewBox="0 0 800 600">
+          <defs>
+            <linearGradient id="l4_bg" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#1e1b4b" />
+              <stop offset="65%" stop-color="#2e1065" />
+              <stop offset="100%" stop-color="#431407" />
+            </linearGradient>
+            <linearGradient id="l4_tent" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ea580c" />
+              <stop offset="100%" stop-color="#9a3412" />
+            </linearGradient>
+          </defs>
+
+          <!-- Arka Plan -->
+          <rect width="800" height="600" fill="url(#l4_bg)" />
+
+          <!-- Hilal Ay -->
+          <g transform="translate(100, 95)">
+            <circle cx="0" cy="0" r="32" fill="#fed7aa" />
+            <circle cx="12" cy="-6" r="28" fill="#1e1b4b" />
+          </g>
+
+          <!-- FARK 3 (x: 640, y: 130): Takımyıldız -->
+          <g transform="translate(640, 130)">
+            ${!isRight ? `
+              <!-- Sol Resim: 4 Bağlantılı Yıldız -->
+              <line x1="-30" y1="-20" x2="10" y2="-30" stroke="#fed7aa" stroke-width="1.8" opacity="0.75" />
+              <line x1="10" y1="-30" x2="35" y2="15" stroke="#fed7aa" stroke-width="1.8" opacity="0.75" />
+              <line x1="35" y1="15" x2="-10" y2="25" stroke="#fed7aa" stroke-width="1.8" opacity="0.75" />
+              <circle cx="-30" cy="-20" r="4" fill="#ffffff" />
+              <circle cx="10" cy="-30" r="4.5" fill="#ffffff" />
+              <circle cx="35" cy="15" r="4" fill="#ffffff" />
+              <circle cx="-10" cy="25" r="3.5" fill="#ffffff" />
+            ` : `
+              <!-- Sağ Resim: Sadece 2 Bağımsız Yıldız -->
+              <circle cx="-20" cy="-20" r="4" fill="#ffffff" />
+              <circle cx="25" cy="15" r="4" fill="#ffffff" />
+            `}
+          </g>
+
+          <!-- FARK 4 (x: 180, y: 250): Kanyon Kayalık Çizgileri -->
+          <g transform="translate(180, 250)">
+            <!-- Kanyon Kaya Kütlesi -->
+            <polygon points="-70,90 -50,-30 40,-45 70,90" fill="#7c2d12" stroke="#581c87" stroke-width="2.5" />
+            ${!isRight ? `
+              <!-- Sol Resim: 3 Belirgin Katman Çizgisi -->
+              <line x1="-55" y1="0" x2="48" y2="-10" stroke="#fed7aa" stroke-width="2.5" opacity="0.8" />
+              <line x1="-60" y1="35" x2="55" y2="25" stroke="#fed7aa" stroke-width="2.5" opacity="0.8" />
+              <line x1="-65" y1="68" x2="65" y2="60" stroke="#fed7aa" stroke-width="2.5" opacity="0.8" />
+            ` : `
+              <!-- Sağ Resim: Sadece 1 Katman Çizgisi -->
+              <line x1="-60" y1="35" x2="55" y2="25" stroke="#fed7aa" stroke-width="2.5" opacity="0.8" />
+            `}
+          </g>
+
+          <!-- Kum Tepeleri (Dunes) -->
+          <path d="M 0 450 Q 240 370 520 440 T 800 410 L 800 600 L 0 600 Z" fill="#9a3412" />
+          <path d="M 0 500 Q 320 440 640 510 L 800 490 L 800 600 L 0 600 Z" fill="#c2410c" />
+
+          <!-- Kamp Çadırı -->
+          <g transform="translate(410, 360)">
+            <!-- Çadır Gövdesi -->
+            <polygon points="0,-120 -110,60 110,60" fill="url(#l4_tent)" stroke="#7c2d12" stroke-width="3" />
+            <!-- Çadır Giriş Açıklığı -->
+            <polygon points="0,-100 -45,60 45,60" fill="#431407" />
+            
+            <!-- FARK 1 (x: 410, y: 220): Tepe Flaması (360-140 = 220) -->
+            <line x1="0" y1="-120" x2="0" y2="-145" stroke="#fed7aa" stroke-width="3" />
+            ${!isRight ? `
+              <!-- Sol Resim: Üçgen Dalgalanan Flama -->
+              <polygon points="0,-145 28,-135 0,-125" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5" />
+            ` : `
+              <!-- Sağ Resim: Düz Yuvarlak Topuz -->
+              <circle cx="0" cy="-145" r="4.5" fill="#fed7aa" />
+            `}
+
+            <!-- FARK 2 (x: 310, y: 390): Asılı Kamp Feneri (410-100 = 310) -->
+            ${!isRight ? `
+              <!-- Sol Resim: Asılı Kamp Feneri -->
+              <line x1="-100" y1="60" x2="-100" y2="5" stroke="#fed7aa" stroke-width="3" />
+              <line x1="-100" y1="5" x2="-80" y2="10" stroke="#fed7aa" stroke-width="2.5" />
+              <rect x="-86" y="10" width="14" height="22" rx="3" fill="#fed7aa" stroke="#7c2d12" stroke-width="2" />
+              <circle cx="-79" cy="21" r="4" fill="#ffffff" />
+            ` : `
+              <!-- Sağ Resim: Boş Direk (Fener Yok) -->
+              <line x1="-100" y1="60" x2="-100" y2="15" stroke="#fed7aa" stroke-width="3" />
+            `}
+
+            <!-- FARK 5 (x: 530, y: 440): Çadır Önü Eşya (410+120 = 530) -->
+            ${!isRight ? `
+              <!-- Sol Resim: Sırt Çantası -->
+              <rect x="100" y="60" width="34" height="42" rx="8" fill="#431407" stroke="#ea580c" stroke-width="2.5" />
+              <rect x="106" y="75" width="22" height="18" rx="4" fill="#7c2d12" />
+              <path d="M 108 60 Q 117 48 126 60" fill="none" stroke="#fed7aa" stroke-width="2.5" />
+            ` : `
+              <!-- Sağ Resim: Su Matarası -->
+              <circle cx="118" cy="85" r="16" fill="#fed7aa" stroke="#7c2d12" stroke-width="2.5" />
+              <rect x="114" y="64" width="8" height="8" rx="2" fill="#ea580c" />
+            `}
+          </g>
+        </svg>
+      `;
+    }
+
+    // 5. SEVİYE: ROBOT LABORATUVARI (Renkler: Siber Taş Rengi, Kobalt, Elektrik Cyan, Ametist Moru, Krom Beyazı)
+    function getSceneSvg_Level5(isRight) {
+      return `
+        <svg class="scene-svg" viewBox="0 0 800 600">
+          <defs>
+            <linearGradient id="l5_bg" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#0f172a" />
+              <stop offset="100%" stop-color="#1e293b" />
+            </linearGradient>
+            <linearGradient id="l5_robot" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f8fafc" />
+              <stop offset="100%" stop-color="#94a3b8" />
+            </linearGradient>
+          </defs>
+
+          <!-- Arka Plan -->
+          <rect width="800" height="600" fill="url(#l5_bg)" />
+
+          <!-- Laboratuvar Izgara Çizgileri -->
+          <line x1="0" y1="120" x2="800" y2="120" stroke="#334155" stroke-width="1.5" stroke-dasharray="6 6" />
+          <line x1="0" y1="240" x2="800" y2="240" stroke="#334155" stroke-width="1.5" stroke-dasharray="6 6" />
+          <line x1="200" y1="0" x2="200" y2="460" stroke="#334155" stroke-width="1.5" stroke-dasharray="6 6" />
+          <line x1="600" y1="0" x2="600" y2="460" stroke="#334155" stroke-width="1.5" stroke-dasharray="6 6" />
+
+          <!-- Çalışma Tezgahı Masası -->
+          <rect x="0" y="460" width="800" height="140" fill="#0f172a" stroke="#2563eb" stroke-width="3" />
+          <line x1="0" y1="465" x2="800" y2="465" stroke="#38bdf8" stroke-width="2" />
+
+          <!-- FARK 3 (x: 190, y: 220): Mekanik Kol Kıskacı -->
+          <g transform="translate(190, 220)">
+            <line x1="-90" y1="-120" x2="-30" y2="-50" stroke="#64748b" stroke-width="10" stroke-linecap="round" />
+            <circle cx="-30" cy="-50" r="12" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+            <line x1="-30" y1="-50" x2="0" y2="0" stroke="#64748b" stroke-width="8" stroke-linecap="round" />
+            <circle cx="0" cy="0" r="10" fill="#a855f7" />
+            ${!isRight ? `
+              <!-- Sol Resim: 3 Parmaklı Açık Kıskaç -->
+              <path d="M 0 0 L 22 -14 L 32 -6" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+              <path d="M 0 0 L 28 0 L 36 0" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+              <path d="M 0 0 L 22 14 L 32 6" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+            ` : `
+              <!-- Sağ Resim: 2 Parmaklı Kapalı Kıskaç -->
+              <path d="M 0 0 L 24 -10 L 30 0" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+              <path d="M 0 0 L 24 10 L 30 0" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+            `}
+          </g>
+
+          <!-- Sevimli Robot -->
+          <g transform="translate(400, 310)">
+            <!-- Ayaklar -->
+            <rect x="-42" y="115" width="28" height="35" rx="6" fill="#475569" stroke="#1e293b" stroke-width="2" />
+            <rect x="14" y="115" width="28" height="35" rx="6" fill="#475569" stroke="#1e293b" stroke-width="2" />
+            <!-- Kollar -->
+            <rect x="-80" y="30" width="24" height="60" rx="10" fill="#64748b" stroke="#334155" stroke-width="2" />
+            <rect x="56" y="30" width="24" height="60" rx="10" fill="#64748b" stroke="#334155" stroke-width="2" />
+            <!-- Gövde -->
+            <rect x="-55" y="10" width="110" height="110" rx="20" fill="url(#l5_robot)" stroke="#2563eb" stroke-width="3.5" />
+            <!-- Kafa -->
+            <rect x="-44" y="-80" width="88" height="70" rx="18" fill="url(#l5_robot)" stroke="#2563eb" stroke-width="3.5" />
+            <!-- Yüz Ekranı -->
+            <rect x="-34" y="-70" width="68" height="50" rx="10" fill="#0f172a" />
+            <circle cx="-16" cy="-45" r="7" fill="#38bdf8" />
+            <circle cx="16" cy="-45" r="7" fill="#38bdf8" />
+            <path d="M -10 -30 Q 0 -22 10 -30" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
+
+            <!-- FARK 1 (x: 400, y: 150): Anten Başlığı (310-160 = 150) -->
+            <line x1="0" y1="-80" x2="0" y2="-120" stroke="#38bdf8" stroke-width="3" />
+            ${!isRight ? `
+              <!-- Sol Resim: Parlak Küre -->
+              <circle cx="0" cy="-126" r="9" fill="#38bdf8" stroke="#ffffff" stroke-width="2" />
+            ` : `
+              <!-- Sağ Resim: Mini Çanak Alıcı -->
+              <path d="M -12 -122 Q 0 -134 12 -122" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
+            `}
+
+            <!-- FARK 2 (x: 400, y: 330): Göğüs Paneli Göstergesi (310+20 = 330) -->
+            <rect x="-35" y="35" width="70" height="55" rx="8" fill="#0f172a" stroke="#475569" stroke-width="2" />
+            ${!isRight ? `
+              <!-- Sol Resim: 3 Dijital LED Çubuk -->
+              <rect x="-24" y="44" width="48" height="6" rx="2" fill="#38bdf8" />
+              <rect x="-24" y="58" width="38" height="6" rx="2" fill="#38bdf8" />
+              <rect x="-24" y="72" width="26" height="6" rx="2" fill="#38bdf8" />
+            ` : `
+              <!-- Sağ Resim: Dairesel Radar Nabız -->
+              <circle cx="0" cy="62" r="16" fill="none" stroke="#a855f7" stroke-width="2.5" />
+              <circle cx="0" cy="62" r="6" fill="#a855f7" />
+            `}
+          </g>
+
+          <!-- FARK 4 (x: 620, y: 410): Enerji Bataryası -->
+          <g transform="translate(620, 410)">
+            <rect x="-20" y="-45" width="40" height="90" rx="8" fill="#0f172a" stroke="#2563eb" stroke-width="3" />
+            <rect x="-10" y="-55" width="20" height="10" rx="3" fill="#94a3b8" />
+            ${!isRight ? `
+              <!-- Sol Resim: 4 Seviye Dolu Batarya -->
+              <rect x="-14" y="24" width="28" height="15" rx="3" fill="#38bdf8" />
+              <rect x="-14" y="5" width="28" height="15" rx="3" fill="#38bdf8" />
+              <rect x="-14" y="-14" width="28" height="15" rx="3" fill="#38bdf8" />
+              <rect x="-14" y="-33" width="28" height="15" rx="3" fill="#38bdf8" />
+            ` : `
+              <!-- Sağ Resim: Sadece 1 Seviye Enerji (Düşük Pil) -->
+              <rect x="-14" y="24" width="28" height="15" rx="3" fill="#38bdf8" />
+            `}
+          </g>
+
+          <!-- FARK 5 (x: 220, y: 460): Masa Üstündeki Alet -->
+          <g transform="translate(220, 500)">
+            ${!isRight ? `
+              <!-- Sol Resim: Çift Ağızlı Ayarlı İngiliz Anahtarı -->
+              <path d="M -30 -10 L 30 10" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" />
+              <circle cx="-30" cy="-10" r="11" fill="none" stroke="#e2e8f0" stroke-width="4" />
+              <circle cx="30" cy="10" r="11" fill="none" stroke="#e2e8f0" stroke-width="4" />
+            ` : `
+              <!-- Sağ Resim: İnce Elektronik Tornavida -->
+              <line x1="-35" y1="-8" x2="35" y2="8" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" />
+              <rect x="-35" y="-15" width="28" height="14" rx="4" fill="#a855f7" />
+            `}
+          </g>
+        </svg>
+      `;
+    }
+
+    /* ==========================================================================
+       9. OYUN YÖNETİMİ VE ETKİLEŞİM MOTORU
+       ========================================================================== */
+    let currentLvlIdx = 0;
+    let foundDifferences = new Set();
+    let isVictory = false;
+    let isDemoMode = false;
+    let timerSec = 0;
+    let timerInterval = null;
+
+    /* Açılış ekranından oyuna başlama */
+    function startGameFromSplash() {
+      sound.playClick();
+      const splash = document.getElementById('splashScreen');
+      splash.classList.add('hidden');
+      initLevelBar();
+      loadLevel(0);
+    }
+
+    /* Seviye Butonları */
+    function initLevelBar() {
+      const bar = document.getElementById('levelBar');
+      bar.innerHTML = '';
+      LEVELS.forEach((lvl, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'level-btn' + (idx === currentLvlIdx ? ' active' : '');
+        btn.innerHTML = `<span>🔍</span> ${lvl.name} <span class="level-pill-count">${lvl.differences.length} Fark</span>`;
+        btn.onclick = () => loadLevel(idx);
+        bar.appendChild(btn);
+      });
+    }
+
+    function updateLevelBarActive() {
+      const btns = document.querySelectorAll('.level-btn');
+      btns.forEach((b, i) => b.classList.toggle('active', i === currentLvlIdx));
+    }
+
+    /* Seviye Yükleme */
+    function loadLevel(idx) {
+      sound.playClick();
+      currentLvlIdx = idx;
+      updateLevelBarActive();
+      foundDifferences.clear();
+      isVictory = false;
+      isDemoMode = false;
+      stopConfetti();
+
+      const lvl = LEVELS[idx];
+      document.getElementById('statLevelBadge').innerText = `Seviye: ${lvl.id} (${lvl.name})`;
+      document.getElementById('statStatus').innerText = 'Durum: Aranıyor';
+      document.getElementById('leftSceneSubtitle').innerText = lvl.theme;
+      document.getElementById('rightSceneSubtitle').innerText = `${lvl.differences.length} Farkı Bulun`;
+
+      renderScenes();
+      clearMarkers();
+      updateStats();
+      startTimer();
+      updateStatus(`${lvl.name} yüklendi. ${lvl.desc}`, 'normal');
+    }
+
+    /* Sahneleri DOM'a Çizme */
+    function renderScenes() {
+      const leftHost = document.getElementById('leftSceneSvgHost');
+      const rightHost = document.getElementById('rightSceneSvgHost');
+
+      switch (currentLvlIdx) {
+        case 0:
+          leftHost.innerHTML = getSceneSvg_Level1(false);
+          rightHost.innerHTML = getSceneSvg_Level1(true);
+          break;
+        case 1:
+          leftHost.innerHTML = getSceneSvg_Level2(false);
+          rightHost.innerHTML = getSceneSvg_Level2(true);
+          break;
+        case 2:
+          leftHost.innerHTML = getSceneSvg_Level3(false);
+          rightHost.innerHTML = getSceneSvg_Level3(true);
+          break;
+        case 3:
+          leftHost.innerHTML = getSceneSvg_Level4(false);
+          rightHost.innerHTML = getSceneSvg_Level4(true);
+          break;
+        case 4:
+          leftHost.innerHTML = getSceneSvg_Level5(false);
+          rightHost.innerHTML = getSceneSvg_Level5(true);
+          break;
+      }
+    }
+
+    /* İşaretleri Temizleme */
+    function clearMarkers() {
+      document.getElementById('leftMarkersSvg').innerHTML = '';
+      document.getElementById('rightMarkersSvg').innerHTML = '';
+    }
+
+    /* Zamanlayıcı */
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerSec = 0;
+      updateTimerUI();
+      timerInterval = setInterval(() => {
+        timerSec++;
+        updateTimerUI();
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const m = String(Math.floor(timerSec / 60)).padStart(2, '0');
+      const s = String(timerSec % 60).padStart(2, '0');
+      document.getElementById('statTimer').innerText = `⏱️ ${m}:${s}`;
+    }
+
+    /* İstatistikleri Güncelleme */
+    function updateStats() {
+      const lvl = LEVELS[currentLvlIdx];
+      const foundCount = foundDifferences.size;
+      const totalCount = lvl.differences.length;
+      document.getElementById('statDifferencesCount').innerText = `🎯 Bulunan Farklar: ${foundCount} / ${totalCount}`;
+    }
+
+    /* Sahne Tıklama Algılama (Hem sol hem de sağ görsel için çalışır) */
+    function handleSceneClick(event, side) {
+      if (isVictory) return;
+
+      const container = side === 'left' ? document.getElementById('leftSceneContainer') : document.getElementById('rightSceneContainer');
+      const rect = container.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      // Piksel oranını 800x600 viewBox koordinatlarına ölçekleme
+      const scaleX = 800 / rect.width;
+      const scaleY = 600 / rect.height;
+      const svgX = clickX * scaleX;
+      const svgY = clickY * scaleY;
+
+      // Seviyenin farklarını kontrol et
+      const lvl = LEVELS[currentLvlIdx];
+      let matchedDiff = null;
+
+      for (const diff of lvl.differences) {
+        const dist = Math.hypot(svgX - diff.x, svgY - diff.y);
+        if (dist <= diff.radius) {
+          matchedDiff = diff;
+          break;
+        }
+      }
+
+      if (matchedDiff) {
+        if (foundDifferences.has(matchedDiff.id)) {
+          updateStatus('Bu farkı zaten daha önce buldunuz!', 'normal');
+          return;
+        }
+
+        // Yeni Fark Bulundu!
+        foundDifferences.add(matchedDiff.id);
+        sound.playFound();
+        addDifferenceMarker(matchedDiff, foundDifferences.size);
+        updateStats();
+
+        updateStatus(`✨ Harika! "${matchedDiff.name}" farkını yakaladınız!`, 'success');
+
+        // Tüm farklar tamamlandı mı?
+        if (foundDifferences.size === lvl.differences.length) {
+          onLevelComplete();
+        }
+      } else {
+        // Iska / Boş Yer Tıklaması
+        sound.playMiss();
+        spawnMissRipple(container, clickX, clickY);
+        updateStatus('Burada bir fark görünmüyor, araştırmaya devam edin!', 'normal');
+      }
+    }
+
+    /* Hata Tıklama Dalgası Efekti */
+    function spawnMissRipple(container, x, y) {
+      const ripple = document.createElement('div');
+      ripple.className = 'miss-ripple';
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      container.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 500);
+    }
+
+    /* Bulunan Fark Halkasını Her İki Görsele Ekleme */
+    function addDifferenceMarker(diff, num) {
+      ['leftMarkersSvg', 'rightMarkersSvg'].forEach(svgId => {
+        const svg = document.getElementById(svgId);
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.id = `marker_${svgId}_${diff.id}`;
+
+        g.innerHTML = `
+          <!-- Dış Parıltı -->
+          <circle cx="${diff.x}" cy="${diff.y}" r="${diff.radius - 2}" class="found-ring-glow" />
+          <!-- Ana Çember -->
+          <circle cx="${diff.x}" cy="${diff.y}" r="${diff.radius - 2}" class="found-ring-core" />
+          <!-- Numara Rozeti -->
+          <circle cx="${diff.x + diff.radius - 6}" cy="${diff.y - diff.radius + 6}" r="12" class="found-badge-bg" />
+          <text x="${diff.x + diff.radius - 6}" y="${diff.y - diff.radius + 6}" class="found-badge-text">${num}</text>
+        `;
+
+        svg.appendChild(g);
+      });
+    }
+
+    /* ==========================================================================
+       10. İPUCU VE ÇÖZÜM İNCELEME MODU
+       ========================================================================== */
+    function giveHint() {
+      if (isVictory) return;
+      sound.playHint();
+
+      const lvl = LEVELS[currentLvlIdx];
+      const unfound = lvl.differences.filter(d => !foundDifferences.has(d.id));
+
+      if (unfound.length === 0) {
+        updateStatus('Tüm farklar zaten bulundu!', 'success');
+        return;
+      }
+
+      // Henüz bulunmamış ilk farkı al
+      const target = unfound[0];
+
+      // Sağ görselde nabız gibi atan geçici ipucu çemberi ekle
+      const svgRight = document.getElementById('rightMarkersSvg');
+      const hintG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      hintG.id = 'tempHintRing';
+
+      hintG.innerHTML = `
+        <circle cx="${target.x}" cy="${target.y}" r="${target.radius + 12}" class="hint-circle" />
+      `;
+
+      svgRight.appendChild(hintG);
+      updateStatus(`💡 İpucu: ${target.hint}`, 'normal');
+
+      // 4 saniye sonra ipucu çemberini kaldır
+      setTimeout(() => {
+        if (hintG.parentNode) hintG.remove();
+      }, 4000);
+    }
+
+    /* Çözümü Göster (Sadece İnceleme/Demo Modu - Zafer Tetiklemez) */
+    function showSolutionDemo() {
+      sound.playHint();
+      isDemoMode = true;
+
+      const lvl = LEVELS[currentLvlIdx];
+      const unfound = lvl.differences.filter(d => !foundDifferences.has(d.id));
+
+      if (unfound.length === 0) {
+        updateStatus('Tüm farklar zaten bulundu!', 'success');
+        return;
+      }
+
+      // Kalan farkları kesikli mor halkalarla göster
+      ['leftMarkersSvg', 'rightMarkersSvg'].forEach(svgId => {
+        const svg = document.getElementById(svgId);
+        unfound.forEach(diff => {
+          const old = document.getElementById(`demo_${svgId}_${diff.id}`);
+          if (old) old.remove();
+
+          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          g.id = `demo_${svgId}_${diff.id}`;
+          g.innerHTML = `
+            <circle cx="${diff.x}" cy="${diff.y}" r="${diff.radius}" class="demo-ring-core" />
+          `;
+          svg.appendChild(g);
+        });
+      });
+
+      document.getElementById('statStatus').innerText = 'Durum: Çözüm Gösteriliyor 👁️';
+      updateStatus('✨ Kalan tüm farklar mor halkalarla gösterildi. İnceledikten sonra "Sıfırla" ile kendiniz çözebilirsiniz.', 'normal');
+    }
+
+    /* ==========================================================================
+       11. SEVİYE TAMAMLAMA VE ZAFER KARTI (MOD B)
+       ========================================================================== */
+    function onLevelComplete() {
+      if (isVictory) return;
+      isVictory = true;
+      if (timerInterval) clearInterval(timerInterval);
+
+      sound.playFanfare();
+      startConfetti();
+      SCORM.complete();
+
+      updateStatus('🏆 Tebrikler, Tüm Farkları Başarıyla Buldunuz!', 'success');
+      document.getElementById('statStatus').innerText = 'Durum: Tamamlandı! 🏆';
+
+      const lvl = LEVELS[currentLvlIdx];
+      const modal = document.getElementById('victoryModal');
+      const desc = document.getElementById('victoryDesc');
+      desc.textContent = `${lvl.name} başarıyla tamamlandı! ${lvl.differences.length} gizli farkın tamamını harika bir dikkatle tespit ettiniz.`;
+      modal.classList.add('active');
+    }
+
+    /* Baştan Başla */
+    function restartCurrentLevel() {
+      sound.playClick();
+      closeVictoryModal();
+      closeAlertModal();
+      loadLevel(currentLvlIdx);
+      updateStatus('Seviye baştan başlatıldı.', 'normal');
+    }
+
+    /* Sonraki Seviyeye Geç */
+    function loadNextLevel() {
+      closeVictoryModal();
+      const nextIdx = (currentLvlIdx + 1) % LEVELS.length;
+      loadLevel(nextIdx);
+    }
+
+    /* ==========================================================================
+       12. MODAL YÖNETİMİ
+       ========================================================================== */
+    function openRulesModal() {
+      sound.playClick();
+      document.getElementById('rulesModal').classList.add('active');
+    }
+
+    function closeRulesModal() {
+      sound.playClick();
+      document.getElementById('rulesModal').classList.remove('active');
+    }
+
+    function closeAlertModal() {
+      sound.playClick();
+      document.getElementById('alertModal').classList.remove('active');
+    }
+
+    function closeVictoryModal() {
+      document.getElementById('victoryModal').classList.remove('active');
+      stopConfetti();
+    }
+
+    function updateStatus(text, type = 'normal') {
+      const box = document.getElementById('statusBox');
+      box.className = 'status-box';
+      if (type === 'success') box.classList.add('success');
+      else if (type === 'alert') box.classList.add('alert');
+      box.innerHTML = `<span>${text}</span>`;
+    }
+
+    function toggleFullScreen() {
+      sound.playClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    /* ==========================================================================
+       13. KONFETİ YAĞMURU MOTORU (CANVAS)
+       ========================================================================== */
+    let confettiActive = false;
+    let confettiAnimId = null;
+    const confettiColors = ['#feca57', '#00cec9', '#10ac84', '#ff7675', '#a78bfa', '#f8fafc', '#ff9f43'];
+    let confettiParticles = [];
+
+    function startConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      confettiParticles = [];
+      for (let i = 0; i < 110; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 8 + 6,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          speedY: Math.random() * 3 + 2,
+          speedX: Math.random() * 2 - 1,
+          rot: Math.random() * 360,
+          rotSpeed: Math.random() * 6 - 3
+        });
+      }
+
+      confettiActive = true;
+      function loop() {
+        if (!confettiActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rot += p.rotSpeed;
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+        confettiAnimId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    function stopConfetti() {
+      confettiActive = false;
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confettiCanvas');
+      if (canvas && confettiActive) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

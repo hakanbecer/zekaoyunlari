@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TANGRAM | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE VİDEO PROJESİ İLE %100 UYUMLU RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial-start: #1a253a;
+      --bg-radial-end: #090d15;
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --border-focus: #00cec9;
+      --gold-primary: #feca57;
+      --gold-dark: #f5b041;
+      --cyan-accent: #00cec9;
+      --cyan-light: #38bdf8;
+      --emerald-accent: #10ac84;
+      --emerald-light: #34d399;
+      --coral-accent: #ff5252;
+      --coral-light: #ff7675;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-bg: #131c2c;
+      --silhouette-fill: #0c121e;
+      --silhouette-stroke: rgba(254, 202, 87, 0.5);
+      --tray-bg: rgba(15, 23, 42, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, var(--bg-radial-start) 0%, var(--bg-radial-end) 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 12px;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (SPLASH SCREEN) STANDARTLARI (BÖLÜM 3)
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--bg-card);
+      border: 2px solid rgba(254, 202, 87, 0.45);
+      border-radius: 32px;
+      padding: 46px 40px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75), 0 0 50px rgba(254, 202, 87, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #feca57, #34d399, #00cec9);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(25px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .splash-title {
+      font-size: 56px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 15%, var(--gold-primary) 65%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      text-shadow: 0 4px 24px rgba(254, 202, 87, 0.35);
+      line-height: 1.15;
+    }
+
+    /* 3B Önizleme Elemanı */
+    .splash-preview {
+      width: 100%;
+      max-width: 320px;
+      height: 130px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 700px;
+    }
+
+    .splash-preview-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.7));
+      animation: floatIsometric 3.5s ease-in-out infinite alternate;
+      transform-style: preserve-3d;
+    }
+
+    @keyframes floatIsometric {
+      0% { transform: translateY(0px) rotateX(12deg) rotateY(-8deg); }
+      100% { transform: translateY(-8px) rotateX(16deg) rotateY(6deg); }
+    }
+
+    /* Kısa Oynayış Yönergesi Kutusu */
+    .splash-instructions {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 18px 24px;
+      text-align: left;
+      margin-bottom: 22px;
+      width: 100%;
+    }
+
+    .instructions-header {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .instructions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .instructions-list li {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .step-num {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 16px 48px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 172, 132, 0.45);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      touch-action: manipulation;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 206, 201, 0.55);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================================
+       3. ÜST KONTROL ŞERİDİ (HEADER BAR) (BÖLÜM 4)
+       ========================================================================== */
+    .top-header {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 12px 22px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(254, 202, 87, 0.12);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      padding: 8px 18px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      min-width: 240px;
+    }
+
+    .status-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      padding: 8px 20px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      text-align: center;
+    }
+
+    .status-box.success {
+      border-color: var(--emerald-light);
+      color: var(--emerald-light);
+      background: rgba(16, 172, 132, 0.16);
+    }
+
+    .status-box.alert {
+      border-color: var(--coral-accent);
+      color: #ff8b8b;
+      background: rgba(255, 82, 82, 0.16);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 14px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-header:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--cyan-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-header:active {
+      transform: translateY(1px);
+    }
+
+    .btn-header.restart {
+      background: rgba(255, 82, 82, 0.15);
+      border-color: rgba(255, 82, 82, 0.4);
+      color: #ff7675;
+    }
+    .btn-header.restart:hover {
+      background: rgba(255, 82, 82, 0.25);
+      border-color: var(--coral-accent);
+    }
+
+    /* ==========================================================================
+       4. SEVİYE VE FİGÜR SEÇİM ŞERİDİ
+       ========================================================================== */
+    .selector-bar {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .figures-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-fig {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 14px;
+      padding: 8px 16px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-fig:hover {
+      border-color: var(--cyan-accent);
+      color: var(--text-light);
+    }
+
+    .btn-fig.active {
+      background: linear-gradient(135deg, rgba(0, 206, 201, 0.2) 0%, rgba(16, 172, 132, 0.2) 100%);
+      border-color: var(--cyan-accent);
+      color: var(--cyan-accent);
+      box-shadow: 0 0 15px rgba(0, 206, 201, 0.25);
+    }
+
+    .difficulty-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px;
+      border-radius: 16px;
+      border: 1.5px solid var(--border-color);
+    }
+
+    .btn-diff {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      border-radius: 12px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-diff:hover {
+      color: var(--text-light);
+    }
+
+    .btn-diff.active {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ==========================================================================
+       5. MERKEZÎ OYUN ALANI (SVG ÇALIŞMA ALANI & DAĞITIM ALANLARI)
+       ========================================================================== */
+    .game-workspace {
+      width: 100%;
+      max-width: 1120px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 28px;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .tangram-svg-canvas {
+      width: 100%;
+      height: auto;
+      max-height: 68vh;
+      display: block;
+      touch-action: none;
+    }
+
+    /* Hedef Yuvalar ve Manyetik Kilitlenme */
+    #ghostLayer {
+      pointer-events: none;
+    }
+
+    .target-slot {
+      pointer-events: none;
+      transition: fill 0.25s ease, stroke 0.25s ease, filter 0.25s ease;
+    }
+
+    #ghostLayer {
+      pointer-events: none;
+      filter: drop-shadow(0 0 16px rgba(254, 202, 87, 0.35));
+    }
+
+    .target-ghost {
+      fill: rgba(0, 206, 201, 0.08);
+      stroke: rgba(0, 206, 201, 0.55);
+      stroke-width: 2;
+      stroke-dasharray: 6 4;
+      pointer-events: none;
+    }
+
+    /* İleri Düzey: Tamamen tek parça gölge, iç kısımda hiçbir şekil/çizgi izi yok! */
+    .target-solid-silhouette {
+      fill: var(--silhouette-fill);
+      stroke: var(--silhouette-fill);
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .target-medium-guide {
+      fill: rgba(254, 202, 87, 0.1);
+      stroke: rgba(254, 202, 87, 0.6);
+      stroke-width: 2;
+      stroke-dasharray: 6 4;
+      pointer-events: none;
+    }
+
+    /* Manyetik Yuva Parıltısı (Üzerine Gelince Aktifleşen Mıknatıs) */
+    .target-slot.magnet-target {
+      fill: rgba(0, 206, 201, 0.32) !important;
+      stroke: #00cec9 !important;
+      stroke-width: 3.5 !important;
+      stroke-dasharray: none !important;
+      filter: drop-shadow(0 0 16px #00cec9) drop-shadow(0 0 25px rgba(254, 202, 87, 0.6)) !important;
+      animation: magnetPulse 0.7s infinite alternate ease-in-out;
+    }
+
+    @keyframes magnetPulse {
+      from { stroke: #00cec9; fill: rgba(0, 206, 201, 0.32); }
+      to { stroke: var(--gold-primary); fill: rgba(254, 202, 87, 0.35); }
+    }
+
+    /* 3B Tangram Taşları */
+    .tan-piece {
+      cursor: grab;
+      transition: filter 0.18s ease, opacity 0.18s ease;
+      touch-action: none;
+    }
+
+    .tan-piece:hover {
+      cursor: grab;
+      filter: brightness(1.08) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.65));
+    }
+
+    .tan-piece.dragging {
+      cursor: grabbing;
+      opacity: 0.96;
+      filter: brightness(1.18) drop-shadow(0 16px 32px rgba(0, 0, 0, 0.85));
+    }
+
+    .tan-piece.selected {
+      stroke: #ffffff !important;
+      stroke-width: 3.5 !important;
+      filter: drop-shadow(0 0 16px var(--gold-primary)) brightness(1.12);
+    }
+
+    .tan-piece.snapped {
+      stroke: rgba(255, 255, 255, 0.65);
+      stroke-width: 2;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
+    }
+
+    /* Yerine Oturma Zıplama Animasyonu */
+    .tan-piece.snap-animation {
+      animation: pieceSnapPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pieceSnapPop {
+      0% { transform-origin: center; filter: drop-shadow(0 0 20px #00cec9) brightness(1.3); }
+      50% { filter: drop-shadow(0 0 10px var(--gold-primary)) brightness(1.15); }
+      100% { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4)); }
+    }
+
+    /* Tepsi Sınırları ve Kılavuzları */
+    .tray-boundary {
+      fill: rgba(15, 23, 42, 0.4);
+      stroke: rgba(75, 105, 145, 0.35);
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+      rx: 16;
+    }
+
+    .tray-title {
+      font-size: 13px;
+      font-weight: 800;
+      fill: var(--text-muted);
+      letter-spacing: 1px;
+      text-anchor: middle;
+    }
+
+    /* Kullanıcı Bilgi İpucu Kutucuğu */
+    .hint-bar-info {
+      width: 100%;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .hint-bar-info span {
+      color: var(--gold-primary);
+    }
+
+    /* ==========================================================================
+       6. ALT ARAÇ VE KONTROL PANELİ (ACTION TOOLBAR)
+       ========================================================================== */
+    .action-toolbar {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 10px 18px;
+      margin-top: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left, .toolbar-center, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-tool {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      touch-action: manipulation;
+    }
+
+    .btn-tool:hover {
+      border-color: var(--cyan-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-tool:active {
+      transform: translateY(1px);
+    }
+
+    .btn-tool.rotate {
+      background: rgba(0, 206, 201, 0.15);
+      border-color: rgba(0, 206, 201, 0.4);
+      color: var(--cyan-accent);
+    }
+    .btn-tool.rotate:hover {
+      background: rgba(0, 206, 201, 0.28);
+      border-color: var(--cyan-accent);
+    }
+
+    .btn-tool.flip {
+      background: rgba(162, 155, 254, 0.15);
+      border-color: rgba(162, 155, 254, 0.4);
+      color: #a29bfe;
+    }
+    .btn-tool.flip:hover {
+      background: rgba(162, 155, 254, 0.28);
+      border-color: #a29bfe;
+    }
+
+    .btn-tool.return-tray {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--cyan-light);
+    }
+    .btn-tool.return-tray:hover {
+      background: rgba(56, 189, 248, 0.28);
+      border-color: var(--cyan-light);
+    }
+
+    .btn-tool.check {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      border: none;
+      color: #0f141d;
+      font-weight: 900;
+      box-shadow: 0 4px 14px rgba(16, 172, 132, 0.35);
+    }
+    .btn-tool.check:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 20px rgba(0, 206, 201, 0.5);
+    }
+
+    .btn-tool.hint {
+      background: rgba(254, 202, 87, 0.15);
+      border-color: rgba(254, 202, 87, 0.4);
+      color: var(--gold-primary);
+    }
+    .btn-tool.hint:hover {
+      background: rgba(254, 202, 87, 0.28);
+      border-color: var(--gold-primary);
+    }
+
+    .btn-tool.clear {
+      background: rgba(255, 82, 82, 0.12);
+      border-color: rgba(255, 82, 82, 0.35);
+      color: #ff7675;
+    }
+    .btn-tool.clear:hover {
+      background: rgba(255, 82, 82, 0.22);
+      border-color: var(--coral-accent);
+    }
+
+    /* ==========================================================================
+       7. ZAFER VE BİLGİLENDİRME MODALLARI
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(9, 13, 21, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 28px;
+      padding: 38px 34px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      text-align: center;
+      position: relative;
+      animation: modalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 56px;
+      margin-bottom: 14px;
+      display: inline-block;
+      animation: bounceWin 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounceWin {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+
+    .modal-title {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--gold-primary);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .modal-desc {
+      font-size: 15px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 26px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-modal-action {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 13px 28px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-modal-action:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 20px rgba(0, 206, 201, 0.45);
+    }
+
+    .btn-modal-secondary {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 800;
+      padding: 12px 24px;
+      border-radius: 30px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-modal-secondary:hover {
+      border-color: var(--cyan-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-close-modal {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-close-modal:hover {
+      color: #fff;
+      border-color: var(--coral-accent);
+    }
+
+    /* Konfeti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1200;
+    }
+
+    /* Responsive İyileştirmeler */
+    @media (max-width: 768px) {
+      .splash-card { padding: 32px 20px; }
+      .splash-title { font-size: 40px; }
+      .top-header { padding: 10px 14px; }
+      .brand-badge { font-size: 14px; padding: 6px 12px; }
+      .status-box { font-size: 13px; }
+      .btn-header { padding: 6px 10px; font-size: 12px; }
+      .btn-tool { padding: 8px 12px; font-size: 12.5px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. GİRİŞ EKRANI (AÇILIŞ / SPLASH SCREEN) (BÖLÜM 3)
+       ========================================================================== -->
+  <div class="screen-overlay" id="splashScreen">
+    <div class="splash-card">
+      <!-- 1. Üst Rozet (Altın sarısı zarif şerit) -->
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+
+      <!-- 2. Ana Başlık -->
+      <h1 class="splash-title">TANGRAM OYUNU</h1>
+
+      <!-- 3. Oyun Parçaları 3B Önizlemesi -->
+      <div class="splash-preview">
+        <svg class="splash-preview-svg" viewBox="0 0 320 140">
+          <defs>
+            <filter id="splashPieceGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+            </filter>
+            <linearGradient id="sp_bt1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00cec9"/>
+              <stop offset="100%" stop-color="#0984e3"/>
+            </linearGradient>
+            <linearGradient id="sp_bt2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ff7675"/>
+              <stop offset="100%" stop-color="#e17055"/>
+            </linearGradient>
+            <linearGradient id="sp_m" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#55efc4"/>
+              <stop offset="100%" stop-color="#00b894"/>
+            </linearGradient>
+            <linearGradient id="sp_sq" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffeaa7"/>
+              <stop offset="100%" stop-color="#feca57"/>
+            </linearGradient>
+            <linearGradient id="sp_p" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#a29bfe"/>
+              <stop offset="100%" stop-color="#6c5ce7"/>
+            </linearGradient>
+            <linearGradient id="sp_st1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ff7675"/>
+              <stop offset="100%" stop-color="#d63031"/>
+            </linearGradient>
+            <linearGradient id="sp_st2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fd79a8"/>
+              <stop offset="100%" stop-color="#e84393"/>
+            </linearGradient>
+          </defs>
+          <!-- 3B İkizkenar Tangram Kompozisyonu -->
+          <g filter="url(#splashPieceGlow)">
+            <polygon points="160,20 220,80 100,80" fill="url(#sp_bt1)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <polygon points="100,80 160,80 100,140" fill="url(#sp_bt2)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <polygon points="160,80 220,80 220,140" fill="url(#sp_m)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <polygon points="60,80 100,80 100,120 60,120" fill="url(#sp_sq)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <polygon points="220,80 260,80 290,120 250,120" fill="url(#sp_p)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <polygon points="40,100 60,80 60,120" fill="url(#sp_st1)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <polygon points="260,80 290,80 290,110" fill="url(#sp_st2)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- 4. Kısa Oynayış Yönergesi Kutusu -->
+      <div class="splash-instructions">
+        <div class="instructions-header">
+          <span>📌 Kısa Oynayış Yönergesi</span>
+        </div>
+        <ul class="instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            <span><strong>Parçaları Tut ve Sürükle:</strong> Taşları bekleme tepsisinden tutarak hedef silüete doğru sürükleyin.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span><strong>Otomatik Manyetik Kilitlenme:</strong> Parçayı hedef yuvasının üzerine getirdiğinizde taş otomatik olarak doğru açıyla yerine kilitlenir.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span><strong>Bulmacayı Tamamla:</strong> 7 geometrik parçanın tümünü doğru yerleştirip bulmacayı tamamlayın.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 5. Başlama Yönerge Metni -->
+      <div class="splash-prompt">Tangram oyununu oynamak için etkinliğe başla</div>
+
+      <!-- 6. Başlat Butonu -->
+      <button class="btn-start" id="btnStartGame">
+        <span>▶ ETKİNLİĞE BAŞLA</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. ÜST KONTROL ŞERİDİ (HEADER BAR) (BÖLÜM 4)
+       ========================================================================== -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span>📐 TANGRAM</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="status-box" id="statusBar">
+        <span>Parçaları hedef silüete sürükleyin; üzerine gelince otomatik oturur...</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn-header restart" id="btnRestart" title="Mevcut bulmacayı sıfırla">
+        <span>🔄 Baştan Başla</span>
+      </button>
+      <button class="btn-header" id="btnInstructions" title="Kuralları incele">
+        <span>ℹ️ Yönerge</span>
+      </button>
+      <button class="btn-header" id="btnSound" title="Sesi aç veya kapat">
+        <span id="soundIcon">🔊</span>
+      </button>
+      <button class="btn-header" id="btnFullscreen" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       3. SEVİYE VE FİGÜR SEÇİM ŞERİDİ (MOD B - SOLO PUZZLE)
+       ========================================================================== -->
+  <nav class="selector-bar">
+    <div class="figures-group">
+      <button class="btn-fig active" data-fig="cat">🐱 Kedi</button>
+      <button class="btn-fig" data-fig="house">🏠 Ev</button>
+      <button class="btn-fig" data-fig="boat">⛵ Yelkenli</button>
+      <button class="btn-fig" data-fig="square">⏹️ Kare</button>
+      <button class="btn-fig" data-fig="triangle">🔺 Piramit</button>
+    </div>
+
+    <div class="difficulty-group">
+      <button class="btn-diff active" data-diff="easy" title="İç kılavuz çizgileri görünür">🟢 Kolay</button>
+      <button class="btn-diff" data-diff="medium" title="Kısmi ipucu görünür">🟡 Orta</button>
+      <button class="btn-diff" data-diff="hard" title="Saf koyu silüet">🔴 İleri</button>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       4. MERKEZÎ OYUN ALANI (SVG ÇALIŞMA ALANI & DAĞITIM ALANLARI)
+       ========================================================================== -->
+  <main class="game-workspace">
+    <svg class="tangram-svg-canvas" id="tangramCanvas" viewBox="0 0 960 560" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- 3B Parça Gölgelendirmesi -->
+        <filter id="pieceShadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000000" flood-opacity="0.65"/>
+        </filter>
+
+        <!-- 3B Zengin Degrade Renkler -->
+        <linearGradient id="grad_BT1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00cec9"/>
+          <stop offset="100%" stop-color="#0984e3"/>
+        </linearGradient>
+
+        <linearGradient id="grad_BT2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff7675"/>
+          <stop offset="100%" stop-color="#e17055"/>
+        </linearGradient>
+
+        <linearGradient id="grad_M" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#55efc4"/>
+          <stop offset="100%" stop-color="#00b894"/>
+        </linearGradient>
+
+        <linearGradient id="grad_SQ" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ffeaa7"/>
+          <stop offset="100%" stop-color="#fdcb6e"/>
+        </linearGradient>
+
+        <linearGradient id="grad_P" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#a29bfe"/>
+          <stop offset="100%" stop-color="#6c5ce7"/>
+        </linearGradient>
+
+        <linearGradient id="grad_ST1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff7675"/>
+          <stop offset="100%" stop-color="#d63031"/>
+        </linearGradient>
+
+        <linearGradient id="grad_ST2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fd79a8"/>
+          <stop offset="100%" stop-color="#e84393"/>
+        </linearGradient>
+
+        <!-- Çalışma Alanı Izgara Deseni -->
+        <pattern id="boardGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+          <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+        </pattern>
+      </defs>
+
+      <!-- Arka Plan Kılavuz Alanları -->
+      <rect x="0" y="0" width="960" height="560" fill="url(#boardGrid)"/>
+
+      <!-- Sol Parça Dağıtım Tepsisi -->
+      <rect class="tray-boundary" x="20" y="20" width="160" height="520"/>
+      <text class="tray-title" x="100" y="46">PARÇALAR</text>
+
+      <!-- Merkez Çalışma ve Hedef Alanı Sınırı -->
+      <rect x="200" y="20" width="560" height="520" fill="rgba(19, 28, 44, 0.45)" stroke="rgba(39, 56, 82, 0.6)" stroke-width="2" rx="20"/>
+
+      <!-- Sağ Parça Dağıtım Tepsisi -->
+      <rect class="tray-boundary" x="780" y="20" width="160" height="520"/>
+      <text class="tray-title" x="860" y="46">PARÇALAR</text>
+
+      <!-- Hedef Silüet ve Yuva Katmanı (Tıklanabilir Manyetik Yuvalar) -->
+      <g id="ghostLayer"></g>
+
+      <!-- Etkileşimli 7 Tangram Parçası Katmanı -->
+      <g id="piecesLayer"></g>
+    </svg>
+    <div class="hint-bar-info">
+      <span>💡 Kolay Oynanış:</span> Parçaları tepsiden silüete sürükleyin; yuvasının üzerine getirdiğinizde <strong>otomatik olarak döner ve yerine kilitlenir</strong>.
+    </div>
+  </main>
+
+  <!-- ==========================================================================
+       5. ALT ARAÇ VE KONTROL PANELİ
+       ========================================================================== -->
+  <footer class="action-toolbar">
+    <div class="toolbar-left">
+      <button class="btn-tool rotate" id="btnRotate" title="Seçili parçayı 45 derece döndür">
+        <span>↷ 45° Döndür</span>
+      </button>
+      <button class="btn-tool flip" id="btnFlip" title="Yalnızca paralelkenar ters çevrilebilir">
+        <span>⇄ Ters Çevir</span>
+      </button>
+      <button class="btn-tool return-tray" id="btnReturnTray" title="Seçili parçayı bekleme tepsisine geri al">
+        <span>↩ Tepsiye Al</span>
+      </button>
+    </div>
+
+    <div class="toolbar-center">
+      <button class="btn-tool check" id="btnCheck">
+        <span>🎯 Kontrol Et</span>
+      </button>
+      <button class="btn-tool hint" id="btnHint">
+        <span>💡 İpucu</span>
+      </button>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="btn-tool clear" id="btnClear" title="Tüm parçaları bekleme tepsisine geri al">
+        <span>🧹 Tümünü Temizle</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       6. ZAFER KARTI MODALI (TEBRİKLER KARTI)
+       ========================================================================== -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card">
+      <div class="modal-icon">🏆</div>
+      <h2 class="modal-title">Tebrikler, Bulmacayı Çözdünüz!</h2>
+      <p class="modal-desc" id="victoryDesc">
+        7 parçanın tümünü doğru yerleştirerek şekli kusursuz bir şekilde tamamladınız.
+      </p>
+      <div class="modal-buttons">
+        <button class="btn-modal-action" id="btnNextPuzzle">
+          <span>Sonraki Bulmaca ❯</span>
+        </button>
+        <button class="btn-modal-secondary" id="btnReplayPuzzle">
+          <span>🔄 Yeniden Oyna</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       7. OYNAYIŞ YÖNERGESİ MODALI
+       ========================================================================== -->
+  <div class="modal-overlay" id="instructionsModal">
+    <div class="modal-card" style="text-align: left;">
+      <button class="btn-close-modal" id="btnCloseInstructions">✕</button>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <span style="font-size: 40px;">📜</span>
+        <h3 class="modal-title" style="margin-top: 6px; font-size: 26px;">Tangramın 3 Altın Kuralı</h3>
+      </div>
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1.5px solid var(--border-color); border-radius: 18px; padding: 18px; margin-bottom: 20px;">
+        <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 12px; color: #cbd5e1; font-size: 14px; line-height: 1.5;">
+          <li><strong>7 Parçanın Tümü Kullanılmalıdır:</strong> Tangram setindeki 2 büyük üçgen, 1 orta üçgen, 2 küçük üçgen, 1 kare ve 1 paralelkenarın tamamı kullanılır.</li>
+          <li><strong>Parçalar Üst Üste Gelemez:</strong> Parçalar asla birbirinin üzerine binmez, aynı düzlemde kenar veya köşelerinden birbirine temas eder.</li>
+          <li><strong>Otomatik Manyetik Kilitlenme:</strong> Parçaları yuvaların üzerine getirdiğinizde taş otomatik olarak doğru açıyla yerine kilitlenir.</li>
+        </ol>
+      </div>
+      <div style="text-align: center;">
+        <button class="btn-modal-action" id="btnCloseInstructionsBtn" style="padding: 10px 30px; font-size: 15px;">
+          <span>Anladım, Oyuna Dön</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konfeti Kutlama Canvası -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ==========================================================================
+       8. JAVASCRIPT: SES MOTORU, SCORM 1.2 VE OYUN MANTIĞI
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       SCORM 1.2 MOTORU (STANDALONE & LMS UYUMLU)
+       ========================================================================== */
+    const SCORM = {
+      api: null,
+      startTime: null,
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && win.parent && win.parent !== win && attempts < 10) {
+          attempts++;
+          win = win.parent;
+        }
+        return win ? win.API : null;
+      },
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (!this.api && window.opener) {
+            this.api = this.findAPI(window.opener);
+          }
+          if (this.api && typeof this.api.LMSInitialize === "function") {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM bağımsız modda çalışıyor:", e);
+        }
+        this.startTime = new Date();
+      },
+      complete() {
+        try {
+          if (this.api && typeof this.api.LMSSetValue === "function") {
+            this.api.LMSSetValue("cmi.core.score.raw", "100");
+            this.api.LMSSetValue("cmi.core.score.min", "0");
+            this.api.LMSSetValue("cmi.core.score.max", "100");
+            this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+            if (this.startTime) {
+              const durationMs = new Date() - this.startTime;
+              const totalSec = Math.floor(durationMs / 1000);
+              const hh = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+              const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+              const ss = String(totalSec % 60).padStart(2, '0');
+              this.api.LMSSetValue("cmi.core.session_time", `${hh}:${mm}:${ss}`);
+            }
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM tamamlama hatası:", e);
+        }
+      },
+      finish() {
+        try {
+          if (this.api && typeof this.api.LMSFinish === "function") {
+            this.api.LMSFinish("");
+          }
+        } catch (e) {
+          console.log("SCORM sonlandırma:", e);
+        }
+      }
+    };
+
+    window.addEventListener("load", () => SCORM.init());
+    window.addEventListener("beforeunload", () => SCORM.finish());
+
+    /* ==========================================================================
+       WEB AUDIO API MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(480, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(860, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+
+      playSwoosh() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(640, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+
+      playPlace() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(540, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.26, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+
+      playErase() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(360, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.16, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+
+      playGentleAlert() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(280, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.20, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.28);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.28);
+      }
+
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.12;
+          gain.gain.setValueAtTime(0.24, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.45);
+        });
+      }
+    }
+
+    /* ==========================================================================
+       KONFETİ EFEKTİ MOTORU
+       ========================================================================== */
+    class ConfettiEngine {
+      constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.animId = null;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      start() {
+        this.resize();
+        this.particles = [];
+        const colors = ['#feca57', '#00cec9', '#10ac84', '#ff7675', '#a29bfe', '#38bdf8', '#ffffff'];
+        for (let i = 0; i < 110; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * -this.canvas.height * 0.5,
+            size: Math.random() * 9 + 5,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 5 + 3,
+            rot: Math.random() * 360,
+            vRot: (Math.random() - 0.5) * 8
+          });
+        }
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.render();
+      }
+
+      render() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        let active = false;
+
+        this.particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vRot;
+
+          if (p.y < this.canvas.height + 20) active = true;
+
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rot * Math.PI) / 180);
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          this.ctx.restore();
+        });
+
+        if (active) {
+          this.animId = requestAnimationFrame(() => this.render());
+        } else {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+
+      stop() {
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+    }
+
+    /* ==========================================================================
+       TANGRAM GEOMETRİK TANIMLARI VE KANONİK ŞEKİLLER
+       ========================================================================== */
+    const PIECE_CONFIG = {
+      'BT1': { name: '1. Büyük Üçgen', grad: 'url(#grad_BT1)', type: 'BT' },
+      'BT2': { name: '2. Büyük Üçgen', grad: 'url(#grad_BT2)', type: 'BT' },
+      'M':   { name: 'Orta Boy Üçgen', grad: 'url(#grad_M)',   type: 'M'  },
+      'SQ':  { name: 'Kare',           grad: 'url(#grad_SQ)',  type: 'SQ' },
+      'P':   { name: 'Paralelkenar',   grad: 'url(#grad_P)',   type: 'P'  },
+      'ST1': { name: '1. Küçük Üçgen', grad: 'url(#grad_ST1)', type: 'ST' },
+      'ST2': { name: '2. Küçük Üçgen', grad: 'url(#grad_ST2)', type: 'ST' }
+    };
+
+    // Orijine göre merkezlenmiş kanonik parça geometrileri (Sıfır kayma ve deformasyon)
+    const CANONICAL_SHAPES = {
+      'BT': [[-120, -40], [120, -40], [0, 80]],
+      'M':  [[-40, -40], [80, -40], [-40, 80]],
+      'SQ': [[-60, 0], [0, 60], [60, 0], [0, -60]],
+      'P':  [[-90, -30], [30, -30], [90, 30], [-30, 30]],
+      'ST': [[-60, -20], [60, -20], [0, 40]]
+    };
+
+    function getTransformedPoints(pieceType, cx, cy, rot = 0, flipped = false) {
+      const base = CANONICAL_SHAPES[pieceType];
+      const rad = (rot * Math.PI) / 180;
+      const ca = Math.cos(rad);
+      const sa = Math.sin(rad);
+      return base.map(([x, y]) => {
+        const fx = flipped ? -x : x;
+        const rx = fx * ca - y * sa + cx;
+        const ry = fx * sa + y * ca + cy;
+        return [Math.round(rx * 10) / 10, Math.round(ry * 10) / 10];
+      });
+    }
+
+    // Temel Figürler ve Merkezlenmiş Koordinatları (ViewBox: 960x560, Merkez: 480, 280)
+    const RAW_SHAPES = {
+      'cat': {
+        name: 'Sevimli Kedi',
+        desc: 'Kulaklar için küçük üçgenleri, sırt ve taban için büyük üçgenleri birleştirin.',
+        dx: 180, dy: 20,
+        shapes: {
+          'ST1': [[210, 110], [150, 170], [150, 50]],
+          'ST2': [[210, 110], [270, 50],  [270, 170]],
+          'SQ':  [[210, 110], [270, 170], [210, 230], [150, 170]],
+          'P':   [[210, 230], [270, 170], [390, 170], [330, 230]],
+          'M':   [[210, 230], [330, 230], [330, 350]],
+          'BT1': [[210, 230], [330, 350], [210, 470]],
+          'BT2': [[330, 350], [450, 470], [210, 470]]
+        },
+        mediumHints: ['BT1', 'BT2', 'SQ']
+      },
+      'house': {
+        name: 'Geometrik Ev',
+        desc: 'Geniş üçgen çatı, bacalı sol kanat ve düz zeminli gövdeyi inşa edin.',
+        dx: 180, dy: 50,
+        shapes: {
+          'BT1': [[300, 170], [420, 290], [180, 290]],
+          'BT2': [[180, 290], [420, 290], [300, 410]],
+          'M':   [[180, 290], [180, 410], [300, 410]],
+          'ST1': [[420, 290], [420, 410], [360, 350]],
+          'ST2': [[420, 410], [300, 410], [360, 350]],
+          'P':   [[180, 170], [180, 290], [240, 230], [240, 110]],
+          'SQ':  [[300, 50],  [360, 110], [300, 170], [240, 110]]
+        },
+        mediumHints: ['BT1', 'BT2', 'M']
+      },
+      'boat': {
+        name: 'Yelkenli Gemi',
+        desc: 'Düz güverteli, açılı pruvalı tekne gövdesini ve direğe dayalı iki yelkeni birleştirin.',
+        dx: 0, dy: 0,
+        shapes: {
+          'BT1': [[540, 100], [420, 220], [540, 340]],
+          'ST1': [[540, 100], [600, 160], [540, 220]],
+          'SQ':  [[540, 220], [600, 160], [660, 220], [600, 280]],
+          'ST2': [[540, 220], [600, 280], [540, 340]],
+          'BT2': [[420, 340], [660, 340], [540, 460]],
+          'M':   [[660, 340], [540, 460], [660, 460]],
+          'P':   [[420, 340], [480, 400], [360, 400], [300, 340]]
+        },
+        mediumHints: ['BT1', 'BT2', 'M']
+      },
+      'square': {
+        name: 'Klasik Başlangıç Karesi',
+        desc: '7 parçayı tek bir mükemmel kare haline getirin.',
+        dx: 180, dy: 30,
+        shapes: {
+          'BT1': [[300, 250], [420, 370], [180, 370]],
+          'BT2': [[300, 250], [420, 130], [420, 370]],
+          'M':   [[180, 130], [300, 130], [180, 250]],
+          'ST1': [[240, 310], [180, 370], [180, 250]],
+          'ST2': [[300, 250], [240, 190], [360, 190]],
+          'SQ':  [[180, 250], [240, 190], [300, 250], [240, 310]],
+          'P':   [[420, 130], [300, 130], [240, 190], [360, 190]]
+        },
+        mediumHints: ['BT1', 'BT2', 'SQ']
+      },
+      'triangle': {
+        name: 'Büyük Piramit',
+        desc: '7 parçanın tümünü birleştirerek kusursuz dengeli büyük bir piramit oluşturun.',
+        dx: 0, dy: 0,
+        shapes: {
+          'BT1': [[480, 400], [480, 160], [360, 280]],
+          'BT2': [[480, 400], [240, 400], [360, 280]],
+          'M':   [[480, 400], [600, 400], [480, 280]],
+          'ST1': [[540, 220], [480, 160], [480, 280]],
+          'SQ':  [[480, 280], [540, 340], [600, 280], [540, 220]],
+          'ST2': [[600, 280], [540, 340], [660, 340]],
+          'P':   [[720, 400], [600, 400], [540, 340], [660, 340]]
+        },
+        mediumHints: ['BT1', 'BT2', 'M']
+      }
+    };
+
+    const GAME_FIGURES = {};
+    Object.keys(RAW_SHAPES).forEach(figKey => {
+      const item = RAW_SHAPES[figKey];
+      const centeredShapes = {};
+      Object.keys(item.shapes).forEach(pieceKey => {
+        centeredShapes[pieceKey] = item.shapes[pieceKey].map(p => [p[0] + item.dx, p[1] + item.dy]);
+      });
+      GAME_FIGURES[figKey] = {
+        name: item.name,
+        desc: item.desc,
+        shapes: centeredShapes,
+        mediumHints: item.mediumHints
+      };
+    });
+
+    // Başlangıçta parçaların bekleme tepsisi konumları
+    const TRAY_COORDINATES = {
+      'BT1': getTransformedPoints('BT', 90,  150, 90),
+      'SQ':  getTransformedPoints('SQ', 100, 310, 0),
+      'ST1': getTransformedPoints('ST', 100, 440, 180),
+      'BT2': getTransformedPoints('BT', 870, 150, 270),
+      'M':   getTransformedPoints('M',  870, 280, 270),
+      'P':   getTransformedPoints('P',  860, 380, 90),
+      'ST2': getTransformedPoints('ST', 860, 470, 180)
+    };
+
+    /* ==========================================================================
+       TANGRAM ANA OYUN MOTORU
+       ========================================================================== */
+    class TangramGame {
+      constructor() {
+        this.sound = new SoundEngine();
+        this.confetti = new ConfettiEngine('confettiCanvas');
+        this.currentFigureKey = 'cat';
+        this.difficulty = 'easy'; // 'easy', 'medium', 'hard'
+        this.selectedPiece = null;
+        this.activeMagnetSlot = null;
+        this.statusTimer = null;
+        this.isSolved = false;
+
+        this.initDOM();
+        this.bindEvents();
+      }
+
+      initDOM() {
+        this.svg = document.getElementById('tangramCanvas');
+        this.ghostLayer = document.getElementById('ghostLayer');
+        this.piecesLayer = document.getElementById('piecesLayer');
+        this.statusBar = document.getElementById('statusBar');
+        this.soundBtn = document.getElementById('btnSound');
+        this.soundIcon = document.getElementById('soundIcon');
+        this.fullscreenBtn = document.getElementById('btnFullscreen');
+        this.restartBtn = document.getElementById('btnRestart');
+        this.instructionsBtn = document.getElementById('btnInstructions');
+
+        this.figButtons = document.querySelectorAll('.btn-fig');
+        this.diffButtons = document.querySelectorAll('.btn-diff');
+
+        this.btnRotate = document.getElementById('btnRotate');
+        this.btnFlip = document.getElementById('btnFlip');
+        this.btnReturnTray = document.getElementById('btnReturnTray');
+        this.btnCheck = document.getElementById('btnCheck');
+        this.btnHint = document.getElementById('btnHint');
+        this.btnClear = document.getElementById('btnClear');
+
+        this.splashScreen = document.getElementById('splashScreen');
+        this.btnStartGame = document.getElementById('btnStartGame');
+
+        this.victoryModal = document.getElementById('victoryModal');
+        this.btnNextPuzzle = document.getElementById('btnNextPuzzle');
+        this.btnReplayPuzzle = document.getElementById('btnReplayPuzzle');
+        this.victoryDesc = document.getElementById('victoryDesc');
+
+        this.instructionsModal = document.getElementById('instructionsModal');
+        this.btnCloseInstructions = document.getElementById('btnCloseInstructions');
+        this.btnCloseInstructionsBtn = document.getElementById('btnCloseInstructionsBtn');
+      }
+
+      init() {
+        this.loadFigure(this.currentFigureKey);
+      }
+
+      bindEvents() {
+        // Başlat Butonu
+        this.btnStartGame.addEventListener('click', () => {
+          this.sound.playClick();
+          this.splashScreen.classList.add('hidden');
+          this.sound.playSwoosh();
+        });
+
+        // Üst Bar Butonları
+        this.restartBtn.addEventListener('click', () => {
+          this.sound.playClick();
+          this.loadFigure(this.currentFigureKey);
+          this.updateStatus('Bulmaca sıfırlandı. Parçaları yerleştirin.');
+        });
+
+        this.instructionsBtn.addEventListener('click', () => {
+          this.sound.playClick();
+          this.instructionsModal.classList.add('active');
+        });
+
+        this.btnCloseInstructions.addEventListener('click', () => {
+          this.sound.playClick();
+          this.instructionsModal.classList.remove('active');
+        });
+
+        this.btnCloseInstructionsBtn.addEventListener('click', () => {
+          this.sound.playClick();
+          this.instructionsModal.classList.remove('active');
+        });
+
+        this.soundBtn.addEventListener('click', () => {
+          this.sound.muted = !this.sound.muted;
+          this.soundIcon.textContent = this.sound.muted ? '🔇' : '🔊';
+          if (!this.sound.muted) this.sound.playClick();
+        });
+
+        this.fullscreenBtn.addEventListener('click', () => {
+          this.sound.playClick();
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else {
+            document.exitFullscreen().catch(() => {});
+          }
+        });
+
+        // Figür ve Seviye Seçicileri
+        this.figButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.sound.playClick();
+            this.figButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.loadFigure(btn.dataset.fig);
+          });
+        });
+
+        this.diffButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.sound.playClick();
+            this.diffButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.difficulty = btn.dataset.diff;
+            this.renderGhost();
+            this.updateStatus(`Zorluk seviyesi: ${btn.textContent.trim()}`);
+          });
+        });
+
+        // Araç Paneli Butonları
+        this.btnRotate.addEventListener('click', () => {
+          if (!this.selectedPiece) {
+            this.updateStatus('Önce döndürmek istediğiniz bir parçaya tıklayın.', 'alert');
+            this.sound.playGentleAlert();
+            return;
+          }
+          this.sound.playSwoosh();
+          this.rotatePiece(this.selectedPiece, 45);
+        });
+
+        this.btnFlip.addEventListener('click', () => {
+          if (!this.selectedPiece || this.selectedPiece.dataset.type !== 'P') {
+            this.updateStatus('Yalnızca paralelkenar ters çevrilebilir!', 'alert');
+            this.sound.playGentleAlert();
+            return;
+          }
+          this.sound.playSwoosh();
+          this.flipPiece(this.selectedPiece);
+        });
+
+        if (this.btnReturnTray) {
+          this.btnReturnTray.addEventListener('click', () => {
+            if (!this.selectedPiece) {
+              this.updateStatus('Önce geri almak istediğiniz parçaya tıklayın.', 'alert');
+              this.sound.playGentleAlert();
+              return;
+            }
+            this.returnPieceToTray(this.selectedPiece);
+          });
+        }
+
+        this.btnCheck.addEventListener('click', () => {
+          this.checkSolution(true);
+        });
+
+        this.btnHint.addEventListener('click', () => {
+          this.giveHint();
+        });
+
+        this.btnClear.addEventListener('click', () => {
+          this.sound.playErase();
+          this.scatterPieces();
+          this.updateStatus('Tüm parçalar bekleme tepsisine geri alındı.');
+        });
+
+        // Zafer Modalı Butonları
+        this.btnNextPuzzle.addEventListener('click', () => {
+          this.sound.playClick();
+          this.victoryModal.classList.remove('active');
+          this.confetti.stop();
+          this.nextPuzzle();
+        });
+
+        this.btnReplayPuzzle.addEventListener('click', () => {
+          this.sound.playClick();
+          this.victoryModal.classList.remove('active');
+          this.confetti.stop();
+          this.loadFigure(this.currentFigureKey);
+        });
+
+        // Tuval boşluğuna tıklama seçimi kaldırır
+        this.svg.addEventListener('pointerdown', (e) => {
+          if (e.target === this.svg || e.target.classList.contains('tray-boundary') || e.target.tagName === 'rect') {
+            this.deselectAll();
+          }
+        });
+      }
+
+      loadFigure(figKey) {
+        this.currentFigureKey = figKey;
+        this.isSolved = false;
+        this.selectedPiece = null;
+        this.activeMagnetSlot = null;
+        this.victoryModal.classList.remove('active');
+        this.confetti.stop();
+
+        const fig = GAME_FIGURES[figKey];
+        this.updateStatus(`${fig.name}: Parçaları yerleştirerek hedef şekli oluşturun.`);
+
+        this.renderGhost();
+        this.scatterPieces();
+      }
+
+      nextPuzzle() {
+        const keys = Object.keys(GAME_FIGURES);
+        const curIdx = keys.indexOf(this.currentFigureKey);
+        const nextKey = keys[(curIdx + 1) % keys.length];
+
+        this.figButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.fig === nextKey);
+        });
+        this.loadFigure(nextKey);
+      }
+
+      renderGhost() {
+        this.ghostLayer.innerHTML = '';
+        const fig = GAME_FIGURES[this.currentFigureKey];
+        const targetShapes = fig.shapes;
+
+        // Hedef yuvaları manyetik kilitlenebilir görsel SVG elemanı olarak oluştur
+        Object.keys(targetShapes).forEach(slotKey => {
+          const pts = targetShapes[slotKey];
+          const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          poly.setAttribute('points', pts.map(p => `${p[0]},${p[1]}`).join(' '));
+          poly.setAttribute('data-slot-key', slotKey);
+          poly.setAttribute('data-slot-type', PIECE_CONFIG[slotKey].type);
+
+          let className = 'target-slot ';
+          if (this.difficulty === 'easy') {
+            className += 'target-ghost';
+          } else if (this.difficulty === 'medium') {
+            const hints = fig.mediumHints || ['BT1', 'BT2'];
+            className += hints.includes(slotKey) ? 'target-medium-guide' : 'target-solid-silhouette';
+          } else {
+            className += 'target-solid-silhouette';
+          }
+          poly.setAttribute('class', className);
+
+          this.ghostLayer.appendChild(poly);
+        });
+      }
+
+      scatterPieces() {
+        this.piecesLayer.innerHTML = '';
+        this.selectedPiece = null;
+        this.activeMagnetSlot = null;
+
+        Object.keys(PIECE_CONFIG).forEach(key => {
+          const conf = PIECE_CONFIG[key];
+          const initialPts = TRAY_COORDINATES[key];
+
+          const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          poly.setAttribute('points', initialPts.map(p => `${p[0]},${p[1]}`).join(' '));
+          poly.setAttribute('fill', conf.grad);
+          poly.setAttribute('stroke', 'rgba(255, 255, 255, 0.45)');
+          poly.setAttribute('stroke-width', '2');
+          poly.setAttribute('stroke-linejoin', 'round');
+          poly.setAttribute('filter', 'url(#pieceShadow)');
+          poly.setAttribute('class', 'tan-piece');
+          poly.setAttribute('data-key', key);
+          poly.setAttribute('data-type', conf.type);
+          poly.setAttribute('id', `piece_${key}`);
+
+          poly._rot = 0;
+          poly._flipped = false;
+
+          this.enableDrag(poly);
+          this.piecesLayer.appendChild(poly);
+        });
+      }
+
+      enableDrag(elem) {
+        let isDragging = false;
+        let startSVG = { x: 0, y: 0 };
+        let basePoints = [];
+        let hasMoved = false;
+        let currentPointerId = null;
+
+        const getSVGPoint = (e) => {
+          const pt = this.svg.createSVGPoint();
+          pt.x = e.clientX;
+          pt.y = e.clientY;
+          const ctm = this.svg.getScreenCTM();
+          if (ctm) {
+            try {
+              return pt.matrixTransform(ctm.inverse());
+            } catch (err) {}
+          }
+          const rect = this.svg.getBoundingClientRect();
+          return {
+            x: ((e.clientX - rect.left) / (rect.width || 1)) * 960,
+            y: ((e.clientY - rect.top) / (rect.height || 1)) * 560
+          };
+        };
+
+        const onMove = (e) => {
+          if (!isDragging) return;
+          if (currentPointerId !== null && e.pointerId !== currentPointerId) return;
+          if (e.cancelable) e.preventDefault();
+
+          const curSVG = getSVGPoint(e);
+          const dx = curSVG.x - startSVG.x;
+          const dy = curSVG.y - startSVG.y;
+
+          if (!hasMoved && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
+            hasMoved = true;
+            elem.classList.add('dragging');
+            // Hareket başladığında eski yuvasından serbest bırak
+            if (elem.dataset.snappedSlot) {
+              elem.classList.remove('snapped');
+              delete elem.dataset.snappedSlot;
+            }
+          }
+
+          if (hasMoved) {
+            // Taban noktalara göre doğrudan hesapla (sıfır kayma ve kesintisiz takip)
+            const newPoints = basePoints.map(p => `${(p[0] + dx).toFixed(1)},${(p[1] + dy).toFixed(1)}`).join(' ');
+            elem.setAttribute('points', newPoints);
+
+            // Anlık Manyetik Yakalama Önizlemesi (Hedef yuva parıldar)
+            const candidateSlot = this.findCandidateSlot(elem, curSVG);
+            this.setMagnetHighlight(candidateSlot);
+          }
+        };
+
+        const onUp = (e) => {
+          if (!isDragging) return;
+          if (currentPointerId !== null && e.pointerId !== currentPointerId) return;
+          isDragging = false;
+          elem.classList.remove('dragging');
+
+          window.removeEventListener('pointermove', onMove, { capture: true });
+          window.removeEventListener('pointerup', onUp, { capture: true });
+          window.removeEventListener('pointercancel', onUp, { capture: true });
+
+          if (hasMoved) {
+            const endPoint = getSVGPoint(e);
+            // Bırakıldığında: Hedef yuva üzerine yaklaştırılmışsa OTOMATİK DÖNDÜRÜP KİLİTLE!
+            const candidateSlot = this.findCandidateSlot(elem, endPoint);
+            if (candidateSlot) {
+              this.snapPieceToSlot(elem, candidateSlot);
+            } else {
+              this.clearMagnetHighlights();
+              // Eğer parça sol veya sağ tepsi üzerine bırakıldıysa tepsideki yuvasına düzgün yerleştir
+              if (endPoint.x < 190 || endPoint.x > 770) {
+                this.returnPieceToTray(elem);
+              }
+            }
+          } else {
+            this.clearMagnetHighlights();
+          }
+        };
+
+        const onDown = (e) => {
+          if (this.isSolved) return;
+          if (e.button && e.button !== 0) return;
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+
+          isDragging = true;
+          hasMoved = false;
+          currentPointerId = e.pointerId;
+
+          // Parçayı seç ve görsel olarak en üst katmana getir
+          this.selectPiece(elem);
+
+          startSVG = getSVGPoint(e);
+          basePoints = elem.getAttribute('points').trim().split(/\s+/).map(p => p.split(',').map(Number));
+
+          this.sound.playClick();
+
+          // Global pencere seviyesinde dinle (imleç hızlansa veya SVG dışına çıksa bile asla kopmaz!)
+          window.addEventListener('pointermove', onMove, { passive: false, capture: true });
+          window.addEventListener('pointerup', onUp, { passive: false, capture: true });
+          window.addEventListener('pointercancel', onUp, { passive: false, capture: true });
+        };
+
+        elem.addEventListener('pointerdown', onDown);
+
+        // Çift tıklama: Parçayı 45 derece döndürür
+        elem.addEventListener('dblclick', (e) => {
+          e.stopPropagation();
+          this.sound.playSwoosh();
+          this.rotatePiece(elem, 45);
+        });
+      }
+
+      findCandidateSlot(piece, pointerPt) {
+        const fig = GAME_FIGURES[this.currentFigureKey];
+        const targetShapes = fig.shapes;
+        const pieceType = piece.dataset.type;
+        const curPts = piece.getAttribute('points').trim().split(/\s+/).map(p => p.split(',').map(Number));
+        const curCenter = this.getCenter(curPts);
+
+        // Bu parça haricinde diğer parçaların doldurduğu yuvaları belirle
+        const pieces = Array.from(this.piecesLayer.querySelectorAll('.tan-piece'));
+        const occupiedSlots = new Set();
+        pieces.forEach(p => {
+          if (p !== piece && p.dataset.snappedSlot) {
+            occupiedSlots.add(p.dataset.snappedSlot);
+          }
+        });
+
+        let bestSlot = null;
+        let bestDist = Infinity;
+
+        for (const [slotKey, slotPts] of Object.entries(targetShapes)) {
+          if (PIECE_CONFIG[slotKey].type !== pieceType) continue;
+          if (occupiedSlots.has(slotKey)) continue;
+
+          const slotCenter = this.getCenter(slotPts);
+          const distToCenter = Math.hypot(slotCenter.x - curCenter.x, slotCenter.y - curCenter.y);
+          const distToPointer = pointerPt ? Math.hypot(slotCenter.x - pointerPt.x, slotCenter.y - pointerPt.y) : Infinity;
+          const isInside = pointerPt ? this.isPointInPoly(pointerPt, slotPts) : false;
+
+          // Parça merkezi veya fare imleci yuvaya yaklaştığında veya yuvanın içine girdiğinde manyetik alan devreye girer
+          if (isInside || distToCenter < 100 || distToPointer < 90) {
+            const minD = Math.min(distToCenter, distToPointer);
+            if (minD < bestDist) {
+              bestDist = minD;
+              bestSlot = slotKey;
+            }
+          }
+        }
+
+        return bestSlot;
+      }
+
+      setMagnetHighlight(slotKey) {
+        if (this.activeMagnetSlot === slotKey) return;
+        this.clearMagnetHighlights();
+        this.activeMagnetSlot = slotKey;
+
+        if (slotKey) {
+          const slotElem = this.ghostLayer.querySelector(`[data-slot-key="${slotKey}"]`);
+          if (slotElem) {
+            slotElem.classList.add('magnet-target');
+          }
+        }
+      }
+
+      clearMagnetHighlights() {
+        this.activeMagnetSlot = null;
+        this.ghostLayer.querySelectorAll('.magnet-target').forEach(el => el.classList.remove('magnet-target'));
+      }
+
+      snapPieceToSlot(piece, slotKey) {
+        const fig = GAME_FIGURES[this.currentFigureKey];
+        const targetPts = fig.shapes[slotKey];
+        if (!targetPts) return;
+
+        // Parçayı tam hedef koordinatlarına oturt
+        piece.setAttribute('points', targetPts.map(p => `${p[0]},${p[1]}`).join(' '));
+        piece.dataset.snappedSlot = slotKey;
+        piece.classList.add('snapped');
+        piece.classList.add('snap-animation');
+        setTimeout(() => piece.classList.remove('snap-animation'), 400);
+
+        this.sound.playPlace();
+        this.clearMagnetHighlights();
+
+        const conf = PIECE_CONFIG[piece.dataset.key];
+        this.updateStatus(`${conf.name} yuvaya otomatik oturdu! ✨`);
+
+        this.checkSolution(false);
+      }
+
+      returnPieceToTray(piece) {
+        const key = piece.dataset.key;
+        const trayPts = TRAY_COORDINATES[key];
+        piece.setAttribute('points', trayPts.map(p => `${p[0]},${p[1]}`).join(' '));
+        delete piece.dataset.snappedSlot;
+        piece.classList.remove('snapped');
+        piece._rot = 0;
+        piece._flipped = false;
+
+        this.sound.playErase();
+        this.clearMagnetHighlights();
+        this.updateStatus(`${PIECE_CONFIG[key].name} bekleme tepsisine alındı.`);
+      }
+
+      selectPiece(elem) {
+        this.deselectAll();
+        this.selectedPiece = elem;
+        elem.classList.add('selected');
+        // Parçayı katmanın en üstüne getir
+        this.piecesLayer.appendChild(elem);
+
+        const key = elem.dataset.key;
+        const conf = PIECE_CONFIG[key];
+        this.updateStatus(`Seçildi: ${conf.name} (Hedefe sürükleyin veya araç panelini kullanın)`);
+      }
+
+      deselectAll() {
+        this.selectedPiece = null;
+        this.piecesLayer.querySelectorAll('.tan-piece').forEach(p => p.classList.remove('selected'));
+      }
+
+      rotatePiece(elem, angleDeg) {
+        const ptype = elem.dataset.type;
+
+        // Yuvalanmış durumdaysa döndürülünce serbest bırakılır
+        if (elem.dataset.snappedSlot) {
+          delete elem.dataset.snappedSlot;
+          elem.classList.remove('snapped');
+        }
+
+        elem._rot = ((elem._rot || 0) + angleDeg) % 360;
+        const curPts = elem.getAttribute('points').trim().split(/\s+/).map(p => p.split(',').map(Number));
+        const curCenter = this.getCenter(curPts);
+
+        // Kanonik şekilden temiz ve deformasyonsuz döndür
+        const newPts = getTransformedPoints(ptype, curCenter.x, curCenter.y, elem._rot, elem._flipped || false);
+        elem.setAttribute('points', newPts.map(p => `${p[0]},${p[1]}`).join(' '));
+
+        // Döndükten sonra yakında yuva varsa kontrol et
+        const candidate = this.findCandidateSlot(elem, curCenter);
+        if (candidate) {
+          this.snapPieceToSlot(elem, candidate);
+        }
+      }
+
+      flipPiece(elem) {
+        if (elem.dataset.type !== 'P') return;
+
+        if (elem.dataset.snappedSlot) {
+          delete elem.dataset.snappedSlot;
+          elem.classList.remove('snapped');
+        }
+
+        elem._flipped = !elem._flipped;
+        const curPts = elem.getAttribute('points').trim().split(/\s+/).map(p => p.split(',').map(Number));
+        const curCenter = this.getCenter(curPts);
+
+        const newPts = getTransformedPoints('P', curCenter.x, curCenter.y, elem._rot || 0, elem._flipped);
+        elem.setAttribute('points', newPts.map(p => `${p[0]},${p[1]}`).join(' '));
+
+        const candidate = this.findCandidateSlot(elem, curCenter);
+        if (candidate) {
+          this.snapPieceToSlot(elem, candidate);
+        }
+      }
+
+      getCenter(pts) {
+        const sum = pts.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0]);
+        return { x: sum[0] / pts.length, y: sum[1] / pts.length };
+      }
+
+      isPointInPoly(pt, poly) {
+        let inside = false;
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+          const xi = poly[i][0], yi = poly[i][1];
+          const xj = poly[j][0], yj = poly[j][1];
+          const intersect = ((yi > pt.y) !== (yj > pt.y)) &&
+                            (pt.x < (xj - xi) * (pt.y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      }
+
+      checkSolution(isManualCheck = false) {
+        const fig = GAME_FIGURES[this.currentFigureKey];
+        const targetShapes = fig.shapes;
+        const pieces = Array.from(this.piecesLayer.querySelectorAll('.tan-piece'));
+
+        const filledSlots = new Set();
+        pieces.forEach(p => {
+          if (p.dataset.snappedSlot && targetShapes[p.dataset.snappedSlot]) {
+            filledSlots.add(p.dataset.snappedSlot);
+          }
+        });
+
+        const isComplete = filledSlots.size === 7;
+
+        if (isComplete) {
+          this.isSolved = true;
+          this.sound.playFanfare();
+          this.confetti.start();
+          SCORM.complete();
+
+          this.updateStatus('🏆 Tebrikler, Bulmacayı Başarıyla Çözdünüz!', 'success');
+          this.victoryDesc.textContent = `${fig.name} şeklini 7 parçanın tümünü doğru yerleştirerek başarıyla tamamladınız.`;
+          setTimeout(() => {
+            this.victoryModal.classList.add('active');
+          }, 450);
+        } else if (isManualCheck) {
+          this.sound.playGentleAlert();
+          const count = filledSlots.size;
+          this.updateStatus(`7 parçadan ${count} tanesi yerleşti. Henüz tamamlanmadı, tekrar dene!`, 'alert');
+        }
+      }
+
+      giveHint() {
+        const fig = GAME_FIGURES[this.currentFigureKey];
+        const targetShapes = fig.shapes;
+        const pieces = Array.from(this.piecesLayer.querySelectorAll('.tan-piece'));
+
+        // Boşta olan ilk hedef yuvayı bul
+        for (const [slotKey, slotPts] of Object.entries(targetShapes)) {
+          const isOccupied = pieces.some(p => p.dataset.snappedSlot === slotKey);
+          if (!isOccupied) {
+            const requiredType = PIECE_CONFIG[slotKey].type;
+            const matchingPiece = pieces.find(p => p.dataset.type === requiredType && !p.dataset.snappedSlot);
+            if (matchingPiece) {
+              this.snapPieceToSlot(matchingPiece, slotKey);
+              return;
+            }
+          }
+        }
+        this.updateStatus('Tüm parçalar zaten yerleştirilmiş durumda.');
+      }
+
+      updateStatus(msg, type = '') {
+        this.statusBar.textContent = msg;
+        this.statusBar.className = `status-box ${type}`.trim();
+
+        if (this.statusTimer) clearTimeout(this.statusTimer);
+        if (type === 'alert') {
+          this.statusTimer = setTimeout(() => {
+            this.statusBar.textContent = 'Parçaları hedef silüete sürükleyin; üzerine gelince otomatik oturur...';
+            this.statusBar.className = 'status-box';
+          }, 3500);
+        }
+      }
+    }
+
+    // Uygulamayı Başlat
+    window.addEventListener('DOMContentLoaded', () => {
+      window.tangramApp = new TangramGame();
+      window.tangramApp.init();
+    });
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

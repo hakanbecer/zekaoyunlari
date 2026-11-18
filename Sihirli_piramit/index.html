@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SİHİRLİ PİRAMİT | Oyun ve Oyun Etkinlikleri Zekâ Oyunları</title>
+  <style>
+    /* ==========================================================================
+       1. TEMA DEĞİŞKENLERİ VE VİDEO UYUMLU RENK PALETİ
+       ========================================================================== */
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial-1: #1a253a;
+      --bg-radial-2: #0c1119;
+      --bg-card: rgba(22, 32, 50, 0.94);
+      --border-color: #273852;
+      --border-light: rgba(254, 202, 87, 0.35);
+
+      --gold-primary: #feca57;
+      --gold-dark: #f5b041;
+      --cyan-accent: #00cec9;
+      --cyan-light: #38bdf8;
+      --emerald-accent: #10ac84;
+      --emerald-light: #34d399;
+      --coral-accent: #ff5252;
+      --coral-light: #ff7675;
+
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-bg: #131c2d;
+      --node-base: #1e293b;
+      --node-border: #3b82f6;
+      --laser-glow: rgba(254, 202, 87, 0.9);
+      --laser-cyan-glow: rgba(0, 206, 201, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, var(--bg-radial-1) 0%, var(--bg-radial-2) 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 10px 14px 20px 14px;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       2. GİRİŞ EKRANI (SPLASH SCREEN / AÇILIŞ KARTI)
+       ========================================================================== */
+    .screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 35%, #1c2a47 0%, #090d15 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .screen-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-light);
+      border-radius: 32px;
+      padding: 46px 40px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(254, 202, 87, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #38bdf8, #feca57, #10ac84, #ff5252);
+    }
+
+    @keyframes splashIn {
+      from { transform: translateY(25px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .splash-badge {
+      display: inline-block;
+      background: rgba(254, 202, 87, 0.14);
+      color: var(--gold-primary);
+      border: 1.5px solid rgba(254, 202, 87, 0.45);
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .splash-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 15%, var(--gold-primary) 65%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 24px rgba(254, 202, 87, 0.35);
+      line-height: 1.15;
+    }
+
+    /* 3B Piramit Önizleme Görseli */
+    .splash-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 14px 24px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .preview-pyramid-svg {
+      width: 240px;
+      height: 110px;
+    }
+
+    /* Kısa Oynayış Yönergesi Kutusu */
+    .splash-instructions {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid var(--border-color);
+      border-radius: 20px;
+      padding: 18px 24px;
+      text-align: left;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .instructions-header {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .instructions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .instructions-list li {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .step-num {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan-light);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 16px 52px;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 172, 132, 0.45);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 206, 201, 0.55);
+    }
+
+    .btn-start:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* ==========================================================================
+       3. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================== */
+    .top-header {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 10px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(254, 202, 87, 0.12);
+      border: 1.5px solid rgba(254, 202, 87, 0.4);
+      padding: 7px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--gold-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .status-box {
+      flex: 1;
+      min-width: 220px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 8px 18px;
+      text-align: center;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--cyan-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .status-box.success {
+      border-color: var(--emerald-accent);
+      color: var(--emerald-light);
+      background: rgba(16, 172, 132, 0.18);
+    }
+
+    .status-box.alert {
+      border-color: var(--coral-accent);
+      color: var(--coral-light);
+      background: rgba(255, 82, 82, 0.18);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-header:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      transform: translateY(-1px);
+    }
+
+    .btn-header:active {
+      transform: translateY(1px);
+    }
+
+    .btn-header.icon-only {
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+
+    /* ==========================================================================
+       4. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ========================================================================== */
+    .level-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(22, 32, 50, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 6px 14px;
+      margin-bottom: 12px;
+      max-width: 1100px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .level-pill {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .level-pill:hover {
+      border-color: var(--cyan-light);
+      color: var(--text-light);
+    }
+
+    .level-pill.active {
+      background: linear-gradient(135deg, rgba(254, 202, 87, 0.22) 0%, rgba(245, 176, 65, 0.12) 100%);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      box-shadow: 0 0 12px rgba(254, 202, 87, 0.25);
+    }
+
+    .level-pill.random-pill {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--cyan-light);
+    }
+
+    .level-pill.random-pill:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--cyan-light);
+    }
+
+    /* ==========================================================================
+       5. OYUN PANELİ VE KONTROL ALANI (HUD & ACTION CONTROLS)
+       ========================================================================== */
+    .game-container {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hud-panel {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      padding: 14px 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hud-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hud-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Toplanan Sayılar Çipleri */
+    .number-chips-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .num-chip {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 900;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .num-chip.collected {
+      background: linear-gradient(135deg, #10ac84 0%, #059669 100%);
+      border-color: var(--emerald-light);
+      color: #ffffff;
+      transform: scale(1.08);
+      box-shadow: 0 0 14px rgba(16, 172, 132, 0.6);
+    }
+
+    .num-chip.duplicate-alert {
+      background: linear-gradient(135deg, #ff5252 0%, #d63031 100%) !important;
+      border-color: #ff7675 !important;
+      color: #ffffff !important;
+      animation: chipShake 0.4s ease;
+      box-shadow: 0 0 16px rgba(255, 82, 82, 0.8) !important;
+    }
+
+    @keyframes chipShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+
+    /* Kat İlerlemesi */
+    .tier-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px 14px;
+    }
+
+    .tier-badge {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--gold-primary);
+    }
+
+    .progress-bar-bg {
+      width: 100px;
+      height: 8px;
+      background: rgba(30, 41, 59, 0.9);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan-accent), var(--gold-primary));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Eylem Butonları */
+    .hud-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+      border-radius: 14px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-action:hover {
+      background: rgba(51, 65, 85, 0.95);
+      border-color: var(--cyan-light);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+    }
+
+    .btn-action.btn-check {
+      background: linear-gradient(135deg, rgba(16, 172, 132, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%);
+      border-color: var(--emerald-light);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 172, 132, 0.35);
+    }
+
+    .btn-action.btn-check:hover {
+      box-shadow: 0 6px 20px rgba(16, 172, 132, 0.55);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-action.btn-hint {
+      background: linear-gradient(135deg, rgba(254, 202, 87, 0.2) 0%, rgba(245, 176, 65, 0.1) 100%);
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+    }
+
+    .btn-action.btn-hint:hover {
+      background: rgba(254, 202, 87, 0.3);
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       6. MERKEZİ PİRAMİT TAHTASI (SVG STAGE)
+       ========================================================================== */
+    .stage-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 28px;
+      padding: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-svg {
+      width: 100%;
+      max-width: 860px;
+      height: auto;
+      max-height: 520px;
+      display: block;
+      touch-action: none;
+    }
+
+    /* SVG Stilleri */
+    .pyramid-edge {
+      stroke: #334155;
+      stroke-width: 3.5;
+      stroke-dasharray: 6 5;
+      transition: stroke 0.3s ease, stroke-width 0.3s ease;
+    }
+
+    .pyramid-laser {
+      stroke: url(#laserGradient);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: url(#laserGlowFilter);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .node-group {
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .node-group:hover circle.node-bg {
+      stroke: var(--cyan-light);
+      stroke-width: 3.5;
+    }
+
+    .node-bg {
+      fill: url(#nodeGradNormal);
+      stroke: #3b82f6;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+      transition: all 0.25s ease;
+    }
+
+    .node-text {
+      fill: #f8fafc;
+      font-size: 20px;
+      font-weight: 900;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Seçili (Yoldaki) Düğüm */
+    .node-group.selected circle.node-bg {
+      fill: url(#nodeGradSelected);
+      stroke: var(--gold-primary);
+      stroke-width: 4;
+      filter: drop-shadow(0 0 16px rgba(254, 202, 87, 0.8));
+    }
+
+    .node-group.selected .node-text {
+      fill: #1a1003;
+      font-weight: 900;
+    }
+
+    /* Bir Sonraki Geçerli Komşu (Pulsing Glow) */
+    .node-group.valid-next circle.node-bg {
+      stroke: var(--emerald-light);
+      stroke-width: 3.5;
+      stroke-dasharray: 5 4;
+      animation: nextRingPulse 1.4s infinite ease-in-out;
+    }
+
+    @keyframes nextRingPulse {
+      0%, 100% {
+        stroke-width: 3;
+        filter: drop-shadow(0 0 4px rgba(16, 172, 132, 0.4));
+      }
+      50% {
+        stroke-width: 5;
+        filter: drop-shadow(0 0 14px rgba(16, 172, 132, 0.85));
+      }
+    }
+
+    /* İpucu İşareti */
+    .node-group.hint-pulse circle.node-bg {
+      stroke: var(--gold-primary) !important;
+      stroke-width: 5 !important;
+      animation: hintBlink 0.8s infinite alternate !important;
+    }
+
+    @keyframes hintBlink {
+      from { filter: drop-shadow(0 0 6px rgba(254, 202, 87, 0.5)); transform: scale(1); }
+      to { filter: drop-shadow(0 0 24px rgba(254, 202, 87, 1)); transform: scale(1.08); }
+    }
+
+    /* Canlı Yol Gösterge Şeridi (Alt Kısım) */
+    .path-indicator-bar {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .path-nodes-sequence {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gold-primary);
+      font-weight: 800;
+    }
+
+    .path-arrow {
+      color: var(--cyan-light);
+      font-size: 12px;
+    }
+
+    /* ==========================================================================
+       7. DİYALOGLAR VE MODALLAR (MOD B: ZAFER, YÖNERGE, TEKRAR DENE)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(7, 11, 18, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 2px solid var(--border-light);
+      border-radius: 28px;
+      padding: 38px 34px;
+      max-width: 580px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      transform: scale(0.92) translateY(20px);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-backdrop.open .modal-box {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--gold-primary), var(--cyan-accent), var(--emerald-accent));
+    }
+
+    .modal-icon {
+      font-size: 54px;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: modalBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes modalBounce {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .modal-title {
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .modal-title.gold {
+      background: linear-gradient(135deg, #ffffff 20%, var(--gold-primary) 70%, #ff9f43 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modal-title.coral {
+      color: var(--coral-light);
+    }
+
+    .modal-desc {
+      font-size: 15px;
+      color: #cbd5e1;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-modal {
+      border: none;
+      border-radius: 16px;
+      padding: 13px 30px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-modal:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-modal:active {
+      transform: translateY(1px);
+    }
+
+    .btn-modal.primary {
+      background: linear-gradient(135deg, #10ac84 0%, #00cec9 100%);
+      color: #0f141d;
+      box-shadow: 0 8px 20px rgba(16, 172, 132, 0.4);
+    }
+
+    .btn-modal.restart {
+      background: linear-gradient(135deg, #feca57 0%, #ff9f43 100%);
+      color: #1a1003;
+      box-shadow: 0 8px 20px rgba(254, 202, 87, 0.35);
+    }
+
+    .btn-modal.secondary {
+      background: rgba(51, 65, 85, 0.85);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+    }
+
+    .btn-modal.secondary:hover {
+      background: rgba(71, 85, 105, 0.95);
+    }
+
+    /* Konfeti Tuvali */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2500;
+    }
+
+    /* ==========================================================================
+       8. DUYARLI EKRAN VE AKILLI TAHTA UYUMLULUĞU
+       ========================================================================== */
+    @media (max-width: 768px) {
+      .splash-card {
+        padding: 32px 20px;
+      }
+      .splash-title {
+        font-size: 38px;
+      }
+      .top-header {
+        padding: 8px 12px;
+      }
+      .brand-badge {
+        font-size: 14px;
+        padding: 5px 10px;
+      }
+      .status-box {
+        font-size: 13px;
+        order: 3;
+        width: 100%;
+      }
+      .hud-panel {
+        padding: 10px 14px;
+        gap: 10px;
+      }
+      .num-chip {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+      }
+      .btn-action {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. GİRİŞ EKRANI (SPLASH SCREEN / AÇILIŞ KARTI)
+       ======================================================================== -->
+  <div id="splashScreen" class="screen-overlay">
+    <div class="splash-card">
+      <div class="splash-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h1 class="splash-title">SİHİRLİ PİRAMİT OYUNU</h1>
+
+      <!-- 3B Parça / Piramit Önizleme Görseli -->
+      <div class="splash-preview">
+        <svg class="preview-pyramid-svg" viewBox="0 0 240 110">
+          <defs>
+            <radialGradient id="prevGold" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#fff275" />
+              <stop offset="70%" stop-color="#feca57" />
+              <stop offset="100%" stop-color="#d97706" />
+            </radialGradient>
+            <radialGradient id="prevCyan" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#7dd3fc" />
+              <stop offset="70%" stop-color="#0284c7" />
+              <stop offset="100%" stop-color="#0369a1" />
+            </radialGradient>
+          </defs>
+          <!-- Bağlantı çizgileri -->
+          <line x1="120" y1="20" x2="85" y2="55" stroke="#feca57" stroke-width="4" stroke-linecap="round" />
+          <line x1="120" y1="20" x2="155" y2="55" stroke="#334155" stroke-width="2.5" stroke-dasharray="4 3" />
+          <line x1="85" y1="55" x2="120" y2="90" stroke="#feca57" stroke-width="4" stroke-linecap="round" />
+          <line x1="85" y1="55" x2="50" y2="90" stroke="#334155" stroke-width="2.5" stroke-dasharray="4 3" />
+          <line x1="155" y1="55" x2="190" y2="90" stroke="#334155" stroke-width="2.5" stroke-dasharray="4 3" />
+          <!-- Çemberler -->
+          <circle cx="120" cy="20" r="14" fill="url(#prevGold)" stroke="#feca57" stroke-width="2" />
+          <text x="120" y="21" fill="#1a1003" font-size="12" font-weight="900" text-anchor="middle" dominant-baseline="central">5</text>
+
+          <circle cx="85" cy="55" r="14" fill="url(#prevGold)" stroke="#feca57" stroke-width="2" />
+          <text x="85" y="56" fill="#1a1003" font-size="12" font-weight="900" text-anchor="middle" dominant-baseline="central">4</text>
+
+          <circle cx="155" cy="55" r="14" fill="url(#prevCyan)" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="155" y="56" fill="#f8fafc" font-size="12" font-weight="900" text-anchor="middle" dominant-baseline="central">2</text>
+
+          <circle cx="50" cy="90" r="13" fill="url(#prevCyan)" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="50" y="91" fill="#f8fafc" font-size="11" font-weight="900" text-anchor="middle" dominant-baseline="central">3</text>
+
+          <circle cx="120" cy="90" r="14" fill="url(#prevGold)" stroke="#feca57" stroke-width="2" />
+          <text x="120" y="91" fill="#1a1003" font-size="12" font-weight="900" text-anchor="middle" dominant-baseline="central">1</text>
+
+          <circle cx="190" cy="90" r="13" fill="url(#prevCyan)" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="190" y="91" fill="#f8fafc" font-size="11" font-weight="900" text-anchor="middle" dominant-baseline="central">4</text>
+        </svg>
+      </div>
+
+      <!-- Kısa Oynayış Yönergesi Kutusu (3 Adımlı Zorunlu Düzen) -->
+      <div class="splash-instructions">
+        <div class="instructions-header">
+          <span>📌</span> Kısa Oynayış Yönergesi
+        </div>
+        <ul class="instructions-list">
+          <li>
+            <span class="step-num">1</span>
+            <span><strong>Zirveden Başla:</strong> Piramidin en tepesindeki çemberden başlayarak aşağı doğru ilerle.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span><strong>Komşu Yolları İzle:</strong> Her kattan yalnızca bir çember seç ve bağlı alt komşulara in.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span><strong>Sayıları Tekrar Etme:</strong> 1'den piramit katına kadar her sayıyı tam birer kez toplayarak tabana ulaş.</span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="splash-prompt">Sihirli Piramit oyununu oynamak için etkinliğe başla</p>
+      <button id="btnStartGame" class="btn-start">
+        <span>▶</span> ETKİNLİĞE BAŞLA
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       2. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ======================================================================== -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span>🔺</span> SİHİRLİ PİRAMİT
+      </div>
+    </div>
+
+    <!-- Dinamik Durum Bildirim Kutusu -->
+    <div id="statusBox" class="status-box">
+      <span>💡</span> En tepedeki çemberden başlayarak alt komşuları seçin.
+    </div>
+
+    <div class="header-actions">
+      <button id="btnRestart" class="btn-header" title="Yolu Baştan Başlat">
+        <span>🔄</span> Baştan Başla
+      </button>
+      <button id="btnRules" class="btn-header" title="Oyun Kuralları">
+        <span>ℹ️</span> Yönerge
+      </button>
+      <button id="btnSound" class="btn-header icon-only" title="Sesi Aç / Kapat">
+        <span id="soundIcon">🔊</span>
+      </button>
+      <button id="btnFullscreen" class="btn-header icon-only" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       3. SEVİYE SEÇİM ŞERİDİ (LEVEL PILLS)
+       ======================================================================== -->
+  <nav class="level-bar">
+    <button class="level-pill" data-key="p4_1">4 Katlı Başlangıç</button>
+    <button class="level-pill active" data-key="p5_1">5 Katlı Standart (Ders)</button>
+    <button class="level-pill" data-key="p5_2">5 Katlı Mücadele A</button>
+    <button class="level-pill" data-key="p5_3">5 Katlı Mücadele B</button>
+    <button class="level-pill" data-key="p6_1">6 Katlı Usta</button>
+    <button id="btnRandomPuzzle" class="level-pill random-pill">
+      <span>🎲</span> Rastgele Yeni Bulmaca
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       4. OYUN ALANI (HUD PANELİ VE MERKEZÎ SVG TAHTASI)
+       ======================================================================== -->
+  <main class="game-container">
+
+    <!-- HUD Kontrol Paneli -->
+    <section class="hud-panel">
+      <!-- Toplanan Sayılar Listesi -->
+      <div class="hud-section">
+        <span class="hud-label">Toplanan Sayılar:</span>
+        <div id="numberChipsContainer" class="number-chips-container">
+          <!-- JS dinamik olarak 1..N çiplerini üretecek -->
+        </div>
+      </div>
+
+      <!-- Kat İlerlemesi -->
+      <div class="hud-section">
+        <div class="tier-progress">
+          <span id="tierText" class="tier-badge">Kat: 0 / 5</span>
+          <div class="progress-bar-bg">
+            <div id="tierProgressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eylem Butonları -->
+      <div class="hud-actions">
+        <button id="btnCheck" class="btn-action btn-check" title="Yolunuzu Kontrol Edin">
+          <span>✅</span> Kontrol Et
+        </button>
+        <button id="btnHint" class="btn-action btn-hint" title="Doğru Adım İpucu Al">
+          <span>💡</span> İpucu
+        </button>
+        <button id="btnUndo" class="btn-action" title="Son Adımı Geri Al">
+          <span>↩️</span> Geri Al
+        </button>
+        <button id="btnClear" class="btn-action" title="Tüm Yolu Temizle">
+          <span>🗑️</span> Temizle
+        </button>
+      </div>
+    </section>
+
+    <!-- Merkezî Piramit Sahnesi (SVG) -->
+    <section class="stage-card">
+      <svg id="pyramidSvg" class="stage-svg" viewBox="0 0 820 500" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <!-- Normal Düğüm Degradesi (3B Mermer) -->
+          <radialGradient id="nodeGradNormal" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="40%" stop-color="#1e3a8a" />
+            <stop offset="100%" stop-color="#0f172a" />
+          </radialGradient>
+
+          <!-- Seçili Düğüm Degradesi (Altın Mermer) -->
+          <radialGradient id="nodeGradSelected" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fffbeb" />
+            <stop offset="35%" stop-color="#feca57" />
+            <stop offset="85%" stop-color="#d97706" />
+            <stop offset="100%" stop-color="#78350f" />
+          </radialGradient>
+
+          <!-- Lazer Hattı Degradesi -->
+          <linearGradient id="laserGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#feca57" />
+            <stop offset="50%" stop-color="#00cec9" />
+            <stop offset="100%" stop-color="#feca57" />
+          </linearGradient>
+
+          <!-- Lazer Parlama Filtresi -->
+          <filter id="laserGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- Arka Plan Bağlantı Kılavuz Çizgileri -->
+        <g id="edgesGroup"></g>
+
+        <!-- Aktif Altın Lazer Yolu -->
+        <g id="laserGroup"></g>
+
+        <!-- Piramit Düğümleri (Çemberler & Sayılar) -->
+        <g id="nodesGroup"></g>
+      </svg>
+
+      <!-- Aktif Seçim Zinciri Şeridi -->
+      <div class="path-indicator-bar">
+        <span>Yolunuz:</span>
+        <div id="pathSequence" class="path-nodes-sequence">
+          <span>(Başlamak için zirveye tıklayın)</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       5. MODALLAR (YÖNERGE, TEKRAR DENE, ZAFER KARTI)
+       ======================================================================== -->
+
+  <!-- Yönerge Modalı -->
+  <div id="instructionsModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-icon">📜</div>
+      <h2 class="modal-title gold">Sihirli Piramit Kuralları</h2>
+      <div class="modal-desc" style="text-align: left;">
+        <p style="margin-bottom: 12px;">Piramidin zirvesinden tabanına kesintisiz bir yol oluşturmak için <strong>3 altın kurala</strong> dikkat edin:</p>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+          <li style="display: flex; gap: 10px; align-items: flex-start;">
+            <span style="color: var(--cyan-light); font-weight: 800;">1.</span>
+            <span><strong>Her Kattan Tek Çember:</strong> Zirveden başlayarak her kattan yalnızca bir çember seçebilirsiniz.</span>
+          </li>
+          <li style="display: flex; gap: 10px; align-items: flex-start;">
+            <span style="color: var(--gold-primary); font-weight: 800;">2.</span>
+            <span><strong>Doğrudan Komşuluk:</strong> Bir kattan diğerine geçerken yalnızca kılavuz çizgileriyle bağlı doğrudan alt komşulara inebilirsiniz.</span>
+          </li>
+          <li style="display: flex; gap: 10px; align-items: flex-start;">
+            <span style="color: var(--emerald-light); font-weight: 800;">3.</span>
+            <span><strong>Sayı Tekrarı Yasak:</strong> 1'den piramidin kat sayısına kadar her sayıyı yolda <strong>tam birer kez</strong> kullanmalısınız. Aynı sayı iki kez seçilemez!</span>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-actions">
+        <button id="btnCloseInstructions" class="btn-modal primary">
+          <span>👍</span> Anladım, Oyuna Dön
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eksik / Hata Modalı (Pedagojik Mod B Standardı) -->
+  <div id="retryModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-icon">💡</div>
+      <h2 class="modal-title coral">Henüz Tamamlanmadı!</h2>
+      <p id="retryModalText" class="modal-desc">
+        Piramitte henüz tabana ulaşamadın ya da bazı sayılar eksik kaldı. Komşuları dikkatle incele, sakin ol ve tekrar dene!
+      </p>
+      <div class="modal-actions">
+        <button id="btnRetryRestart" class="btn-modal restart">
+          <span>🔁</span> Baştan Başla
+        </button>
+        <button id="btnRetryContinue" class="btn-modal secondary">
+          <span>▶️</span> Devam Et
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zafer Modalı (Mod B Standardı) -->
+  <div id="victoryModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-icon">🏆</div>
+      <h2 class="modal-title gold">Tebrikler, Bulmacayı Çözdünüz!</h2>
+      <p id="victoryModalText" class="modal-desc">
+        Piramidin zirvesinden tabanına kurallara tam uyarak eksiksiz bir yol çizdiniz!
+      </p>
+      <div class="modal-actions">
+        <button id="btnNextPuzzle" class="btn-modal primary">
+          <span>🌟</span> Sonraki Bulmaca
+        </button>
+        <button id="btnReplayPuzzle" class="btn-modal secondary">
+          <span>🔄</span> Yeniden Oyna
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konfeti Efekti Tuvali -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ========================================================================
+       6. SCRİPT BÖLÜMÜ: SES, SCORM, BULMACALAR VE OYUN MANTIĞI
+       ======================================================================== -->
+  <script>
+    /* ==========================================================================
+       SCORM 1.2 ENTEGRASYONU (STANDART VE GÜVENLİ FALLBACK)
+       ========================================================================== */
+    const SCORM = {
+      api: null,
+      startTime: null,
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && attempts < 10) {
+          if (win.parent && win.parent !== win) {
+            win = win.parent;
+          } else if (win.opener) {
+            win = win.opener;
+          } else {
+            break;
+          }
+          attempts++;
+        }
+        return win ? win.API : null;
+      },
+      init() {
+        try {
+          this.api = this.findAPI(window);
+          if (this.api && typeof this.api.LMSInitialize === "function") {
+            this.api.LMSInitialize("");
+            this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM bağımsız modda çalışıyor:", e);
+        }
+        this.startTime = new Date();
+      },
+      complete() {
+        try {
+          if (this.api && typeof this.api.LMSSetValue === "function") {
+            this.api.LMSSetValue("cmi.core.score.raw", "100");
+            this.api.LMSSetValue("cmi.core.lesson_status", "passed");
+            if (this.startTime) {
+              const diff = Math.floor((new Date() - this.startTime) / 1000);
+              const hrs = String(Math.floor(diff / 3600)).padStart(2, "0");
+              const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+              const secs = String(diff % 60).padStart(2, "0");
+              this.api.LMSSetValue("cmi.core.session_time", `${hrs}:${mins}:${secs}`);
+            }
+            this.api.LMSCommit("");
+          }
+        } catch (e) {
+          console.log("SCORM complete hatası:", e);
+        }
+      },
+      finish() {
+        try {
+          if (this.api && typeof this.api.LMSFinish === "function") {
+            this.api.LMSFinish("");
+          }
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("load", () => SCORM.init());
+    window.addEventListener("beforeunload", () => SCORM.finish());
+
+    /* ==========================================================================
+       WEB AUDIO API SES MOTORU (SIFIR HARİCİ DOSYA)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+      playStep(freq = 480) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.35, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.22, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      }
+      playUndo() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(360, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+      playAlert() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.22);
+      }
+      playHint() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = f;
+          const st = this.ctx.currentTime + idx * 0.08;
+          gain.gain.setValueAtTime(0.18, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.22);
+        });
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          const st = this.ctx.currentTime + idx * 0.11;
+          gain.gain.setValueAtTime(0.24, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.42);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.42);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    /* ==========================================================================
+       KONFETİ SİSTEMİ (CANVAS TABANLI)
+       ========================================================================== */
+    class ConfettiManager {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.animId = null;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+      start(count = 90) {
+        this.stop();
+        this.particles = [];
+        const colors = ['#feca57', '#00cec9', '#10ac84', '#ff5252', '#38bdf8', '#ffffff'];
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: -10 - Math.random() * 40,
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 3 + 2.5,
+            size: Math.random() * 8 + 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 6
+          });
+        }
+        this.loop();
+      }
+      loop() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        let alive = 0;
+        this.particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rotation += p.rotSpeed;
+          if (p.y < this.canvas.height + 20) alive++;
+
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rotation * Math.PI) / 180);
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+          this.ctx.restore();
+        });
+        if (alive > 0) {
+          this.animId = requestAnimationFrame(() => this.loop());
+        } else {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+      stop() {
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.animId = null;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+    }
+    const confetti = new ConfettiManager(document.getElementById('confettiCanvas'));
+
+    /* ==========================================================================
+       BULMACA HAVUZU VE ÇÖZÜCÜ (SOLVER)
+       ========================================================================== */
+    const PUZZLE_PRESETS = {
+      p4_1: {
+        name: "4 Katlı Başlangıç",
+        levels: 4,
+        grid: [
+          [4],
+          [3, 2],
+          [2, 4, 3],
+          [3, 1, 4, 2]
+        ],
+        solution: [[0,0], [1,0], [2,0], [3,1]] // values: 4 -> 3 -> 2 -> 1
+      },
+      p5_1: {
+        name: "5 Katlı Standart (Ders Örneği)",
+        levels: 5,
+        grid: [
+          [5],
+          [2, 4],
+          [3, 1, 4],
+          [2, 5, 3, 1],
+          [1, 5, 3, 2, 4]
+        ],
+        solution: [[0,0], [1,1], [2,1], [3,2], [4,3]] // values: 5 -> 4 -> 1 -> 3 -> 2
+      },
+      p5_2: {
+        name: "5 Katlı Mücadele A",
+        levels: 5,
+        grid: [
+          [3],
+          [5, 3],
+          [2, 3, 4],
+          [2, 4, 1, 3],
+          [5, 1, 2, 3, 4]
+        ],
+        solution: [[0,0], [1,0], [2,0], [3,1], [4,1]] // values: 3 -> 5 -> 2 -> 4 -> 1
+      },
+      p5_3: {
+        name: "5 Katlı Mücadele B",
+        levels: 5,
+        grid: [
+          [1],
+          [4, 5],
+          [5, 2, 3],
+          [4, 1, 2, 5],
+          [5, 2, 1, 4, 3]
+        ],
+        solution: [[0,0], [1,1], [2,2], [3,2], [4,3]] // values: 1 -> 5 -> 3 -> 2 -> 4
+      },
+      p6_1: {
+        name: "6 Katlı Usta",
+        levels: 6,
+        grid: [
+          [1],
+          [4, 2],
+          [1, 5, 2],
+          [6, 2, 5, 4],
+          [2, 1, 3, 4, 5],
+          [5, 1, 6, 2, 4, 3]
+        ],
+        solution: [[0,0], [1,0], [2,1], [3,1], [4,2], [5,2]] // values: 1 -> 4 -> 5 -> 2 -> 3 -> 6
+      }
+    };
+
+    // Piramit Geri İzleme Çözücüsü (Backtracking Solver)
+    function solvePyramid(grid) {
+      const n = grid.length;
+      const solutions = [];
+      function dfs(r, c, path, visitedVals) {
+        const val = grid[r][c];
+        if (visitedVals.has(val)) return;
+        const newPath = [...path, [r, c]];
+        const newVals = new Set(visitedVals);
+        newVals.add(val);
+        if (r === n - 1) {
+          if (newVals.size === n) solutions.push(newPath);
+          return;
+        }
+        dfs(r + 1, c, newPath, newVals);
+        dfs(r + 1, c + 1, newPath, newVals);
+      }
+      dfs(0, 0, [], new Set());
+      return solutions;
+    }
+
+    // Rastgele Benzersiz Çözümlü Piramit Üreticisi
+    function generateUniquePuzzle(levels = 5) {
+      for (let attempt = 0; attempt < 4000; attempt++) {
+        const grid = [];
+        for (let r = 0; r < levels; r++) {
+          const rowNums = [];
+          for (let i = 1; i <= levels; i++) rowNums.push(i);
+          // Fisher-Yates Karıştırma
+          for (let i = rowNums.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [rowNums[i], rowNums[j]] = [rowNums[j], rowNums[i]];
+          }
+          grid.push(rowNums.slice(0, r + 1));
+        }
+        const sols = solvePyramid(grid);
+        if (sols.length === 1) {
+          return {
+            name: `${levels} Katlı Rastgele Bulmaca`,
+            levels: levels,
+            grid: grid,
+            solution: sols[0]
+          };
+        }
+      }
+      return PUZZLE_PRESETS.p5_1;
+    }
+
+    /* ==========================================================================
+       PİRAMİT SVG GÖRSELLEŞTİRME VE ETKİLEŞİM MOTORU
+       ========================================================================== */
+    class PyramidRenderer {
+      constructor(svgEl, onNodeClick) {
+        this.svg = svgEl;
+        this.edgesGroup = svgEl.querySelector('#edgesGroup');
+        this.laserGroup = svgEl.querySelector('#laserGroup');
+        this.nodesGroup = svgEl.querySelector('#nodesGroup');
+        this.onNodeClick = onNodeClick;
+
+        this.currentGrid = null;
+        this.nodePositions = {}; // key: "r,c" -> { x, y, r, c, val, radius }
+      }
+
+      render(grid) {
+        this.currentGrid = grid;
+        this.edgesGroup.innerHTML = '';
+        this.laserGroup.innerHTML = '';
+        this.nodesGroup.innerHTML = '';
+        this.nodePositions = {};
+
+        const levels = grid.length;
+        const width = 820;
+        const height = 500;
+
+        const topMargin = 55;
+        const bottomMargin = 50;
+        const availableHeight = height - topMargin - bottomMargin;
+        const rowHeight = availableHeight / (levels - 1);
+
+        // Dinamik düğüm yarıçapı
+        const nodeRadius = levels <= 4 ? 28 : levels === 5 ? 24 : 21;
+
+        // 1. Düğüm koordinatlarını hesapla
+        for (let r = 0; r < levels; r++) {
+          const count = r + 1;
+          const y = topMargin + r * rowHeight;
+          const colSpacing = Math.min(105, 540 / (levels + 1));
+          const rowWidth = (count - 1) * colSpacing;
+          const startX = (width - rowWidth) / 2;
+
+          for (let c = 0; c < count; c++) {
+            const x = startX + c * colSpacing;
+            this.nodePositions[`${r},${c}`] = {
+              r, c, x, y,
+              val: grid[r][c],
+              radius: nodeRadius
+            };
+          }
+        }
+
+        // 2. Kılavuz Bağlantı Çizgilerini Çiz
+        for (let r = 0; r < levels - 1; r++) {
+          for (let c = 0; c <= r; c++) {
+            const from = this.nodePositions[`${r},${c}`];
+            const toLeft = this.nodePositions[`${r + 1},${c}`];
+            const toRight = this.nodePositions[`${r + 1},${c + 1}`];
+
+            this.createEdge(from.x, from.y, toLeft.x, toLeft.y);
+            this.createEdge(from.x, from.y, toRight.x, toRight.y);
+          }
+        }
+
+        // 3. Düğümleri Çiz (Geniş Dokunma Alanıyla Birlikte)
+        for (let r = 0; r < levels; r++) {
+          for (let c = 0; c <= r; c++) {
+            const node = this.nodePositions[`${r},${c}`];
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.classList.add('node-group');
+            g.setAttribute('data-pos', `${r},${c}`);
+            g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+
+            // Geniş görünmez dokunma alanı (Touch target padding)
+            const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            hitArea.setAttribute('r', node.radius + 16);
+            hitArea.setAttribute('fill', 'transparent');
+            g.appendChild(hitArea);
+
+            // Görünen 3B Çember
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.classList.add('node-bg');
+            circle.setAttribute('r', node.radius);
+            g.appendChild(circle);
+
+            // Sayı Metni
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.classList.add('node-text');
+            text.textContent = node.val;
+            g.appendChild(text);
+
+            // Tıklama Olayı
+            g.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.onNodeClick(r, c);
+            });
+
+            this.nodesGroup.appendChild(g);
+          }
+        }
+      }
+
+      createEdge(x1, y1, x2, y2) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.classList.add('pyramid-edge');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        this.edgesGroup.appendChild(line);
+      }
+
+      // Aktif Lazer Hattını ve Düğüm Durumlarını Güncelle
+      updatePath(path, validNextNeighbors = [], hintNode = null) {
+        // Tüm düğüm durum sınıflarını sıfırla
+        const allGroups = this.nodesGroup.querySelectorAll('.node-group');
+        allGroups.forEach(g => {
+          g.classList.remove('selected', 'valid-next', 'hint-pulse');
+        });
+
+        // 1. Lazer hattını temizle ve yeniden çiz
+        this.laserGroup.innerHTML = '';
+        if (path.length > 1) {
+          for (let i = 0; i < path.length - 1; i++) {
+            const p1 = this.nodePositions[`${path[i][0]},${path[i][1]}`];
+            const p2 = this.nodePositions[`${path[i + 1][0]},${path[i + 1][1]}`];
+            if (p1 && p2) {
+              const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+              line.classList.add('pyramid-laser');
+              line.setAttribute('x1', p1.x);
+              line.setAttribute('y1', p1.y);
+              line.setAttribute('x2', p2.x);
+              line.setAttribute('y2', p2.y);
+              this.laserGroup.appendChild(line);
+            }
+          }
+        }
+
+        // 2. Seçili düğümleri işaretle
+        path.forEach(([r, c]) => {
+          const el = this.nodesGroup.querySelector(`[data-pos="${r},${c}"]`);
+          if (el) el.classList.add('selected');
+        });
+
+        // 3. Geçerli bir sonraki komşuları işaretle
+        validNextNeighbors.forEach(([r, c]) => {
+          const el = this.nodesGroup.querySelector(`[data-pos="${r},${c}"]`);
+          if (el) el.classList.add('valid-next');
+        });
+
+        // 4. Varsa ipucu düğümünü parlat
+        if (hintNode) {
+          const el = this.nodesGroup.querySelector(`[data-pos="${hintNode[0]},${hintNode[1]}"]`);
+          if (el) el.classList.add('hint-pulse');
+        }
+      }
+    }
+
+    /* ==========================================================================
+       ANA OYUN KONTROLÖRÜ (GAME CONTROLLER)
+       ========================================================================== */
+    class MagicPyramidGame {
+      constructor() {
+        this.currentKey = 'p5_1';
+        this.currentPuzzle = PUZZLE_PRESETS.p5_1;
+        this.userPath = []; // [[r, c], ...]
+        this.activeHint = null;
+        this.isCompleted = false;
+
+        // DOM Elemanları
+        this.statusBox = document.getElementById('statusBox');
+        this.numberChipsContainer = document.getElementById('numberChipsContainer');
+        this.tierText = document.getElementById('tierText');
+        this.tierProgressBar = document.getElementById('tierProgressBar');
+        this.pathSequence = document.getElementById('pathSequence');
+
+        // Modallar
+        this.splashScreen = document.getElementById('splashScreen');
+        this.instructionsModal = document.getElementById('instructionsModal');
+        this.retryModal = document.getElementById('retryModal');
+        this.victoryModal = document.getElementById('victoryModal');
+        this.retryModalText = document.getElementById('retryModalText');
+        this.victoryModalText = document.getElementById('victoryModalText');
+
+        // Renderer
+        const svgEl = document.getElementById('pyramidSvg');
+        this.renderer = new PyramidRenderer(svgEl, (r, c) => this.handleNodeClick(r, c));
+
+        this.initEvents();
+        this.loadPuzzle(this.currentKey);
+      }
+
+      initEvents() {
+        // Giriş Ekranı Başlat
+        document.getElementById('btnStartGame').addEventListener('click', () => {
+          sound.playClick();
+          this.splashScreen.classList.add('hidden');
+        });
+
+        // Üst Şerit Butonları
+        document.getElementById('btnRestart').addEventListener('click', () => {
+          sound.playClick();
+          this.resetPath();
+          this.setStatus("Yol sıfırlandı. Zirveden başlayın.", "normal");
+        });
+
+        document.getElementById('btnRules').addEventListener('click', () => {
+          sound.playClick();
+          this.instructionsModal.classList.add('open');
+        });
+
+        document.getElementById('btnCloseInstructions').addEventListener('click', () => {
+          sound.playClick();
+          this.instructionsModal.classList.remove('open');
+        });
+
+        document.getElementById('btnSound').addEventListener('click', () => {
+          sound.muted = !sound.muted;
+          document.getElementById('soundIcon').textContent = sound.muted ? '🔇' : '🔊';
+        });
+
+        document.getElementById('btnFullscreen').addEventListener('click', () => {
+          sound.playClick();
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else {
+            document.exitFullscreen().catch(() => {});
+          }
+        });
+
+        // Seviye Seçimleri
+        document.querySelectorAll('.level-pill[data-key]').forEach(pill => {
+          pill.addEventListener('click', () => {
+            sound.playClick();
+            const key = pill.getAttribute('data-key');
+            document.querySelectorAll('.level-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            this.loadPuzzle(key);
+          });
+        });
+
+        // Rastgele Yeni Bulmaca
+        document.getElementById('btnRandomPuzzle').addEventListener('click', () => {
+          sound.playClick();
+          document.querySelectorAll('.level-pill').forEach(p => p.classList.remove('active'));
+          document.getElementById('btnRandomPuzzle').classList.add('active');
+          const randomLevels = Math.random() < 0.6 ? 5 : (Math.random() < 0.5 ? 4 : 6);
+          const newPuzzle = generateUniquePuzzle(randomLevels);
+          this.currentKey = 'random';
+          this.currentPuzzle = newPuzzle;
+          this.resetPath();
+          this.buildNumberChips();
+          this.renderer.render(this.currentPuzzle.grid);
+          this.updateGameUI();
+          this.setStatus(`🎲 ${newPuzzle.levels} Katlı Rastgele Bulmaca hazırlandı! Zirveden başlayın.`, 'normal');
+        });
+
+        // HUD Eylemleri
+        document.getElementById('btnCheck').addEventListener('click', () => this.checkPath());
+        document.getElementById('btnHint').addEventListener('click', () => this.giveHint());
+        document.getElementById('btnUndo').addEventListener('click', () => this.undoStep());
+        document.getElementById('btnClear').addEventListener('click', () => {
+          sound.playUndo();
+          this.resetPath();
+          this.setStatus("Yol temizlendi. Zirveden başlayabilirsiniz.", "normal");
+        });
+
+        // Retry Modal Eylemleri
+        document.getElementById('btnRetryRestart').addEventListener('click', () => {
+          sound.playClick();
+          this.retryModal.classList.remove('open');
+          this.resetPath();
+        });
+
+        document.getElementById('btnRetryContinue').addEventListener('click', () => {
+          sound.playClick();
+          this.retryModal.classList.remove('open');
+        });
+
+        // Victory Modal Eylemleri
+        document.getElementById('btnNextPuzzle').addEventListener('click', () => {
+          sound.playClick();
+          this.victoryModal.classList.remove('open');
+          confetti.stop();
+          this.advanceNextPuzzle();
+        });
+
+        document.getElementById('btnReplayPuzzle').addEventListener('click', () => {
+          sound.playClick();
+          this.victoryModal.classList.remove('open');
+          confetti.stop();
+          this.resetPath();
+        });
+
+        // Klavye Kısayolları (Smartboard & PC)
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' || e.key === 'z' || e.key === 'Z') {
+            this.undoStep();
+          } else if (e.key === 'r' || e.key === 'R') {
+            this.resetPath();
+          } else if (e.key === 'h' || e.key === 'H') {
+            this.giveHint();
+          } else if (e.key === 'Enter' || e.key === ' ') {
+            this.checkPath();
+          }
+        });
+      }
+
+      loadPuzzle(key) {
+        this.currentKey = key;
+        this.currentPuzzle = PUZZLE_PRESETS[key] || PUZZLE_PRESETS.p5_1;
+        this.resetPath();
+        this.buildNumberChips();
+        this.renderer.render(this.currentPuzzle.grid);
+        this.updateGameUI();
+        this.setStatus(`💡 ${this.currentPuzzle.levels} katlı piramit hazır. Zirvedeki (${this.currentPuzzle.grid[0][0]}) çemberinden başlayın.`, 'normal');
+      }
+
+      resetPath() {
+        this.userPath = [];
+        this.activeHint = null;
+        this.isCompleted = false;
+        this.updateGameUI();
+      }
+
+      buildNumberChips() {
+        this.numberChipsContainer.innerHTML = '';
+        const total = this.currentPuzzle.levels;
+        for (let i = 1; i <= total; i++) {
+          const chip = document.createElement('div');
+          chip.classList.add('num-chip');
+          chip.id = `chip-${i}`;
+          chip.textContent = i;
+          this.numberChipsContainer.appendChild(chip);
+        }
+      }
+
+      handleNodeClick(r, c) {
+        if (this.isCompleted) return;
+        const val = this.currentPuzzle.grid[r][c];
+        this.activeHint = null; // Tıklama yapılınca ipucu sıfırlanır
+
+        // Senaryo 1: Yol Henüz Boş
+        if (this.userPath.length === 0) {
+          if (r === 0 && c === 0) {
+            this.userPath.push([r, c]);
+            sound.playStep(440);
+            this.setStatus(`Zirveden başladınız: (${val}). Bağlı bir alt komşuya inin.`, 'normal');
+          } else {
+            sound.playAlert();
+            this.setStatus("⚠️ Lütfen önce piramidin en tepesindeki (zirve) çemberden başlayın!", "alert");
+          }
+          this.updateGameUI();
+          return;
+        }
+
+        // Senaryo 2: Zaten Seçilmiş Bir Düğüme Tıklama (Geri Alma / Trim)
+        const existingIndex = this.userPath.findIndex(([pr, pc]) => pr === r && pc === c);
+        if (existingIndex !== -1) {
+          if (existingIndex === this.userPath.length - 1) {
+            // Son adıma tekrar tıklandı -> son adımı geri al
+            this.userPath.pop();
+            sound.playUndo();
+            this.setStatus("Son adım geri alındı.", "normal");
+          } else {
+            // Daha önceki bir adıma tıklandı -> yolu o noktaya kadar kısalt
+            this.userPath = this.userPath.slice(0, existingIndex + 1);
+            sound.playUndo();
+            this.setStatus(`Yol (${val}) çemberine kadar geri çekildi.`, "normal");
+          }
+          this.updateGameUI();
+          return;
+        }
+
+        // Senaryo 3: Yeni Bir Düğüm Eklemeye Çalışma
+        const [lastR, lastC] = this.userPath[this.userPath.length - 1];
+
+        // 3a. Kat Kuralı Kontrolü (Yalnızca bir alt kata inilebilir)
+        if (r !== lastR + 1) {
+          sound.playAlert();
+          this.setStatus("⚠️ Yalnızca bir sonraki alt kattaki çemberlere inebilirsiniz!", "alert");
+          return;
+        }
+
+        // 3b. Komşuluk Kuralı Kontrolü (lastC veya lastC + 1 olmalı)
+        if (c !== lastC && c !== lastC + 1) {
+          sound.playAlert();
+          this.setStatus("⚠️ Yalnızca kılavuz çizgisiyle doğrudan bağlı alt komşulara inebilirsiniz!", "alert");
+          return;
+        }
+
+        // 3c. Mükerrer Sayı Kuralı Kontrolü (Aynı sayı daha önce toplandı mı?)
+        const collectedVals = this.userPath.map(([pr, pc]) => this.currentPuzzle.grid[pr][pc]);
+        if (collectedVals.includes(val)) {
+          sound.playAlert();
+          this.triggerChipAlert(val);
+          this.setStatus(`⚠️ (${val}) sayısı yolda zaten var! Sihirli Piramitte sayılar tekrar edemez.`, "alert");
+          return;
+        }
+
+        // Hamle Başarılı: Yola Ekle
+        this.userPath.push([r, c]);
+        const stepPitch = 440 + this.userPath.length * 60;
+        sound.playStep(stepPitch);
+
+        if (this.userPath.length === this.currentPuzzle.levels) {
+          this.setStatus(`🎉 Harika! Taban katına ulaştınız (${val}). 'Kontrol Et' butonuna basarak tamamlayın!`, "success");
+        } else {
+          this.setStatus(`Adım eklendi: (${val}). Bir alt komşuyu seçin.`, "normal");
+        }
+
+        this.updateGameUI();
+      }
+
+      undoStep() {
+        if (this.userPath.length > 0) {
+          this.userPath.pop();
+          sound.playUndo();
+          this.activeHint = null;
+          this.isCompleted = false;
+          this.setStatus("Son hamle geri alındı.", "normal");
+          this.updateGameUI();
+        }
+      }
+
+      checkPath() {
+        const total = this.currentPuzzle.levels;
+
+        // Taban katına ulaşılmamışsa
+        if (this.userPath.length < total) {
+          sound.playAlert();
+          this.retryModalText.textContent = `Piramitte henüz tabana ulaşmadınız (${this.userPath.length} / ${total} kat). Zirveden tabana kesintisiz inmelisiniz.`;
+          this.retryModal.classList.add('open');
+          return;
+        }
+
+        // Sayıları kontrol et
+        const collectedVals = this.userPath.map(([r, c]) => this.currentPuzzle.grid[r][c]);
+        const uniqueSet = new Set(collectedVals);
+
+        if (uniqueSet.size === total) {
+          // Zafer Senaryosu!
+          this.isCompleted = true;
+          sound.playFanfare();
+          confetti.start(100);
+          SCORM.complete();
+
+          this.setStatus("🏆 TEBRİKLER! Sihirli Piramidi kurallara tam uyarak eksiksiz çözdünüz!", "success");
+          this.victoryModalText.innerHTML = `Piramidin zirvesinden tabanına <strong>[${collectedVals.join(' ➔ ')}]</strong> sayılarını birer kez kullanarak eksiksiz ulaştınız!`;
+          this.victoryModal.classList.add('open');
+        } else {
+          // Sayı tekrarı veya eksik durum
+          sound.playAlert();
+          this.retryModalText.textContent = "Bazı sayılar tekrar etti veya kural dışı seçim yapıldı. Sakin olun, yolu inceleyin ve tekrar deneyin!";
+          this.retryModal.classList.add('open');
+        }
+      }
+
+      giveHint() {
+        if (this.isCompleted) return;
+        sound.playHint();
+
+        const sol = this.currentPuzzle.solution;
+        if (!sol) {
+          const sols = solvePyramid(this.currentPuzzle.grid);
+          if (sols.length > 0) this.currentPuzzle.solution = sols[0];
+        }
+
+        if (!this.currentPuzzle.solution) {
+          this.setStatus("Bu bulmaca için çözüm hesaplanıyor...", "normal");
+          return;
+        }
+
+        const trueSol = this.currentPuzzle.solution;
+
+        // Henüz başlanmamışsa zirveyi göster
+        if (this.userPath.length === 0) {
+          this.activeHint = trueSol[0];
+          this.setStatus(`💡 İpucu: En tepedeki çemberden (${this.currentPuzzle.grid[0][0]}) başlayın!`, "normal");
+          this.updateGameUI();
+          return;
+        }
+
+        // Mevcut yol doğru gidiyor mu kontrol et
+        let isCorrectSoFar = true;
+        for (let i = 0; i < this.userPath.length; i++) {
+          if (this.userPath[i][0] !== trueSol[i][0] || this.userPath[i][1] !== trueSol[i][1]) {
+            isCorrectSoFar = false;
+            break;
+          }
+        }
+
+        if (isCorrectSoFar) {
+          if (this.userPath.length < trueSol.length) {
+            const nextNode = trueSol[this.userPath.length];
+            this.activeHint = nextNode;
+            const nextVal = this.currentPuzzle.grid[nextNode[0]][nextNode[1]];
+            this.setStatus(`💡 İpucu: Alt komşulardan (${nextVal}) sayısına basabilirsiniz.`, "normal");
+          } else {
+            this.setStatus("💡 Zaten tabana ulaştınız! 'Kontrol Et' butonuna basın.", "success");
+          }
+        } else {
+          this.setStatus("💡 Mevcut yol çıkmaz bir yola saptı. 'Geri Al' butonuna basarak önceki doğru adıma dönün.", "alert");
+        }
+
+        this.updateGameUI();
+      }
+
+      triggerChipAlert(val) {
+        const chip = document.getElementById(`chip-${val}`);
+        if (chip) {
+          chip.classList.add('duplicate-alert');
+          setTimeout(() => chip.classList.remove('duplicate-alert'), 600);
+        }
+      }
+
+      advanceNextPuzzle() {
+        const keys = ['p4_1', 'p5_1', 'p5_2', 'p5_3', 'p6_1'];
+        const currentIdx = keys.indexOf(this.currentKey);
+        const nextKey = currentIdx !== -1 && currentIdx < keys.length - 1 ? keys[currentIdx + 1] : 'p5_1';
+
+        document.querySelectorAll('.level-pill').forEach(p => {
+          if (p.getAttribute('data-key') === nextKey) p.classList.add('active');
+          else p.classList.remove('active');
+        });
+
+        this.loadPuzzle(nextKey);
+      }
+
+      setStatus(msg, type = 'normal') {
+        this.statusBox.textContent = msg;
+        this.statusBox.classList.remove('success', 'alert');
+        if (type === 'success') this.statusBox.classList.add('success');
+        if (type === 'alert') this.statusBox.classList.add('alert');
+      }
+
+      updateGameUI() {
+        const total = this.currentPuzzle.levels;
+        const currentCount = this.userPath.length;
+
+        // Kat İlerlemesi & Barı
+        this.tierText.textContent = `Kat: ${currentCount} / ${total}`;
+        const pct = Math.round((currentCount / total) * 100);
+        this.tierProgressBar.style.width = `${pct}%`;
+
+        // HUD Çipleri Güncelle
+        const collectedVals = this.userPath.map(([r, c]) => this.currentPuzzle.grid[r][c]);
+        for (let i = 1; i <= total; i++) {
+          const chip = document.getElementById(`chip-${i}`);
+          if (chip) {
+            if (collectedVals.includes(i)) {
+              chip.classList.add('collected');
+            } else {
+              chip.classList.remove('collected');
+            }
+          }
+        }
+
+        // Yol Sırası Metni
+        if (collectedVals.length === 0) {
+          this.pathSequence.innerHTML = '<span>(Başlamak için zirveye tıklayın)</span>';
+        } else {
+          this.pathSequence.innerHTML = collectedVals
+            .map(v => `<span>${v}</span>`)
+            .join('<span class="path-arrow">➔</span>');
+        }
+
+        // Geçerli bir sonraki komşuları hesapla
+        let validNeighbors = [];
+        if (currentCount === 0) {
+          validNeighbors = [[0, 0]];
+        } else if (currentCount < total) {
+          const [lastR, lastC] = this.userPath[currentCount - 1];
+          validNeighbors = [
+            [lastR + 1, lastC],
+            [lastR + 1, lastC + 1]
+          ];
+        }
+
+        // SVG Render güncelle
+        this.renderer.updatePath(this.userPath, validNeighbors, this.activeHint);
+      }
+    }
+
+    // Oyunu Başlat
+    let game;
+    window.addEventListener('DOMContentLoaded', () => {
+      game = new MagicPyramidGame();
+    });
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

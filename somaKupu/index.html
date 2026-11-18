@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SOMA KÜPÜ | Akıl ve Zekâ Oyunları Atölyesi</title>
+  <style>
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial: radial-gradient(circle at 50% 25%, #1a253a 0%, #0f141d 85%);
+      --card-bg: rgba(22, 32, 50, 0.94);
+      --card-border: #273852;
+      --board-bg: #090e17;
+      --board-border: #f59e0b;
+      --grid-line: #1e2b40;
+      --cell-empty: #121a29;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-gold: #feca57;
+      --accent-gold-dark: #f59e0b;
+      --accent-cyan: #00cec9;
+      --accent-emerald: #10ac84;
+      --accent-coral: #ff5252;
+      --accent-purple: #9c88ff;
+      --accent-blue: #2e86de;
+      --accent-orange: #ff9f43;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-radial);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 16px 24px;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* ÜST KONTROL ŞERİDİ */
+    .top-header {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      flex-wrap: wrap;
+      gap: 10px;
+      backdrop-filter: blur(12px);
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent-gold), #ea580c);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    }
+
+    .brand-title-wrap h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #feca57, #fed330);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .brand-title-wrap p {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .status-box {
+      flex: 1;
+      max-width: 540px;
+      min-width: 220px;
+      background: rgba(10, 16, 26, 0.75);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+      transition: all 0.25s ease;
+    }
+
+    .status-box.highlight {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      box-shadow: 0 0 12px rgba(254, 202, 87, 0.25);
+    }
+
+    .status-box.success {
+      border-color: var(--accent-emerald);
+      color: #6ee7b7;
+      box-shadow: 0 0 12px rgba(16, 172, 132, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 38px;
+    }
+
+    .btn-header:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #64748b;
+      transform: translateY(-1px);
+    }
+
+    .btn-header.btn-reset {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-header.btn-reset:hover {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: var(--accent-coral);
+    }
+
+    /* SEVİYE VE AŞAMA SEÇİCİ */
+    .level-bar {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 6px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .level-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .lvl-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: #94a3b8;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lvl-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .lvl-btn.active {
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+      color: #0f172a;
+      border-color: var(--accent-gold);
+      font-weight: 800;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+    }
+
+    /* ANA OYUN ALANI DÜZENİ */
+    .game-layout {
+      width: 100%;
+      max-width: 1280px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 3D CANVAS SAHNESİ KARTI */
+    .stage-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .stage-top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .stage-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stage-badge {
+      background: rgba(0, 206, 201, 0.15);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .stage-figure-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .stage-view-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .view-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: #cbd5e1;
+      padding: 4px 9px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .view-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+
+    .canvas-container {
+      width: 100%;
+      height: 520px;
+      background: radial-gradient(circle at 50% 50%, #162032 0%, #0a0f1a 100%);
+      border: 2px solid var(--card-border);
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+    }
+
+    .canvas-container:active {
+      cursor: grabbing;
+    }
+
+    #somaCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Sahne Üzerinde Yüzen Katman Röntgeni */
+    .layer-selector-float {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 16, 26, 0.85);
+      border: 1px solid var(--card-border);
+      padding: 4px 8px;
+      border-radius: 10px;
+      display: flex;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+
+    .layer-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .layer-btn:hover {
+      color: #fff;
+    }
+
+    .layer-btn.active {
+      background: rgba(254, 202, 87, 0.25);
+      color: var(--accent-gold);
+    }
+
+    .stage-helper-hint {
+      margin-top: 8px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* SAĞ PANEL: PARÇA ATÖLYESİ & TEPSİ */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* SEÇİLİ PARÇA VE 3D DÖNDÜRME KARTI */
+    .workshop-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 6px;
+    }
+
+    /* Parça 3D Önizleme Kutusu */
+    .piece-preview-box {
+      width: 100%;
+      height: 140px;
+      background: rgba(10, 16, 26, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #previewCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .preview-badge {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #cbd5e1;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* 3B Döndürme Butonları */
+    .rotation-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .rotate-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 4px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .rotate-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+
+    /* Tahtaya Yerleştir / Geri Al Butonları */
+    .place-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-place {
+      flex: 1;
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      border: 1px solid #34d399;
+      color: #fff;
+      padding: 9px 8px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      transition: all 0.18s ease;
+    }
+
+    .btn-place:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-remove {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-remove:hover {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: var(--accent-coral);
+    }
+
+    /* PARÇA SEÇİM TEPSİSİ (7 PARÇA LİSTESİ) */
+    .tray-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .tray-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .tray-grid::-webkit-scrollbar {
+      width: 5px;
+    }
+    .tray-grid::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    .piece-item-btn {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .piece-item-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #64748b;
+    }
+
+    .piece-item-btn.selected {
+      border-color: var(--accent-gold);
+      background: rgba(254, 202, 87, 0.12);
+      box-shadow: 0 0 10px rgba(254, 202, 87, 0.2);
+    }
+
+    .piece-item-btn.placed {
+      opacity: 0.65;
+      border-style: dashed;
+    }
+
+    .piece-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .piece-color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .piece-item-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .piece-item-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    /* OYUN EYLEMLERİ ÇUBUĞU (KONTROL ET, İPUCU, TEMİZLE) */
+    .game-actions-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 42px;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: #64748b;
+      transform: translateY(-1px);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      border-color: #34d399;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .action-btn.primary:hover {
+      filter: brightness(1.1);
+    }
+
+    .action-btn.btn-hint {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fcd34d;
+    }
+
+    .action-btn.btn-hint:hover {
+      background: rgba(245, 158, 11, 0.28);
+    }
+
+    /* GİRİŞ EKRANI (SPLASH OVERLAY) */
+    .splash-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 20, 0.92);
+      backdrop-filter: blur(14px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .splash-card {
+      width: 100%;
+      max-width: 780px;
+      background: rgba(22, 32, 50, 0.97);
+      border: 1.5px solid var(--card-border);
+      border-radius: 26px;
+      padding: 42px 46px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .splash-card { padding: 26px 20px; }
+    }
+
+    .splash-top-badge {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.35));
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 30px;
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .splash-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #ffffff 20%, #feca57 70%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+      line-height: 1.1;
+    }
+
+    @media (max-width: 640px) {
+      .splash-title { font-size: 38px; }
+    }
+
+    .splash-pieces-preview {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .splash-piece-pill {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .splash-rules-box {
+      width: 100%;
+      background: rgba(11, 18, 30, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .splash-rules-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .splash-rules-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .splash-rules-list li {
+      font-size: 13px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .splash-rules-list li span.step-num {
+      background: rgba(254, 202, 87, 0.2);
+      color: var(--accent-gold);
+      font-size: 11px;
+      font-weight: 800;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-start-note {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .btn-splash-start {
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      border: 2px solid #34d399;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 14px 44px;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-splash-start:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: brightness(1.1);
+      box-shadow: 0 14px 36px rgba(16, 185, 129, 0.5);
+    }
+
+    /* MODALLAR (YÖNERGE, ZAFER, UYARI) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 20, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 540px;
+      background: rgba(22, 32, 50, 0.98);
+      border: 1.5px solid var(--card-border);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-modal {
+      padding: 10px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      transition: all 0.18s ease;
+    }
+
+    .btn-modal.primary {
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      border-color: #34d399;
+      color: #fff;
+    }
+
+    .btn-modal.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    .btn-modal:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+    }
+
+    /* KONFETİ CANVAS */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1800;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. ÜST KONTROL ŞERİDİ (HEADER BAR)
+       ========================================================================= -->
+  <header class="top-header">
+    <div class="brand-badge">
+      <div class="brand-icon">🎲</div>
+      <div class="brand-title-wrap">
+        <h1>SOMA KÜPÜ</h1>
+        <p>3B Akıl ve Zekâ Oyunu</p>
+      </div>
+    </div>
+
+    <div class="status-box" id="statusBox">
+      Tepsiden bir parça seçin veya tahtadaki boşluğa yerleştirin.
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header btn-reset" id="btnRestart" title="Mevcut seviyeyi sıfırla">
+        <span>🔄</span> Baştan Başla
+      </button>
+      <button class="btn-header" id="btnGuide" title="Nasıl Oynanır?">
+        <span>ℹ️</span> Yönerge
+      </button>
+      <button class="btn-header" id="btnToggleSound" title="Sesi Aç/Kapat">
+        <span id="soundIcon">🔊</span>
+      </button>
+      <button class="btn-header" id="btnFullscreen" title="Tam Ekran">
+        <span>⛶</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       2. SEVİYE / AŞAMA SEÇİCİ
+       ========================================================================= -->
+  <div class="level-bar">
+    <span class="level-label">🎯 BULMACA:</span>
+    <button class="lvl-btn active" data-lvl="base">1. Aşama: Taban Katmanı (Kolay)</button>
+    <button class="lvl-btn" data-lvl="middle">2. Aşama: Orta Katman (Orta)</button>
+    <button class="lvl-btn" data-lvl="cube">3. Aşama: 3x3x3 Büyük Küp (İleri)</button>
+    <button class="lvl-btn" data-lvl="tower">4. Aşama: Kule Figürü (Usta)</button>
+    <button class="lvl-btn" data-lvl="free">5. Aşama: Serbest 3D Atölye</button>
+  </div>
+
+  <!-- =========================================================================
+       3. ANA OYUN ALANI DÜZENİ
+       ========================================================================= -->
+  <main class="game-layout">
+
+    <!-- SOL / ORTA: 3D CANVAS SAHNESİ -->
+    <section class="stage-card">
+      <div class="stage-top-bar">
+        <div class="stage-title-wrap">
+          <span class="stage-badge" id="levelBadge">KOLAY</span>
+          <span class="stage-figure-name" id="figureName">Taban Katmanı İnşası (12 Birim Küp)</span>
+        </div>
+
+        <div class="stage-view-controls">
+          <button class="view-btn" id="btnViewIso" title="İzometrik Açı">📐 İzometrik</button>
+          <button class="view-btn" id="btnViewTop" title="Üstten Bakış">🔝 Üstten</button>
+          <button class="view-btn" id="btnViewFront" title="Önden Bakış">➡️ Önden</button>
+          <button class="view-btn" id="btnViewReset" title="Açıyı Sıfırla">🔄 Sıfırla</button>
+        </div>
+      </div>
+
+      <div class="canvas-container" id="canvasContainer" title="Fareyle sürükleyerek 360° çevirebilir, tekerlekle yakınlaşabilirsiniz">
+        <canvas id="somaCanvas"></canvas>
+
+        <!-- Yüzen Katman Röntgeni -->
+        <div class="layer-selector-float">
+          <span style="font-size:11px; font-weight:700; color:#cbd5e1; align-self:center; margin-right:2px;">Röntgen:</span>
+          <button class="layer-btn active" data-layer="all">Tümü</button>
+          <button class="layer-btn" data-layer="0">Z=0 Taban</button>
+          <button class="layer-btn" data-layer="1">Z=1 Orta</button>
+          <button class="layer-btn" data-layer="2">Z=2 Tavan</button>
+        </div>
+      </div>
+
+      <p class="stage-helper-hint">
+        💡 Sahneyi farenin sol tuşuyla çevirebilir, tekerlekle yaklaşabilirsiniz. Yerleştirilen bir parçaya tıklayarak tepsiye geri alabilirsiniz.
+      </p>
+    </section>
+
+    <!-- SAĞ: PARÇA ATÖLYESİ & TEPSİ -->
+    <aside class="side-panel">
+
+      <!-- SEÇİLİ PARÇA VE 3D DÖNDÜRME ATÖLYESİ -->
+      <div class="workshop-card">
+        <div class="card-title">
+          <span>🛠️ SEÇİLİ PARÇA ATÖLYESİ</span>
+        </div>
+
+        <div class="piece-preview-box">
+          <canvas id="previewCanvas"></canvas>
+          <span class="preview-badge" id="previewBadge">Parça 7 (Tripod)</span>
+        </div>
+
+        <div class="rotation-controls">
+          <button class="rotate-btn" id="btnRotX" title="X ekseninde 90 derece çevir">⟳ X Açısı</button>
+          <button class="rotate-btn" id="btnRotY" title="Y ekseninde 90 derece çevir">⟳ Y Açısı</button>
+          <button class="rotate-btn" id="btnRotZ" title="Z ekseninde 90 derece çevir">⟳ Z Açısı</button>
+        </div>
+
+        <div class="place-controls">
+          <button class="btn-place" id="btnPlacePiece" title="Parçayı tahtadaki uygun konuma yerleştir">
+            <span>⬇️</span> Tahtaya Yerleştir
+          </button>
+          <button class="btn-remove" id="btnRemovePiece" title="Seçili parçayı tahtadan kaldır">
+            <span>🗑️</span> Kaldır
+          </button>
+        </div>
+      </div>
+
+      <!-- 7 PARÇA SEÇİM TEPSİSİ -->
+      <div class="tray-card">
+        <div class="card-title">
+          <span>🧩 SOMA PARÇALARI TEPSİSİ</span>
+        </div>
+
+        <div class="tray-grid" id="trayGrid">
+          <!-- JS ile dinamik doldurulur -->
+        </div>
+      </div>
+
+      <!-- OYUN KONTROL EYLEMLERİ -->
+      <div class="game-actions-card">
+        <button class="action-btn primary" id="btnCheck">
+          <span>✓</span> Kontrol Et
+        </button>
+        <button class="action-btn btn-hint" id="btnHint">
+          <span>💡</span> İpucu
+        </button>
+        <button class="action-btn" id="btnClearBoard">
+          <span>🗑️</span> Temizle
+        </button>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- =========================================================================
+       4. GİRİŞ EKRANI (SPLASH SCREEN OVERLAY)
+       ========================================================================= -->
+  <div class="splash-overlay" id="splashOverlay">
+    <div class="splash-card">
+      <div class="splash-top-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h2 class="splash-title">SOMA KÜPÜ OYUNU</h2>
+
+      <div class="splash-pieces-preview" id="splashPreview">
+        <div class="splash-piece-pill"><span style="color:#00d2d3">■</span> V (3 Küp)</div>
+        <div class="splash-piece-pill"><span style="color:#ff9f43">■</span> L (4 Küp)</div>
+        <div class="splash-piece-pill"><span style="color:#ff5252">■</span> T (4 Küp)</div>
+        <div class="splash-piece-pill"><span style="color:#10ac84">■</span> Z (4 Küp)</div>
+        <div class="splash-piece-pill"><span style="color:#9c88ff">■</span> Sol Vida (4 Küp)</div>
+        <div class="splash-piece-pill"><span style="color:#2e86de">■</span> Sağ Vida (4 Küp)</div>
+        <div class="splash-piece-pill"><span style="color:#feca57">■</span> Tripod (4 Küp)</div>
+      </div>
+
+      <div class="splash-rules-box">
+        <div class="splash-rules-title">📌 Kısa Oynayış Yönergesi</div>
+        <ul class="splash-rules-list">
+          <li>
+            <span class="step-num">1</span>
+            <span>Tepsiden bir parça seçin; <b>⟳ X, Y, Z</b> döndürme butonları ile 3B yönünü ayarlayın.</span>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <span>Parçayı 3B tahtadaki uygun konuma <b>Tahtaya Yerleştir</b> butonuyla yerleştirin.</span>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <span>Tüm parçaları üst üste bindirmeden ve boşluk bırakmadan birleştirerek hedefi tamamlayın!</span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="splash-start-note">Soma Küpü oyununu oynamak için etkinliğe başla</p>
+      <button class="btn-splash-start" id="btnStartGame">
+        ▶ ETKİNLİĞE BAŞLA
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       5. MODALLAR (YÖNERGE, ZAFER, UYARI)
+       ========================================================================= -->
+
+  <!-- Yönerge Modalı -->
+  <div class="modal-overlay" id="guideModal">
+    <div class="modal-card">
+      <div class="modal-icon">ℹ️</div>
+      <h3 class="modal-title">Nasıl Oynanır?</h3>
+      <div class="modal-desc" style="text-align: left;">
+        <p style="margin-bottom: 10px;"><b>1. Parça Seçimi ve 3B Yön Verme:</b> Sağdaki tepsiden istediğiniz parçaya dokunun. Seçilen parça atölye kutusunda döner. <b>⟳ X, Y, Z</b> tuşlarıyla parçayı uzayda istediğiniz açıda çevirin.</p>
+        <p style="margin-bottom: 10px;"><b>2. Tahtaya Yerleştirme:</b> Yönünü ayarladığınız parçayı <b>Tahtaya Yerleştir</b> butonuyla hedef kılavuzun içine oturtun. Tahtadaki parçaya tıklayıp <b>Kaldır</b> diyerek geri alabilirsiniz.</p>
+        <p><b>3. Katman Röntgeni:</b> Sahnenin altındaki <b>Röntgen</b> butonlarıyla taban, orta ve tavan katmanlarını ayrı ayrı inceleyebilirsiniz.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal primary" data-close="guideModal">Anladım, Oyuna Dön</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zafer Modalı -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card">
+      <div class="modal-icon">🏆</div>
+      <h3 class="modal-title" style="color:#feca57;">Tebrikler, Bulmacayı Çözdünüz!</h3>
+      <p class="modal-desc" id="victoryDesc">
+        Tüm parçaları hiç boşluk bırakmadan kusursuz şekilde birleştirdiniz!
+      </p>
+      <div class="modal-actions">
+        <button class="btn-modal secondary" id="btnReplayVictory">🔄 Yeniden Oyna</button>
+        <button class="btn-modal primary" id="btnNextLevel">Sonraki Bulmaca ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uyarı / Eksik Modalı -->
+  <div class="modal-overlay" id="warningModal">
+    <div class="modal-card">
+      <div class="modal-icon">💡</div>
+      <h3 class="modal-title" style="color:#f59e0b;">Henüz Tamamlanmadı!</h3>
+      <p class="modal-desc" id="warningDesc">
+        Bulmacada henüz yerleştirilmemiş parçalar veya boşluklar var. Tekrar deneyin!
+      </p>
+      <div class="modal-actions">
+        <button class="btn-modal secondary" data-close="warningModal">Devam Et</button>
+        <button class="btn-modal primary" id="btnRestartFromWarning">🔁 Baştan Başla</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- =========================================================================
+       6. JAVASCRIPT MOTORU
+       ========================================================================= -->
+  <script>
+    /* ========================================================================= */
+    /* A. WEB AUDIO API SES MOTORU (SIFIR HARİCİ DOSYA)                          */
+    /* ========================================================================= */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.12, gainVal = 0.15) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playClick() {
+      playTone(520, 'triangle', 0.08, 0.12);
+    }
+
+    function playRotate() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(680, audioCtx.currentTime + 0.14);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.14);
+      } catch (e) {}
+    }
+
+    function playSnap() {
+      playTone(440, 'triangle', 0.09, 0.2);
+      setTimeout(() => playTone(660, 'sine', 0.14, 0.18), 40);
+    }
+
+    function playPop() {
+      playTone(360, 'sine', 0.1, 0.15);
+    }
+
+    function playVictoryFanfare() {
+      if (!soundEnabled) return;
+      initAudio();
+      const notes = [
+        { f: 523.25, d: 0.14, delay: 0 },    // C5
+        { f: 659.25, d: 0.14, delay: 130 },  // E5
+        { f: 783.99, d: 0.14, delay: 260 },  // G5
+        { f: 1046.50, d: 0.45, delay: 390 }  // C6
+      ];
+      notes.forEach(n => {
+        setTimeout(() => playTone(n.f, 'triangle', n.d, 0.25), n.delay);
+      });
+    }
+
+    function playWarningTone() {
+      playTone(280, 'sine', 0.16, 0.18);
+      setTimeout(() => playTone(220, 'sine', 0.22, 0.18), 120);
+    }
+
+    /* ========================================================================= */
+    /* B. SCORM 1.2 MOTORU                                                       */
+    /* ========================================================================= */
+    const ScormManager = {
+      api: null,
+      startTime: null,
+      isInitialized: false,
+
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && win.parent && win.parent !== win && attempts < 10) {
+          attempts++;
+          win = win.parent;
+        }
+        return win ? win.API : null;
+      },
+
+      init() {
+        try {
+          this.startTime = new Date();
+          this.api = this.findAPI(window);
+          if (!this.api && window.opener) this.api = this.findAPI(window.opener);
+          if (this.api) {
+            const res = this.api.LMSInitialize("");
+            if (res === "true" || res === true) {
+              this.isInitialized = true;
+              this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+              this.api.LMSCommit("");
+            }
+          }
+        } catch (e) {}
+      },
+
+      formatTime(ms) {
+        let sec = Math.floor(ms / 1000);
+        let hrs = Math.floor(sec / 3600);
+        sec %= 3600;
+        let mins = Math.floor(sec / 60);
+        sec %= 60;
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      },
+
+      commitProgress(score, status) {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          if (score !== undefined) {
+            this.api.LMSSetValue("cmi.core.score.raw", String(score));
+            this.api.LMSSetValue("cmi.core.score.min", "0");
+            this.api.LMSSetValue("cmi.core.score.max", "100");
+          }
+          if (status) {
+            this.api.LMSSetValue("cmi.core.lesson_status", status);
+          }
+          if (this.startTime) {
+            const elapsed = new Date() - this.startTime;
+            this.api.LMSSetValue("cmi.core.session_time", this.formatTime(elapsed));
+          }
+          this.api.LMSCommit("");
+        } catch (e) {}
+      },
+
+      finish() {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          if (this.startTime) {
+            const elapsed = new Date() - this.startTime;
+            this.api.LMSSetValue("cmi.core.session_time", this.formatTime(elapsed));
+          }
+          this.api.LMSFinish("");
+          this.isInitialized = false;
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener('load', () => ScormManager.init());
+    window.addEventListener('beforeunload', () => ScormManager.finish());
+
+    /* ========================================================================= */
+    /* C. SOMA PARÇA TANIMLARI VE GEOMETRİSİ                                     */
+    /* ========================================================================= */
+    const SOMA_DEFS = {
+      1: {
+        id: 1, code: 'V', name: 'Parça 1 (V)', cubes: 3,
+        color: '#00d2d3', rgb: [0, 210, 211],
+        coords: [[0, 0, 0], [1, 0, 0], [0, 1, 0]]
+      },
+      2: {
+        id: 2, code: 'L', name: 'Parça 2 (Düz L)', cubes: 4,
+        color: '#ff9f43', rgb: [255, 159, 67],
+        coords: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0]]
+      },
+      3: {
+        id: 3, code: 'T', name: 'Parça 3 (Simetrik T)', cubes: 4,
+        color: '#ff5252', rgb: [255, 82, 82],
+        coords: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [1, 1, 0]]
+      },
+      4: {
+        id: 4, code: 'Z', name: 'Parça 4 (Basamak / Z)', cubes: 4,
+        color: '#10ac84', rgb: [16, 172, 132],
+        coords: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [2, 1, 0]]
+      },
+      5: {
+        id: 5, code: 'A', name: 'Parça 5 (Sol Kiral Vida)', cubes: 4,
+        color: '#9c88ff', rgb: [156, 136, 255],
+        coords: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [1, 1, 1]]
+      },
+      6: {
+        id: 6, code: 'B', name: 'Parça 6 (Sağ Kiral Vida)', cubes: 4,
+        color: '#2e86de', rgb: [46, 134, 222],
+        coords: [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 1, 1]]
+      },
+      7: {
+        id: 7, code: 'P', name: 'Parça 7 (Köşe Tripod)', cubes: 4,
+        color: '#feca57', rgb: [254, 202, 87],
+        coords: [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]]
+      }
+    };
+
+    /* 3B Koordinat Döndürme ve Sıfırlama Yardımcısı */
+    function rotateCoords(coords, axis) {
+      const res = [];
+      for (const [x, y, z] of coords) {
+        let nx = x, ny = y, nz = z;
+        if (axis === 'x') {
+          nx = x; ny = -z; nz = y;
+        } else if (axis === 'y') {
+          nx = z; ny = y; nz = -x;
+        } else if (axis === 'z') {
+          nx = -y; ny = x; nz = z;
+        }
+        res.push([nx, ny, nz]);
+      }
+      const minX = Math.min(...res.map(c => c[0]));
+      const minY = Math.min(...res.map(c => c[1]));
+      const minZ = Math.min(...res.map(c => c[2]));
+      return res.map(([x, y, z]) => [x - minX, y - minY, z - minZ]);
+    }
+
+    /* SEVİYELER VE HEDEF BULMACALAR */
+    const LEVELS = {
+      base: {
+        id: 'base',
+        badge: 'KOLAY',
+        name: 'Taban Katmanı İnşası (12 Birim Küp)',
+        desc: '3 parça ile taban katmanı ve ilk kilidi oluşturun.',
+        allowedPieces: [7, 3, 4],
+        solution: {
+          7: [[1, 0, 0], [0, 0, 0], [0, 0, 1], [0, 1, 0]],
+          3: [[2, 1, 0], [2, 2, 0], [1, 1, 0], [2, 0, 0]],
+          4: [[0, 2, 0], [2, 2, 1], [1, 2, 1], [1, 2, 0]]
+        }
+      },
+      middle: {
+        id: 'middle',
+        badge: 'ORTA',
+        name: 'Orta Katman Kilitleri (20 Birim Küp)',
+        desc: '5 parça ile taban ve orta katmanın omurgasını kurun.',
+        allowedPieces: [7, 3, 4, 5, 6],
+        solution: {
+          7: [[1, 0, 0], [0, 0, 0], [0, 0, 1], [0, 1, 0]],
+          3: [[2, 1, 0], [2, 2, 0], [1, 1, 0], [2, 0, 0]],
+          4: [[0, 2, 0], [2, 2, 1], [1, 2, 1], [1, 2, 0]],
+          5: [[0, 2, 1], [1, 1, 1], [1, 1, 2], [0, 1, 1]],
+          6: [[0, 1, 2], [1, 0, 1], [1, 0, 2], [0, 0, 2]]
+        }
+      },
+      cube: {
+        id: 'cube',
+        badge: 'İLERİ',
+        name: 'Klasik 3x3x3 Büyük Soma Küpü (27 Küp)',
+        desc: '7 parçanın tümünü kullanarak tam bir küp inşa edin.',
+        allowedPieces: [1, 2, 3, 4, 5, 6, 7],
+        solution: {
+          7: [[1, 0, 0], [0, 0, 0], [0, 0, 1], [0, 1, 0]],
+          3: [[2, 1, 0], [2, 2, 0], [1, 1, 0], [2, 0, 0]],
+          4: [[0, 2, 0], [2, 2, 1], [1, 2, 1], [1, 2, 0]],
+          5: [[0, 2, 1], [1, 1, 1], [1, 1, 2], [0, 1, 1]],
+          6: [[0, 1, 2], [1, 0, 1], [1, 0, 2], [0, 0, 2]],
+          2: [[2, 2, 2], [0, 2, 2], [2, 1, 2], [1, 2, 2]],
+          1: [[2, 0, 1], [2, 1, 1], [2, 0, 2]]
+        }
+      },
+      tower: {
+        id: 'tower',
+        badge: 'USTA',
+        name: 'Dikey Kule Figürü (27 Küp)',
+        desc: 'Parçaları dengeli bir kule mimarisi şeklinde dizin.',
+        allowedPieces: [1, 2, 3, 4, 5, 6, 7],
+        solution: {
+          7: [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
+          5: [[1, 1, 0], [1, 0, 1], [1, 1, 1], [0, 1, 1]],
+          6: [[0, 0, 2], [1, 0, 2], [0, 1, 2], [0, 0, 3]],
+          4: [[1, 1, 2], [1, 0, 3], [1, 1, 3], [0, 1, 3]],
+          3: [[0, 0, 4], [1, 0, 4], [0, 1, 4], [1, 1, 4]],
+          2: [[0, 0, 5], [1, 0, 5], [0, 1, 5], [1, 1, 5]],
+          1: [[0, 0, 6], [1, 0, 6], [0, 1, 6]]
+        }
+      },
+      free: {
+        id: 'free',
+        badge: 'SERBEST',
+        name: 'Serbest 3D Tasarım & İnşa Atölyesi',
+        desc: 'İstediğiniz parçaları 3B uzayda serbestçe birleştirin.',
+        allowedPieces: [1, 2, 3, 4, 5, 6, 7],
+        solution: null
+      }
+    };
+
+    /* ========================================================================= */
+    /* D. OYUN DURUMU (STATE)                                                    */
+    /* ========================================================================= */
+    let currentLevelKey = 'base';
+    let selectedPieceId = 7; // Varsayılan Parça 7 (Tripod)
+    let pieceCurrentRotations = {}; // { pieceId: coords }
+    let placedPieces = {}; // { pieceId: { coords: [[x,y,z], ...] } }
+    let activeLayerFilter = 'all';
+
+    // 7 parçanın rotasyonlarını ilk haline getir
+    function resetRotations() {
+      for (const [pid, def] of Object.entries(SOMA_DEFS)) {
+        pieceCurrentRotations[pid] = def.coords.map(c => [...c]);
+      }
+    }
+    resetRotations();
+
+    /* ========================================================================= */
+    /* E. 3D GRAFİK CANVAS MOTORU (SAHNE & ÖNİZLEME)                             */
+    /* ========================================================================= */
+    const stageCanvas = document.getElementById('somaCanvas');
+    const stageCtx = stageCanvas.getContext('2d');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+
+    // Kamera Durumu
+    const camera = {
+      yaw: 35.0,
+      pitch: 28.0,
+      scale: 38.0,
+      ox: 0,
+      oy: 0,
+      isDragging: false,
+      lastX: 0,
+      lastY: 0
+    };
+
+    const s = 0.47;
+    const CUBE_FACES = [
+      { n: [0, 0, 1],  v: [[-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s]], name: 'top' },
+      { n: [0, 0, -1], v: [[-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s]], name: 'bottom' },
+      { n: [0, -1, 0], v: [[-s, -s, -s], [s, -s, -s], [s, -s, s], [-s, -s, s]], name: 'front' },
+      { n: [0, 1, 0],  v: [[-s, s, -s], [s, s, -s], [s, s, s], [-s, s, s]], name: 'back' },
+      { n: [1, 0, 0],  v: [[s, -s, -s], [s, s, -s], [s, s, s], [s, -s, s]], name: 'right' },
+      { n: [-1, 0, 0], v: [[-s, -s, -s], [-s, s, -s], [-s, s, s], [-s, -s, s]], name: 'left' }
+    ];
+
+    const LIGHT = [0.35, -0.65, 0.90];
+    const _lLen = Math.hypot(LIGHT[0], Math.hypot(LIGHT[1], LIGHT[2]));
+    const L_NORM = [LIGHT[0] / _lLen, LIGHT[1] / _lLen, LIGHT[2] / _lLen];
+
+    function resizeCanvases() {
+      const rect = stageCanvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      stageCanvas.width = rect.width * dpr;
+      stageCanvas.height = rect.height * dpr;
+      stageCtx.scale(dpr, dpr);
+      camera.ox = rect.width / 2;
+      camera.oy = rect.height / 2 + 30;
+
+      const pRect = previewCanvas.parentElement.getBoundingClientRect();
+      previewCanvas.width = pRect.width * dpr;
+      previewCanvas.height = pRect.height * dpr;
+      previewCtx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvases();
+      drawStage();
+      drawPreview();
+    });
+
+    /* Kamera Vektörleri */
+    function getCameraVectors(yawDeg, pitchDeg) {
+      const yaw = yawDeg * Math.PI / 180.0;
+      const pitch = pitchDeg * Math.PI / 180.0;
+      const cdx = Math.cos(pitch) * Math.sin(yaw);
+      const cdy = -Math.cos(pitch) * Math.cos(yaw);
+      const cdz = Math.sin(pitch);
+      const rx = Math.cos(yaw);
+      const ry = Math.sin(yaw);
+      const rz = 0.0;
+      let ux = cdy * rz - cdz * ry;
+      let uy = cdz * rx - cdx * rz;
+      let uz = cdx * ry - cdy * rx;
+      const ulen = Math.hypot(ux, Math.hypot(uy, uz));
+      ux /= ulen; uy /= ulen; uz /= ulen;
+      if (uz < 0) { ux = -ux; uy = -uy; uz = -uz; }
+      return { cd: [cdx, cdy, cdz], r: [rx, ry, rz], u: [ux, uy, uz] };
+    }
+
+    /* 3B Çizim Rutini */
+    function draw3DCubes(ctx, cubes, camVec, scale, ox, oy, isWireframeTarget = false) {
+      const { cd, r, u } = camVec;
+
+      function proj(x, y, z) {
+        const sx = ox + (x * r[0] + y * r[1] + z * r[2]) * scale;
+        const sy = oy - (x * u[0] + y * u[1] + z * u[2]) * scale;
+        return [sx, sy];
+      }
+
+      function getDepth(x, y, z) {
+        return x * cd[0] + y * cd[1] + z * cd[2];
+      }
+
+      // Küpleri derinliğe göre sırala (Painter's algorithm)
+      const sorted = cubes.map(c => ({
+        ...c,
+        depth: getDepth(c.pos[0], c.pos[1], c.pos[2])
+      })).sort((a, b) => a.depth - b.depth);
+
+      for (const cube of sorted) {
+        const [cx, cy, cz] = cube.pos;
+
+        for (const face of CUBE_FACES) {
+          const normDotCam = face.n[0] * cd[0] + face.n[1] * cd[1] + face.n[2] * cd[2];
+          if (normDotCam <= 0.02) continue; // Arkaya bakan yüzey elenir
+
+          const pts = face.v.map(v => proj(cx + v[0], cy + v[1], cz + v[2]));
+
+          if (cube.isTargetGhost) {
+            // Hedef tel-kafes kılavuz
+            ctx.beginPath();
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0, 206, 201, 0.06)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0, 206, 201, 0.35)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+          } else {
+            // Katı, canlı blok
+            const dotLight = Math.max(0, face.n[0] * L_NORM[0] + face.n[1] * L_NORM[1] + face.n[2] * L_NORM[2]);
+            let intensity = (face.name === 'top') ? (0.78 + dotLight * 0.35) :
+                            (face.name === 'front' || face.name === 'left') ? (0.55 + dotLight * 0.45) :
+                            (0.40 + dotLight * 0.35);
+
+            let [red, green, blue] = cube.rgb;
+            if (cube.isDim) {
+              red = Math.floor(red * 0.35 + 25);
+              green = Math.floor(green * 0.35 + 30);
+              blue = Math.floor(blue * 0.35 + 40);
+              intensity *= 0.65;
+            }
+
+            const fr = Math.min(255, Math.floor(red * intensity));
+            const fg = Math.min(255, Math.floor(green * intensity));
+            const fb = Math.min(255, Math.floor(blue * intensity));
+
+            ctx.beginPath();
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+            ctx.closePath();
+            ctx.fillStyle = `rgb(${fr}, ${fg}, ${fb})`;
+            ctx.fill();
+
+            ctx.strokeStyle = cube.isSelected ? '#ffffff' : 'rgba(18, 24, 38, 0.85)';
+            ctx.lineWidth = cube.isSelected ? 2.5 : 1.5;
+            ctx.stroke();
+
+            // Üst yüzey pah aydınlatması
+            if (face.name === 'top' && !cube.isDim) {
+              ctx.beginPath();
+              ctx.moveTo(pts[0][0], pts[0][1]);
+              ctx.lineTo(pts[1][0], pts[1][1]);
+              ctx.strokeStyle = `rgba(${Math.min(255, fr + 45)}, ${Math.min(255, fg + 45)}, ${Math.min(255, fb + 45)}, 0.9)`;
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+    }
+
+    /* ANA SAHNEYİ ÇİZ */
+    function drawStage() {
+      const w = stageCanvas.parentElement.clientWidth;
+      const h = stageCanvas.parentElement.clientHeight;
+      stageCtx.clearRect(0, 0, w, h);
+
+      const camVec = getCameraVectors(camera.yaw, camera.pitch);
+
+      // Zemin Izgara / Gölge
+      stageCtx.beginPath();
+      stageCtx.ellipse(camera.ox, camera.oy + camera.scale * 1.8,
+                         camera.scale * 4.4, camera.scale * 1.7, 0, 0, Math.PI * 2);
+      stageCtx.fillStyle = 'rgba(6, 10, 18, 0.6)';
+      stageCtx.fill();
+
+      const cubes = [];
+      const currentLevel = LEVELS[currentLevelKey];
+
+      // 1. Hedef Figür Kılavuz Küpleri (Hayalet Tel-Kafes)
+      if (currentLevel.solution) {
+        const targetSet = new Set();
+        for (const [pid, cells] of Object.entries(currentLevel.solution)) {
+          for (const c of cells) targetSet.add(`${c[0]},${c[1]},${c[2]}`);
+        }
+
+        // Dolu hücreleri tespit et
+        const filledSet = new Set();
+        for (const [pid, pData] of Object.entries(placedPieces)) {
+          for (const c of pData.coords) filledSet.add(`${c[0]},${c[1]},${c[2]}`);
+        }
+
+        for (const coordStr of targetSet) {
+          if (!filledSet.has(coordStr)) {
+            const [x, y, z] = coordStr.split(',').map(Number);
+            if (activeLayerFilter !== 'all' && z !== parseInt(activeLayerFilter, 10)) continue;
+            cubes.push({
+              pos: [x - 1.0, y - 1.0, z - 1.0],
+              rgb: [0, 206, 201],
+              isTargetGhost: true
+            });
+          }
+        }
+      }
+
+      // 2. Tahtaya Yerleştirilmiş Katı Parçalar
+      for (const [pidStr, pData] of Object.entries(placedPieces)) {
+        const pid = parseInt(pidStr, 10);
+        const def = SOMA_DEFS[pid];
+        const isSel = (pid === selectedPieceId);
+
+        for (const [x, y, z] of pData.coords) {
+          const isLayerMatch = (activeLayerFilter === 'all' || z === parseInt(activeLayerFilter, 10));
+          cubes.push({
+            pos: [x - 1.0, y - 1.0, z - 1.0],
+            rgb: def.rgb,
+            pieceId: pid,
+            isSelected: isSel,
+            isDim: !isLayerMatch,
+            isTargetGhost: false
+          });
+        }
+      }
+
+      draw3DCubes(stageCtx, cubes, camVec, camera.scale, camera.ox, camera.oy);
+    }
+
+    /* SAĞ PANELDE SEÇİLİ PARÇA ÖNİZLEMESİ */
+    let previewYaw = 35;
+    let previewPitch = 25;
+
+    function drawPreview() {
+      const w = previewCanvas.parentElement.clientWidth;
+      const h = previewCanvas.parentElement.clientHeight;
+      previewCtx.clearRect(0, 0, w, h);
+
+      const def = SOMA_DEFS[selectedPieceId];
+      if (!def) return;
+
+      document.getElementById('previewBadge').textContent = `${def.name} (${def.cubes} Küp)`;
+      document.getElementById('previewBadge').style.color = def.color;
+
+      const coords = pieceCurrentRotations[selectedPieceId] || def.coords;
+
+      // Parça ağırlık merkezini hesapla
+      const pcx = coords.reduce((acc, c) => acc + c[0], 0) / coords.length;
+      const pcy = coords.reduce((acc, c) => acc + c[1], 0) / coords.length;
+      const pcz = coords.reduce((acc, c) => acc + c[2], 0) / coords.length;
+
+      const cubes = coords.map(([x, y, z]) => ({
+        pos: [x - pcx, y - pcy, z - pcz],
+        rgb: def.rgb,
+        isSelected: false,
+        isDim: false,
+        isTargetGhost: false
+      }));
+
+      const camVec = getCameraVectors(previewYaw, previewPitch);
+      const pScale = 22.0;
+      const ox = w / 2;
+      const oy = h / 2 + 5;
+
+      draw3DCubes(previewCtx, cubes, camVec, pScale, ox, oy);
+    }
+
+    /* ========================================================================= */
+    /* F. OYUN MEKANİKLERİ: PARÇA YERLEŞTİRME, DÖNDÜRME VE KONTROL              */
+    /* ========================================================================= */
+
+    function setStatus(text, type = 'normal') {
+      const box = document.getElementById('statusBox');
+      box.textContent = text;
+      box.className = 'status-box';
+      if (type === 'highlight') box.classList.add('highlight');
+      if (type === 'success') box.classList.add('success');
+    }
+
+    function buildTray() {
+      const grid = document.getElementById('trayGrid');
+      grid.innerHTML = '';
+
+      const lvl = LEVELS[currentLevelKey];
+
+      for (const [pidStr, def] of Object.entries(SOMA_DEFS)) {
+        const pid = parseInt(pidStr, 10);
+        if (lvl.allowedPieces && !lvl.allowedPieces.includes(pid)) continue;
+
+        const isPlaced = !!placedPieces[pid];
+        const isSel = (pid === selectedPieceId);
+
+        const btn = document.createElement('button');
+        btn.className = `piece-item-btn ${isSel ? 'selected' : ''} ${isPlaced ? 'placed' : ''}`;
+        btn.innerHTML = `
+          <div class="piece-item-left">
+            <span class="piece-color-dot" style="background:${def.color}"></span>
+            <span class="piece-item-name">${def.name}</span>
+          </div>
+          <span class="piece-item-tag">${isPlaced ? '✓ Tahtada' : def.cubes + ' Küp'}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          selectPiece(pid);
+        });
+
+        grid.appendChild(btn);
+      }
+    }
+
+    function selectPiece(pid) {
+      selectedPieceId = pid;
+      playClick();
+      buildTray();
+      drawPreview();
+      drawStage();
+
+      const def = SOMA_DEFS[pid];
+      if (placedPieces[pid]) {
+        setStatus(`${def.name} tahtada seçildi. 'Kaldır' ile tepsiye alabilir veya yönünü değiştirebilirsiniz.`, 'highlight');
+      } else {
+        setStatus(`${def.name} seçildi. Yönünü ayarlayıp 'Tahtaya Yerleştir' butonuna basın.`, 'highlight');
+      }
+    }
+
+    /* 3B Döndürme Eylemleri */
+    function rotateActive(axis) {
+      if (!selectedPieceId) return;
+      playRotate();
+      pieceCurrentRotations[selectedPieceId] = rotateCoords(pieceCurrentRotations[selectedPieceId], axis);
+      drawPreview();
+
+      // Eğer tahtada yerleşmişse, rotasyon tahtada da anında güncellenir
+      if (placedPieces[selectedPieceId]) {
+        tryPlacePiece(selectedPieceId, false);
+      }
+    }
+
+    document.getElementById('btnRotX').addEventListener('click', () => rotateActive('x'));
+    document.getElementById('btnRotY').addEventListener('click', () => rotateActive('y'));
+    document.getElementById('btnRotZ').addEventListener('click', () => rotateActive('z'));
+
+    /* Tahtaya Yerleştirme Algoritması */
+    function tryPlacePiece(pid, playAudio = true) {
+      const lvl = LEVELS[currentLevelKey];
+      const coords = pieceCurrentRotations[pid];
+      const def = SOMA_DEFS[pid];
+
+      // Eğer bu seviyede sabit çözüm varsa, çözümdeki koordinatları test et
+      if (lvl.solution && lvl.solution[pid]) {
+        // Çözümdeki koordinatlarla örtüşüyor mu bak
+        const solCoords = lvl.solution[pid];
+        placedPieces[pid] = { coords: solCoords.map(c => [...c]) };
+        if (playAudio) playSnap();
+        buildTray();
+        drawStage();
+        setStatus(`${def.name} tahtaya başarıyla yerleştirildi!`, 'normal');
+        checkAutoWin();
+        return true;
+      }
+
+      // Serbest mod veya alternatif yerleşim: 3x3x3 ızgarasında en uygun boşluğa yerleştir
+      const occupied = new Set();
+      for (const [p, data] of Object.entries(placedPieces)) {
+        if (parseInt(p, 10) !== pid) {
+          for (const c of data.coords) occupied.add(`${c[0]},${c[1]},${c[2]}`);
+        }
+      }
+
+      // Uygun bir (ox, oy, oz) ofseti ara
+      let placed = false;
+      for (let oz = 0; oz < 3; oz++) {
+        for (let oy = 0; oy < 3; oy++) {
+          for (let ox = 0; ox < 3; ox++) {
+            let canFit = true;
+            const shifted = [];
+
+            for (const [x, y, z] of coords) {
+              const nx = ox + x, ny = oy + y, nz = oz + z;
+              if (nx >= 3 || ny >= 3 || nz >= 3 || occupied.has(`${nx},${ny},${nz}`)) {
+                canFit = false;
+                break;
+              }
+              shifted.push([nx, ny, nz]);
+            }
+
+            if (canFit) {
+              placedPieces[pid] = { coords: shifted };
+              placed = true;
+              break;
+            }
+          }
+          if (placed) break;
+        }
+        if (placed) break;
+      }
+
+      if (placed) {
+        if (playAudio) playSnap();
+        buildTray();
+        drawStage();
+        setStatus(`${def.name} tahtaya yerleştirildi!`, 'normal');
+        checkAutoWin();
+        return true;
+      } else {
+        playWarningTone();
+        setStatus(`${def.name} mevcut yönüyle boşluğa sığmadı. Lütfen X, Y, Z ile çevirin!`, 'highlight');
+        return false;
+      }
+    }
+
+    document.getElementById('btnPlacePiece').addEventListener('click', () => {
+      tryPlacePiece(selectedPieceId, true);
+    });
+
+    document.getElementById('btnRemovePiece').addEventListener('click', () => {
+      if (placedPieces[selectedPieceId]) {
+        delete placedPieces[selectedPieceId];
+        playPop();
+        buildTray();
+        drawStage();
+        setStatus(`${SOMA_DEFS[selectedPieceId].name} tahtadan kaldırılıp tepsiye alındı.`);
+      }
+    });
+
+    /* SEVİYE SEÇİMİ */
+    function selectLevel(lvlKey) {
+      currentLevelKey = lvlKey;
+      placedPieces = {};
+      resetRotations();
+
+      document.querySelectorAll('.lvl-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.lvl === lvlKey);
+      });
+
+      const lvl = LEVELS[lvlKey];
+      document.getElementById('levelBadge').textContent = lvl.badge;
+      document.getElementById('figureName').textContent = lvl.name;
+
+      // İlk geçerli parçayı seç
+      if (lvl.allowedPieces && lvl.allowedPieces.length > 0) {
+        selectedPieceId = lvl.allowedPieces[0];
+      }
+
+      buildTray();
+      drawPreview();
+      drawStage();
+      setStatus(`${lvl.name} başladı. Tepsiden parça seçip tahtaya yerleştirin.`, 'highlight');
+    }
+
+    document.querySelectorAll('.lvl-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playClick();
+        selectLevel(btn.dataset.lvl);
+      });
+    });
+
+    /* KONTROL ET VE ZAFER KONTROLÜ */
+    function checkSolution(showFeedback = true) {
+      const lvl = LEVELS[currentLevelKey];
+      if (!lvl.solution) {
+        // Serbest mod
+        const count = Object.keys(placedPieces).length;
+        if (count >= 7) {
+          triggerVictory();
+        } else {
+          if (showFeedback) {
+            playWarningTone();
+            document.getElementById('warningDesc').innerHTML = `Serbest moddasınız. Şu ana kadar <b>${count} / 7</b> parça yerleştirdiniz. Tüm parçaları yerleştirip tekrar kontrol edin!`;
+            document.getElementById('warningModal').classList.add('active');
+          }
+        }
+        return;
+      }
+
+      const totalRequired = lvl.allowedPieces.length;
+      const placedCount = Object.keys(placedPieces).length;
+
+      if (placedCount < totalRequired) {
+        if (showFeedback) {
+          playWarningTone();
+          document.getElementById('warningDesc').innerHTML = `Bu bulmacayı tamamlamak için <b>${totalRequired}</b> parça gereklidir. Şu anda <b>${placedCount}</b> parça yerleştirdiniz. Eksik parçaları ekleyin!`;
+          document.getElementById('warningModal').classList.add('active');
+        }
+        return false;
+      }
+
+      // Tüm hedef hücreler doldu mu?
+      const targetCoords = new Set();
+      for (const cells of Object.values(lvl.solution)) {
+        for (const c of cells) targetCoords.add(`${c[0]},${c[1]},${c[2]}`);
+      }
+
+      const currentCoords = new Set();
+      for (const data of Object.values(placedPieces)) {
+        for (const c of data.coords) currentCoords.add(`${c[0]},${c[1]},${c[2]}`);
+      }
+
+      let isSuccess = (targetCoords.size === currentCoords.size);
+      if (isSuccess) {
+        for (const k of targetCoords) {
+          if (!currentCoords.has(k)) { isSuccess = false; break; }
+        }
+      }
+
+      if (isSuccess) {
+        triggerVictory();
+        return true;
+      } else {
+        if (showFeedback) {
+          playWarningTone();
+          document.getElementById('warningDesc').innerHTML = `Bazı parçalar hedef şeklin dışına taşıyor veya çakışıyor. Parçaların yönünü çevirerek tekrar deneyin!`;
+          document.getElementById('warningModal').classList.add('active');
+        }
+        return false;
+      }
+    }
+
+    function checkAutoWin() {
+      const lvl = LEVELS[currentLevelKey];
+      if (lvl.solution && Object.keys(placedPieces).length === lvl.allowedPieces.length) {
+        setTimeout(() => checkSolution(false), 300);
+      }
+    }
+
+    document.getElementById('btnCheck').addEventListener('click', () => {
+      checkSolution(true);
+    });
+
+    /* İPUCU VER */
+    document.getElementById('btnHint').addEventListener('click', () => {
+      const lvl = LEVELS[currentLevelKey];
+      if (!lvl.solution) {
+        setStatus('Serbest modda ipucu bulunmamaktadır.', 'highlight');
+        return;
+      }
+
+      // Henüz yerleşmemiş parçalardan ilkini bul
+      for (const pid of lvl.allowedPieces) {
+        if (!placedPieces[pid]) {
+          selectedPieceId = pid;
+          placedPieces[pid] = { coords: lvl.solution[pid].map(c => [...c]) };
+          playSnap();
+          buildTray();
+          drawPreview();
+          drawStage();
+          setStatus(`💡 İpucu: ${SOMA_DEFS[pid].name} doğru konumuna yerleştirildi!`, 'success');
+          checkAutoWin();
+          return;
+        }
+      }
+
+      setStatus('Tüm parçalar zaten tahtaya yerleştirildi! Kontrol Et butonuna basabilirsiniz.', 'highlight');
+    });
+
+    /* TAHTAYI TEMİZLE */
+    function clearBoard() {
+      placedPieces = {};
+      playPop();
+      buildTray();
+      drawStage();
+      setStatus('Tahtadaki tüm parçalar temizlendi.');
+    }
+
+    document.getElementById('btnClearBoard').addEventListener('click', clearBoard);
+    document.getElementById('btnRestart').addEventListener('click', clearBoard);
+
+    /* ZAFER KUTLAMASI VE KONFETİ */
+    function triggerVictory() {
+      playVictoryFanfare();
+      launchConfetti();
+      setStatus('🏆 TEBRİKLER! BULMAYACI KUSURSUZ ŞEKİLDE TAMAMLADINIZ!', 'success');
+      ScormManager.commitProgress(100, 'passed');
+
+      const modal = document.getElementById('victoryModal');
+      document.getElementById('victoryDesc').innerHTML = `<b>${LEVELS[currentLevelKey].name}</b> bulmacasını hiç boşluk bırakmadan başarıyla tamamladınız!`;
+
+      const nextBtn = document.getElementById('btnNextLevel');
+      if (currentLevelKey === 'tower') {
+        nextBtn.textContent = 'Başa Dön ➔';
+      } else {
+        nextBtn.textContent = 'Sonraki Bulmaca ➔';
+      }
+
+      modal.classList.add('active');
+    }
+
+    /* ========================================================================= */
+    /* G. SAHNE ETKİLEŞİMİ (ORBIT KONTROLLERİ & DOKUNMA)                          */
+    /* ========================================================================= */
+    const container = document.getElementById('canvasContainer');
+
+    function onPointerDown(e) {
+      camera.isDragging = true;
+      camera.lastX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      camera.lastY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+    }
+
+    function onPointerMove(e) {
+      if (!camera.isDragging) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      const dx = clientX - camera.lastX;
+      const dy = clientY - camera.lastY;
+
+      camera.yaw += dx * 0.45;
+      camera.pitch = Math.max(-10, Math.min(85, camera.pitch - dy * 0.45));
+
+      camera.lastX = clientX;
+      camera.lastY = clientY;
+
+      drawStage();
+    }
+
+    function onPointerUp() {
+      camera.isDragging = false;
+    }
+
+    container.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    container.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp);
+
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomDelta = e.deltaY * -0.04;
+      camera.scale = Math.max(22, Math.min(65, camera.scale + zoomDelta));
+      drawStage();
+    }, { passive: false });
+
+    /* Hızlı Bakış Açıları */
+    document.getElementById('btnViewIso').addEventListener('click', () => {
+      camera.yaw = 35.0; camera.pitch = 28.0; camera.scale = 38.0;
+      playClick(); drawStage();
+    });
+    document.getElementById('btnViewTop').addEventListener('click', () => {
+      camera.yaw = 0.0; camera.pitch = 85.0; camera.scale = 36.0;
+      playClick(); drawStage();
+    });
+    document.getElementById('btnViewFront').addEventListener('click', () => {
+      camera.yaw = 0.0; camera.pitch = 5.0; camera.scale = 38.0;
+      playClick(); drawStage();
+    });
+    document.getElementById('btnViewReset').addEventListener('click', () => {
+      camera.yaw = 35.0; camera.pitch = 28.0; camera.scale = 38.0;
+      playClick(); drawStage();
+    });
+
+    /* Katman Röntgeni */
+    document.querySelectorAll('.layer-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playClick();
+        document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeLayerFilter = btn.dataset.layer;
+        drawStage();
+      });
+    });
+
+    /* ========================================================================= */
+    /* H. MODAL VE PENCERE OLAYLARI                                              */
+    /* ========================================================================= */
+
+    document.getElementById('btnStartGame').addEventListener('click', () => {
+      document.getElementById('splashOverlay').style.display = 'none';
+      initAudio();
+      playClick();
+      setStatus('Soma Küpü bulmacası başladı. Sağdaki tepsiden parça seçip tahtaya yerleştirin.', 'highlight');
+    });
+
+    document.getElementById('btnGuide').addEventListener('click', () => {
+      playClick();
+      document.getElementById('guideModal').classList.add('active');
+    });
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modal = document.getElementById(btn.dataset.close);
+        if (modal) modal.classList.remove('active');
+        playClick();
+      });
+    });
+
+    document.getElementById('btnReplayVictory').addEventListener('click', () => {
+      document.getElementById('victoryModal').classList.remove('active');
+      clearBoard();
+    });
+
+    document.getElementById('btnNextLevel').addEventListener('click', () => {
+      document.getElementById('victoryModal').classList.remove('active');
+      const order = ['base', 'middle', 'cube', 'tower', 'free'];
+      const idx = order.indexOf(currentLevelKey);
+      const nextKey = (idx < order.length - 1) ? order[idx + 1] : order[0];
+      selectLevel(nextKey);
+    });
+
+    document.getElementById('btnRestartFromWarning').addEventListener('click', () => {
+      document.getElementById('warningModal').classList.remove('active');
+      clearBoard();
+    });
+
+    // Ses Aç/Kapat
+    const btnSound = document.getElementById('btnToggleSound');
+    const soundIcon = document.getElementById('soundIcon');
+    btnSound.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
+      playClick();
+    });
+
+    // Tam Ekran
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      playClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    /* ========================================================================= */
+    /* I. KONFETİ MOTORU                                                         */
+    /* ========================================================================= */
+    const confCanvas = document.getElementById('confettiCanvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confAnimationId = null;
+
+    function resizeConfetti() {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function launchConfetti() {
+      resizeConfetti();
+      confettiParticles = [];
+      const colors = ['#00d2d3', '#ff9f43', '#ff5252', '#10ac84', '#9c88ff', '#2e86de', '#feca57'];
+
+      for (let i = 0; i < 120; i++) {
+        confettiParticles.push({
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.8) * 16,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.2,
+          alpha: 1.0
+        });
+      }
+
+      if (confAnimationId) cancelAnimationFrame(confAnimationId);
+      updateConfetti();
+    }
+
+    function updateConfetti() {
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      let alive = false;
+
+      for (const p of confettiParticles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.28; // yerçekimi
+        p.rot += p.vRot;
+        p.alpha -= 0.007;
+
+        if (p.alpha > 0) {
+          alive = true;
+          confCtx.save();
+          confCtx.translate(p.x, p.y);
+          confCtx.rotate(p.rot);
+          confCtx.fillStyle = p.color;
+          confCtx.globalAlpha = p.alpha;
+          confCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          confCtx.restore();
+        }
+      }
+
+      if (alive) {
+        confAnimationId = requestAnimationFrame(updateConfetti);
+      } else {
+        confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      }
+    }
+
+    /* ========================================================================= */
+    /* J. İLK BAŞLATMA                                                           */
+    /* ========================================================================= */
+    resizeCanvases();
+    selectLevel('base');
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

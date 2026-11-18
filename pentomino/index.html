@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PENTOMİNO | Akıl ve Zekâ Oyunları Atölyesi</title>
+  <style>
+    :root {
+      --bg-dark: #0f141d;
+      --bg-radial: radial-gradient(circle at 50% 25%, #1a253a 0%, #0f141d 85%);
+      --card-bg: rgba(22, 32, 50, 0.94);
+      --card-border: #273852;
+      --board-bg: #090e17;
+      --board-border: #f59e0b;
+      --grid-line: #1e2b40;
+      --cell-empty: #121a29;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-gold: #feca57;
+      --accent-gold-dark: #f59e0b;
+      --accent-cyan: #00cec9;
+      --accent-emerald: #10ac84;
+      --accent-coral: #ff5252;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-blue: #38bdf8;
+      --cell-size: 52px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-radial);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 16px 28px;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* ÜST KONTROL ŞERİDİ */
+    .top-header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      flex-wrap: wrap;
+      gap: 10px;
+      backdrop-filter: blur(12px);
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent-gold), #ea580c);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    }
+
+    .brand-title-wrap h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #feca57, #fed330);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .brand-title-wrap p {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .status-box {
+      flex: 1;
+      max-width: 500px;
+      min-width: 220px;
+      background: rgba(10, 16, 26, 0.75);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+      transition: all 0.25s ease;
+    }
+
+    .status-box.highlight {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      box-shadow: 0 0 12px rgba(254, 202, 87, 0.25);
+    }
+
+    .status-box.success {
+      border-color: var(--accent-emerald);
+      color: #6ee7b7;
+      box-shadow: 0 0 12px rgba(16, 172, 132, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 40px;
+    }
+
+    .btn-header:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #475569;
+      transform: translateY(-1px);
+    }
+
+    .btn-header.btn-reset {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-header.btn-reset:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: var(--accent-coral);
+      color: #fff;
+    }
+
+    .btn-icon-only {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
+
+    /* İKİ SÜTUNLU DÜZEN: SOLDA TAHTA, SAĞDA SEÇME & DÖNDÜRME */
+    .game-layout {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* SOL: TAHTA KARTI */
+    .board-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 20px;
+      padding: 16px 20px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .level-selector-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .lvl-btn {
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.25);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+    }
+
+    .lvl-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-main);
+    }
+
+    .lvl-btn.active {
+      background: linear-gradient(135deg, var(--accent-gold), #ea580c);
+      color: #0f172a;
+      border-color: var(--accent-gold);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+
+    .board-header-info {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .board-header-info b {
+      color: #fff;
+    }
+
+    /* PENTOMINO IZGARASI */
+    .board-frame {
+      position: relative;
+      background: var(--board-bg);
+      padding: 16px;
+      border-radius: 16px;
+      border: 3px solid var(--board-border);
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.8), 0 10px 28px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pentomino-grid {
+      display: grid;
+      gap: 3px;
+      background: var(--grid-line);
+      border-radius: 8px;
+      padding: 2px;
+    }
+
+    .p-cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      background: var(--cell-empty);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.15s, box-shadow 0.15s;
+    }
+
+    .p-cell.hover-valid {
+      background: rgba(16, 185, 129, 0.5) !important;
+      box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.8), 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    .p-cell.hover-invalid {
+      background: rgba(239, 68, 68, 0.45) !important;
+      box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.7), 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+
+    .cell-inner-block {
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+      box-shadow: inset 1.5px 1.5px 3px rgba(255,255,255,0.45), inset -1.5px -1.5px 3px rgba(0,0,0,0.4), 0 3px 6px rgba(0,0,0,0.35);
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+
+    .cell-inner-block:hover {
+      filter: brightness(1.15);
+      transform: scale(0.96);
+    }
+
+    /* OYUN KONTROL TUŞLARI */
+    .game-actions-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .action-btn {
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      min-height: 42px;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: #64748b;
+      transform: translateY(-1px);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, var(--accent-emerald), #059669);
+      border-color: #34d399;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .action-btn.primary:hover {
+      filter: brightness(1.1);
+    }
+
+    .action-btn.btn-hint {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fcd34d;
+    }
+
+    /* SAĞ PANEL: SEÇİLİ PARÇA & TEPSİ */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* SEÇİLİ PARÇA KARTI */
+    .active-piece-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .active-piece-card.has-selection {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+    }
+
+    .active-piece-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .active-piece-preview {
+      width: 170px;
+      height: 170px;
+      background: rgba(10, 16, 26, 0.85);
+      border-radius: 14px;
+      border: 1.5px dashed var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .active-piece-preview.has-selection {
+      border-color: var(--accent-gold);
+      border-style: solid;
+    }
+
+    .piece-manip-btns {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .piece-manip-btns .action-btn {
+      flex: 1;
+      justify-content: center;
+      font-size: 12.5px;
+      padding: 9px 8px;
+      min-height: 40px;
+    }
+
+    .btn-rotate {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+
+    .btn-rotate:hover {
+      filter: brightness(1.15);
+    }
+
+    .btn-flip {
+      background: rgba(139, 92, 246, 0.22);
+      border-color: #8b5cf6;
+      color: #c4b5fd;
+    }
+
+    .btn-flip:hover {
+      background: rgba(139, 92, 246, 0.35);
+      color: #fff;
+    }
+
+    .btn-cancel {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fff;
+    }
+
+    /* PARÇA TEPSİSİ */
+    .tray-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .tray-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tray-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .tray-counter {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.15);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .tray-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .tray-grid::-webkit-scrollbar { width: 5px; }
+    .tray-grid::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    .tray-item {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .tray-item:hover {
+      border-color: #64748b;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .tray-item.selected {
+      border-color: var(--accent-gold);
+      background: rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    }
+
+    .tray-item.placed {
+      opacity: 0.3;
+      filter: grayscale(0.7);
+      pointer-events: none;
+      border-style: dashed;
+    }
+
+    .tray-item.placed::after {
+      content: '✓';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--accent-emerald);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tray-item-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    /* GİRİŞ EKRANI */
+    .splash-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 20, 0.9);
+      backdrop-filter: blur(14px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .splash-card {
+      width: 100%;
+      max-width: 780px;
+      background: rgba(22, 32, 50, 0.96);
+      border: 1.5px solid var(--card-border);
+      border-radius: 26px;
+      padding: 46px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .splash-top-badge {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.35));
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 6px 18px;
+      border-radius: 30px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .splash-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #ffffff 20%, #feca57 70%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 22px;
+      line-height: 1.1;
+    }
+
+    @media (max-width: 640px) {
+      .splash-card { padding: 28px 20px; }
+      .splash-title { font-size: 38px; }
+    }
+
+    .splash-pieces-preview {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+    }
+
+    .splash-preview-piece {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .splash-preview-piece span {
+      font-size: 11px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .splash-rules-box {
+      width: 100%;
+      background: rgba(11, 18, 30, 0.75);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .splash-rules-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent-gold);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .splash-rules-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .splash-rules-list li {
+      font-size: 13.5px;
+      color: #e2e8f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .splash-step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .splash-prompt-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    .btn-splash-start {
+      background: linear-gradient(135deg, var(--accent-emerald) 0%, #059669 100%);
+      color: #ffffff;
+      border: 2px solid #34d399;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 16px 42px;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.45);
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-splash-start:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 14px 38px rgba(16, 185, 129, 0.6);
+      filter: brightness(1.08);
+    }
+
+    /* MODALLAR */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 20, 0.82);
+      backdrop-filter: blur(10px);
+      z-index: 1500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-card {
+      width: 100%;
+      max-width: 580px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover { background: rgba(239, 68, 68, 0.2); color: #fff; }
+
+    .victory-card {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .trophy-glow {
+      font-size: 64px;
+      animation: bounceTrophy 1s infinite alternate ease-in-out;
+      filter: drop-shadow(0 0 20px rgba(254, 202, 87, 0.6));
+    }
+
+    .victory-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .victory-desc {
+      font-size: 14.5px;
+      color: #cbd5e1;
+      max-width: 440px;
+      line-height: 1.5;
+    }
+
+    .victory-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .warning-modal-card {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1800;
+    }
+
+    @keyframes bounceTrophy {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- GİRİŞ EKRANI -->
+  <div class="splash-overlay" id="splashOverlay">
+    <div class="splash-card">
+      <div class="splash-top-badge">OYUN VE OYUN ETKİNLİKLERİ ZEKÂ OYUNLARI</div>
+      <h1 class="splash-title">PENTOMİNO OYUNU</h1>
+      
+      <div class="splash-pieces-preview" id="splashPiecesPreview"></div>
+
+      <div class="splash-rules-box">
+        <div class="splash-rules-title">📌 Kısa Oynayış Yönergesi</div>
+        <ul class="splash-rules-list">
+          <li>
+            <span class="splash-step-num">1</span>
+            <span><b>Parça Seçimi:</b> Sağdaki tepsiden bir parçaya dokunarak seçin.</span>
+          </li>
+          <li>
+            <span class="splash-step-num">2</span>
+            <span><b>Döndür ve Çevir:</b> Parçayı döndürmek için <b>[R]</b> / <b>[Boşluk]</b> veya sağdaki <b>↻ Döndür</b> butonuna basın.</span>
+          </li>
+          <li>
+            <span class="splash-step-num">3</span>
+            <span><b>Hedef Alanı Doldur:</b> Parçaları üst üste bindirmeden ve boşluk bırakmadan hedef alanı eksiksiz kaplayın.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="splash-prompt-text">Pentomino oyununu oynamak için etkinliğe başla</div>
+      
+      <button class="btn-splash-start" id="btnStartGame">
+        ▶ ETKİNLİĞE BAŞLA
+      </button>
+    </div>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ÜST KONTROL ŞERİDİ -->
+  <header class="top-header">
+    <div class="brand-badge">
+      <div class="brand-icon">🧩</div>
+      <div class="brand-title-wrap">
+        <h1>PENTOMİNO</h1>
+        <p>Akıl ve Zekâ Oyunları Atölyesi</p>
+      </div>
+    </div>
+
+    <div class="status-box" id="statusBox">
+      Sağdaki havuzdan bir parça seçin, döndürün ve tahtaya yerleştirin.
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header btn-reset" id="btnRestart" title="Tahtayı Temizle">
+        🔄 Baştan Başla
+      </button>
+      <button class="btn-header" id="btnGuide" title="Oyun Kuralları">
+        ℹ️ Yönerge
+      </button>
+      <button class="btn-header btn-icon-only" id="btnToggleSound" title="Sesi Aç/Kapat">
+        🔊
+      </button>
+      <button class="btn-header btn-icon-only" id="btnFullscreen" title="Tam Ekran">
+        ⛶
+      </button>
+    </div>
+  </header>
+
+  <!-- İKİ SÜTUNLU DÜZEN: SOLDA TAHTA, SAĞDA SEÇİLİ PARÇA & TEPSİ -->
+  <main class="game-layout">
+    <!-- SOL: TAHTA BÖLÜMÜ -->
+    <section class="board-card">
+      <div class="level-selector-bar">
+        <button class="lvl-btn active" data-level="3x5">🟢 1. Seviye (3x5 Mini)</button>
+        <button class="lvl-btn" data-level="4x5">🔵 2. Seviye (4x5 Tahta)</button>
+        <button class="lvl-btn" data-level="5x5">🟣 3. Seviye (5x5 Tahta)</button>
+        <button class="lvl-btn" data-level="6x5">🟠 4. Seviye (6x5 Tahta)</button>
+        <button class="lvl-btn" data-level="6x10">🏆 5. Seviye (6x10 Büyük)</button>
+        <button class="lvl-btn" data-level="free">🎨 Serbest Mod</button>
+      </div>
+
+      <div class="board-header-info">
+        <span id="boardTitleLabel">📐 Hedef Tahta: 3x5 (15 Kare)</span>
+        <span>Yerleşen: <b id="statPlaced">0</b> / <b id="statTotal">3</b> | Boş: <b id="statEmpty">15</b></span>
+      </div>
+
+      <div class="board-frame">
+        <div class="pentomino-grid" id="pentominoBoard"></div>
+      </div>
+
+      <div class="game-actions-bar">
+        <button class="action-btn primary" id="btnCheck">
+          🔍 Kontrol Et
+        </button>
+        <button class="action-btn btn-hint" id="btnHint">
+          💡 İpucu
+        </button>
+        <button class="action-btn" id="btnSolve">
+          👁️ Çözümü Göster
+        </button>
+        <button class="action-btn" id="btnUndo">
+          ⟲ Geri Al
+        </button>
+        <button class="action-btn" id="btnClear">
+          🗑️ Temizle
+        </button>
+      </div>
+    </section>
+
+    <!-- SAĞ: SEÇİLİ PARÇA VE PARÇA HAVUZU -->
+    <aside class="side-panel">
+      <!-- SEÇİLİ PARÇA KARTI (DÖNDÜRME VE ÇEVİRME KONTROLLERİ) -->
+      <div class="active-piece-card" id="activePieceCard">
+        <div class="active-piece-title">
+          <span>🎯 Seçili Parça:</span>
+          <span id="activePieceName" style="color: #fff;">-</span>
+        </div>
+
+        <div class="active-piece-preview" id="activePreview">
+          <span style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px;">
+            Aşağıdaki tepsiden bir parça seçin
+          </span>
+        </div>
+
+        <div class="piece-manip-btns">
+          <button class="action-btn btn-rotate" id="btnRotate" title="90 Derece Döndür (R / Boşluk)">
+            ↻ Döndür (R)
+          </button>
+          <button class="action-btn btn-flip" id="btnFlip" title="Ters Çevir / Ayna (F)">
+            ⇄ Çevir (F)
+          </button>
+          <button class="action-btn btn-cancel" id="btnCancel" title="Seçimi Bırak (Esc)">
+            ✕ Bırak
+          </button>
+        </div>
+      </div>
+
+      <!-- PARÇA TEPSİSİ -->
+      <div class="tray-card">
+        <div class="tray-header">
+          <div class="tray-title">📦 Kullanılabilir Parçalar</div>
+          <div class="tray-counter" id="trayCounter">Kalan: 3 / 3</div>
+        </div>
+        <div class="tray-grid" id="pieceTray"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- YÖNERGE MODALI -->
+  <div class="modal-overlay" id="guideModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" data-close="guideModal">✕</button>
+      <div class="splash-rules-title" style="font-size: 19px; margin-bottom: 14px;">
+        📌 Pentomino Nasıl Oynanır?
+      </div>
+      <ul class="splash-rules-list" style="gap: 12px;">
+        <li>
+          <span class="splash-step-num">1</span>
+          <span><b>12 Geometrik Parça:</b> Her parça 5 birim kareden oluşur ve harf isimleriyle (F, L, P, X vb.) anılır.</span>
+        </li>
+        <li>
+          <span class="splash-step-num">2</span>
+          <span><b>Sağ Panelden Döndürme:</b> Bir parçayı seçtiğinizde sağ paneldeki <b>↻ Döndür</b> butonuna basarak 90 derece çevirebilir veya <b>⇄ Çevir</b> ile aynalayabilirsiniz. Klavyeden <b>[R]</b> ve <b>[F]</b> tuşları da çalışır.</span>
+        </li>
+        <li>
+          <span class="splash-step-num">3</span>
+          <span><b>Boşluksuz Yerleşim:</b> Tahtada hiç boş kare bırakmadan ve taşma olmadan tüm alanı kaplayın.</span>
+        </li>
+        <li>
+          <span class="splash-step-num">💡</span>
+          <span><b>Pratik İpucu:</b> Tahtadaki bir parçaya tıklayarak onu tekrar elinize alabilir, sağ panelden döndürüp başka bir yere yerleştirebilirsiniz!</span>
+        </li>
+      </ul>
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="action-btn primary" style="margin: 0 auto;" data-close="guideModal">
+          Anladım, Oyuna Dön
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZAFER MODALI -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card victory-card">
+      <div class="trophy-glow">🏆</div>
+      <h2 class="victory-title">Tebrikler, Bulmacayı Çözdünüz!</h2>
+      <p class="victory-desc" id="victoryDesc">
+        Hedef alanı tek bir boşluk bırakmadan başarıyla tamamladınız!
+      </p>
+      <div class="victory-actions">
+        <button class="action-btn primary" id="btnNextLevel">
+          Sonraki Bulmaca ➔
+        </button>
+        <button class="action-btn" id="btnReplayVictory">
+          🔄 Yeniden Oyna
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UYARI MODALI -->
+  <div class="modal-overlay" id="warningModal">
+    <div class="modal-card warning-modal-card">
+      <div style="font-size: 50px;">💡</div>
+      <h2 style="font-size: 21px; font-weight: 800; color: #fcd34d;">Henüz Tamamlanmadı!</h2>
+      <p style="font-size: 14px; color: #cbd5e1; max-width: 440px;" id="warningText">
+        Tahtada henüz boş kareler veya yerleşmemiş parçalar bulunuyor. Tekrar deneyebilirsiniz!
+      </p>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="action-btn primary" data-close="warningModal">
+          Denemeye Devam Et
+        </button>
+        <button class="action-btn btn-reset" id="btnRestartFromWarning">
+          🔁 Baştan Başla
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    /* ========================================================================= */
+    /* 5. SES EFEKTLERİ (WEB AUDIO API - SIFIR HARİCİ DOSYA)                     */
+    /* ========================================================================= */
+    let soundEnabled = localStorage.getItem('pentomino_muted') !== 'true';
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playBeep(freq, type = 'sine', duration = 0.1) {
+      if (!soundEnabled) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function playSuccessFanfare() {
+      if (!soundEnabled) return;
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+        setTimeout(() => playBeep(f, 'triangle', 0.25), idx * 120);
+      });
+    }
+
+    /* ========================================================================= */
+    /* 6. SCORM 1.2 MOTORU                                                       */
+    /* ========================================================================= */
+    const ScormManager = {
+      api: null,
+      startTime: null,
+      isInitialized: false,
+
+      findAPI(win) {
+        let attempts = 0;
+        while (win && !win.API && attempts < 10) {
+          if (win.parent && win.parent !== win) win = win.parent;
+          else break;
+          attempts++;
+        }
+        return win ? win.API : null;
+      },
+
+      init() {
+        this.startTime = new Date();
+        try {
+          this.api = this.findAPI(window);
+          if (!this.api && window.opener) this.api = this.findAPI(window.opener);
+          if (this.api) {
+            const res = this.api.LMSInitialize("");
+            if (res === "true" || res === true) {
+              this.isInitialized = true;
+              this.api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+              this.api.LMSCommit("");
+            }
+          }
+        } catch (e) {}
+      },
+
+      formatTime(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      },
+
+      commitProgress(score, status) {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          if (score !== undefined) {
+            this.api.LMSSetValue("cmi.core.score.raw", String(score));
+            this.api.LMSSetValue("cmi.core.score.min", "0");
+            this.api.LMSSetValue("cmi.core.score.max", "100");
+          }
+          if (status) {
+            this.api.LMSSetValue("cmi.core.lesson_status", status);
+          }
+          if (this.startTime) {
+            const elapsed = new Date() - this.startTime;
+            this.api.LMSSetValue("cmi.core.session_time", this.formatTime(elapsed));
+          }
+          this.api.LMSCommit("");
+        } catch (e) {}
+      },
+
+      finish() {
+        if (!this.isInitialized || !this.api) return;
+        try {
+          if (this.startTime) {
+            const elapsed = new Date() - this.startTime;
+            this.api.LMSSetValue("cmi.core.session_time", this.formatTime(elapsed));
+          }
+          this.api.LMSFinish("");
+          this.isInitialized = false;
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener('load', () => ScormManager.init());
+    window.addEventListener('beforeunload', () => ScormManager.finish());
+
+    /* ========================================================================= */
+    /* PENTOMİNO GEOMETRİSİ VE SEVİYELER                                        */
+    /* ========================================================================= */
+    const PIECE_DEFS = {
+      'I': { coords: [[0,0], [0,1], [0,2], [0,3], [0,4]], color: '#38bdf8', label: 'I Parçası' },
+      'X': { coords: [[0,1], [1,0], [1,1], [1,2], [2,1]], color: '#ec4899', label: 'X Parçası' },
+      'V': { coords: [[0,0], [1,0], [2,0], [2,1], [2,2]], color: '#10b981', label: 'V Parçası' },
+      'W': { coords: [[0,0], [1,0], [1,1], [2,1], [2,2]], color: '#f59e0b', label: 'W Parçası' },
+      'Z': { coords: [[0,0], [0,1], [1,1], [2,1], [2,2]], color: '#8b5cf6', label: 'Z Parçası' },
+      'T': { coords: [[0,0], [0,1], [0,2], [1,1], [2,1]], color: '#06b6d4', label: 'T Parçası' },
+      'U': { coords: [[0,0], [0,2], [1,0], [1,1], [1,2]], color: '#eab308', label: 'U Parçası' },
+      'F': { coords: [[0,1], [0,2], [1,0], [1,1], [2,1]], color: '#f43f5e', label: 'F Parçası' },
+      'P': { coords: [[0,0], [0,1], [1,0], [1,1], [2,0]], color: '#6366f1', label: 'P Parçası' },
+      'L': { coords: [[0,0], [1,0], [2,0], [3,0], [3,1]], color: '#14b8a6', label: 'L Parçası' },
+      'Y': { coords: [[0,1], [1,0], [1,1], [2,1], [3,1]], color: '#fb923c', label: 'Y Parçası' },
+      'N': { coords: [[0,1], [1,1], [2,0], [2,1], [3,0]], color: '#a855f7', label: 'N Parçası' }
+    };
+
+    const LEVELS = {
+      '3x5': {
+        title: "1. Seviye: 3x5 Isınma Tahtası",
+        rows: 3, cols: 5,
+        pieces: ['P', 'L', 'V'],
+        solution: {
+          "P": [[0,0], [0,1], [1,0], [1,1], [1,2]],
+          "V": [[0,2], [0,3], [0,4], [1,4], [2,4]],
+          "L": [[1,3], [2,0], [2,1], [2,2], [2,3]]
+        }
+      },
+      '4x5': {
+        title: "2. Seviye: 4x5 Keşif Tahtası",
+        rows: 4, cols: 5,
+        pieces: ['P', 'L', 'U', 'F'],
+        solution: {
+          "P": [[0,0], [0,1], [1,0], [1,1], [2,1]],
+          "U": [[0,2], [0,3], [0,4], [1,2], [1,4]],
+          "F": [[1,3], [2,2], [2,3], [2,4], [3,4]],
+          "L": [[2,0], [3,0], [3,1], [3,2], [3,3]]
+        }
+      },
+      '5x5': {
+        title: "3. Seviye: 5x5 Gelişme Tahtası",
+        rows: 5, cols: 5,
+        pieces: ['P', 'L', 'U', 'V', 'W'],
+        solution: {
+          "P": [[0,0], [0,1], [1,0], [1,1], [2,0]],
+          "V": [[0,2], [0,3], [0,4], [1,4], [2,4]],
+          "U": [[1,2], [1,3], [2,3], [3,2], [3,3]],
+          "W": [[2,1], [2,2], [3,0], [3,1], [4,0]],
+          "L": [[3,4], [4,1], [4,2], [4,3], [4,4]]
+        }
+      },
+      '6x5': {
+        title: "4. Seviye: 6x5 Ustalık Tahtası",
+        rows: 6, cols: 5,
+        pieces: ['P', 'L', 'U', 'V', 'I', 'T'],
+        solution: {
+          "P": [[0,0], [1,0], [1,1], [2,0], [2,1]],
+          "V": [[0,1], [0,2], [0,3], [1,3], [2,3]],
+          "I": [[0,4], [1,4], [2,4], [3,4], [4,4]],
+          "L": [[1,2], [2,2], [3,2], [4,1], [4,2]],
+          "U": [[3,0], [3,1], [4,0], [5,0], [5,1]],
+          "T": [[3,3], [4,3], [5,2], [5,3], [5,4]]
+        }
+      },
+      '6x10': {
+        title: "5. Seviye: 6x10 Büyük Şampiyonluk (12 Parça)",
+        rows: 6, cols: 10,
+        pieces: ['I', 'X', 'V', 'W', 'Z', 'T', 'U', 'F', 'P', 'L', 'Y', 'N'],
+        solution: {
+          "I": [[0,0], [0,1], [0,2], [0,3], [0,4]],
+          "V": [[0,6], [0,7], [0,8], [1,8], [2,8]],
+          "L": [[0,9], [1,9], [2,9], [3,8], [3,9]],
+          "P": [[4,0], [4,1], [5,0], [5,1], [5,2]],
+          "U": [[1,0], [1,1], [1,2], [2,0], [2,2]],
+          "X": [[0,5], [1,4], [1,5], [1,6], [2,5]],
+          "Y": [[1,3], [2,3], [3,3], [4,3], [2,4]],
+          "F": [[2,1], [3,0], [3,1], [3,2], [4,2]],
+          "W": [[1,7], [2,6], [2,7], [3,5], [3,6]],
+          "T": [[3,4], [4,4], [5,3], [5,4], [5,5]],
+          "N": [[4,5], [4,6], [5,6], [5,7], [5,8]],
+          "Z": [[3,7], [4,7], [4,8], [4,9], [5,9]]
+        }
+      },
+      'free': {
+        title: "6. Seviye: Serbest Atölye",
+        rows: 6, cols: 10,
+        pieces: ['I', 'X', 'V', 'W', 'Z', 'T', 'U', 'F', 'P', 'L', 'Y', 'N'],
+        solution: null
+      }
+    };
+
+    /* MATEMATİKSEL NORMALİZASYON VE DÖNDÜRME */
+    function normalizeCoords(coords) {
+      const minR = Math.min(...coords.map(p => p[0]));
+      const minC = Math.min(...coords.map(p => p[1]));
+      return coords.map(([r, c]) => [r - minR, c - minC]).sort((a,b) => a[0] - b[0] || a[1] - b[1]);
+    }
+
+    function rotateCoords(coords) {
+      const rot = coords.map(([r, c]) => [c, -r]);
+      return normalizeCoords(rot);
+    }
+
+    function flipCoords(coords) {
+      const flp = coords.map(([r, c]) => [r, -c]);
+      return normalizeCoords(flp);
+    }
+
+    /* ========================================================================= */
+    /* OYUN DURUMU VE MOTOR                                                      */
+    /* ========================================================================= */
+    let currentLevelKey = '3x5';
+    let boardState = [];
+    let placedPieces = {};
+    let activePieceKey = null;
+    let activePieceCoords = [];
+    let moveHistory = [];
+
+    function selectLevel(lvlKey) {
+      currentLevelKey = lvlKey;
+      document.querySelectorAll('.lvl-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.level === lvlKey);
+      });
+
+      const lvl = LEVELS[lvlKey];
+      boardState = Array.from({ length: lvl.rows }, () => Array(lvl.cols).fill(null));
+      placedPieces = {};
+      moveHistory = [];
+      activePieceKey = null;
+      activePieceCoords = [];
+
+      document.getElementById('boardTitleLabel').textContent = `📐 ${lvl.title} (${lvl.rows * lvl.cols} Kare)`;
+      setStatus(`Hedef: ${lvl.pieces.length} parçayı boşluk bırakmadan tahtaya yerleştirin.`, 'normal');
+
+      buildBoard();
+      buildTray();
+      updateActivePreview();
+      updateStats();
+      playBeep(480, 'sine', 0.1);
+    }
+
+    function buildBoard() {
+      const boardEl = document.getElementById('pentominoBoard');
+      const lvl = LEVELS[currentLevelKey];
+      boardEl.style.gridTemplateColumns = `repeat(${lvl.cols}, var(--cell-size))`;
+      boardEl.style.gridTemplateRows = `repeat(${lvl.rows}, var(--cell-size))`;
+      boardEl.innerHTML = '';
+
+      if (lvl.cols >= 10 && window.innerWidth < 800) {
+        document.documentElement.style.setProperty('--cell-size', '38px');
+      } else if (lvl.cols >= 10) {
+        document.documentElement.style.setProperty('--cell-size', '48px');
+      } else {
+        document.documentElement.style.setProperty('--cell-size', '54px');
+      }
+
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'p-cell';
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+
+          cell.addEventListener('mouseenter', () => onCellHover(r, c));
+          cell.addEventListener('mouseleave', clearHoverHighlights);
+          cell.addEventListener('click', () => onCellClick(r, c));
+
+          boardEl.appendChild(cell);
+        }
+      }
+      renderBoardPieces();
+    }
+
+    function renderBoardPieces() {
+      const lvl = LEVELS[currentLevelKey];
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          const cell = document.querySelector(`.p-cell[data-r='${r}'][data-c='${c}']`);
+          if (!cell) continue;
+          cell.innerHTML = '';
+
+          const pieceKey = boardState[r][c];
+          if (pieceKey) {
+            const def = PIECE_DEFS[pieceKey];
+            const block = document.createElement('div');
+            block.className = 'cell-inner-block';
+            block.style.background = `linear-gradient(135deg, ${def.color}, ${darkenColor(def.color, 25)})`;
+            block.textContent = pieceKey;
+            block.title = `${def.label} (Geri almak veya döndürmek için tıkla)`;
+            cell.appendChild(block);
+          }
+        }
+      }
+      updateStats();
+    }
+
+    function buildTray() {
+      const trayEl = document.getElementById('pieceTray');
+      trayEl.innerHTML = '';
+      const lvl = LEVELS[currentLevelKey];
+
+      lvl.pieces.forEach(key => {
+        const item = document.createElement('div');
+        item.className = 'tray-item';
+        item.id = `tray-${key}`;
+        if (placedPieces[key]) item.classList.add('placed');
+        if (activePieceKey === key) item.classList.add('selected');
+
+        item.onclick = () => selectPiece(key);
+
+        const svg = createPieceSvg(key, PIECE_DEFS[key].coords, PIECE_DEFS[key].color, 12);
+        item.appendChild(svg);
+
+        const lbl = document.createElement('div');
+        lbl.className = 'tray-item-label';
+        lbl.textContent = PIECE_DEFS[key].label;
+        item.appendChild(lbl);
+
+        trayEl.appendChild(item);
+      });
+
+      updateTrayCounter();
+    }
+
+    function createPieceSvg(key, coords, color, cellSize = 16) {
+      const maxR = Math.max(...coords.map(p => p[0])) + 1;
+      const maxC = Math.max(...coords.map(p => p[1])) + 1;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', maxC * cellSize);
+      svg.setAttribute('height', maxR * cellSize);
+      svg.style.overflow = 'visible';
+
+      coords.forEach(([r, c]) => {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', c * cellSize + 0.5);
+        rect.setAttribute('y', r * cellSize + 0.5);
+        rect.setAttribute('width', cellSize - 1);
+        rect.setAttribute('height', cellSize - 1);
+        rect.setAttribute('rx', 2.5);
+        rect.setAttribute('fill', color);
+        rect.setAttribute('stroke', 'rgba(255,255,255,0.45)');
+        rect.setAttribute('stroke-width', 1);
+        svg.appendChild(rect);
+      });
+      return svg;
+    }
+
+    function selectPiece(key) {
+      if (placedPieces[key]) {
+        removePieceFromBoard(key);
+      }
+      activePieceKey = key;
+      activePieceCoords = normalizeCoords(PIECE_DEFS[key].coords);
+      updateTrayUI();
+      updateActivePreview();
+      playBeep(420, 'sine', 0.08);
+      setStatus(`${PIECE_DEFS[key].label} seçildi. Sağdaki [↻ Döndür] ile çevirebilir, tahtadaki kareye dokunarak yerleştirebilirsiniz.`, 'highlight');
+    }
+
+    function updateTrayUI() {
+      const lvl = LEVELS[currentLevelKey];
+      lvl.pieces.forEach(key => {
+        const item = document.getElementById(`tray-${key}`);
+        if (!item) return;
+        item.classList.toggle('selected', activePieceKey === key);
+        item.classList.toggle('placed', !!placedPieces[key]);
+      });
+      updateTrayCounter();
+    }
+
+    function updateTrayCounter() {
+      const lvl = LEVELS[currentLevelKey];
+      const placedCount = Object.keys(placedPieces).length;
+      document.getElementById('trayCounter').textContent = `Kalan: ${lvl.pieces.length - placedCount} / ${lvl.pieces.length}`;
+    }
+
+    function updateActivePreview() {
+      const cardEl = document.getElementById('activePieceCard');
+      const prevEl = document.getElementById('activePreview');
+      const nameEl = document.getElementById('activePieceName');
+      prevEl.innerHTML = '';
+
+      if (!activePieceKey) {
+        cardEl.classList.remove('has-selection');
+        prevEl.classList.remove('has-selection');
+        prevEl.innerHTML = '<span style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px;">Aşağıdaki tepsiden bir parça seçin veya tahtadaki parçaya tıklayın</span>';
+        nameEl.textContent = '-';
+        nameEl.style.color = '#94a3b8';
+        return;
+      }
+
+      cardEl.classList.add('has-selection');
+      prevEl.classList.add('has-selection');
+      const def = PIECE_DEFS[activePieceKey];
+      nameEl.textContent = def.label;
+      nameEl.style.color = def.color;
+
+      const svg = createPieceSvg(activePieceKey, activePieceCoords, def.color, 24);
+      prevEl.appendChild(svg);
+    }
+
+    function rotateActivePiece() {
+      if (!activePieceKey) return;
+      activePieceCoords = rotateCoords(activePieceCoords);
+      updateActivePreview();
+      playBeep(520, 'triangle', 0.08);
+      setStatus(`${PIECE_DEFS[activePieceKey].label} 90° döndürüldü.`, 'highlight');
+    }
+
+    function flipActivePiece() {
+      if (!activePieceKey) return;
+      activePieceCoords = flipCoords(activePieceCoords);
+      updateActivePreview();
+      playBeep(460, 'triangle', 0.08);
+      setStatus(`${PIECE_DEFS[activePieceKey].label} ters çevrildi.`, 'highlight');
+    }
+
+    function cancelActivePiece() {
+      activePieceKey = null;
+      activePieceCoords = [];
+      updateTrayUI();
+      updateActivePreview();
+      clearHoverHighlights();
+      playBeep(300, 'sine', 0.06);
+      setStatus('Seçim bırakıldı.', 'normal');
+    }
+
+    /* ======================================================================= */
+    /* KESİN ÇAPA VE AKILLI YERLEŞTİRME HESAPLAYICISI                         */
+    /* ======================================================================= */
+    function getValidPlacement(coords, clickR, clickC) {
+      const lvl = LEVELS[currentLevelKey];
+      const candidates = [];
+
+      for (let i = 0; i < coords.length; i++) {
+        const [anchorR, anchorC] = coords[i];
+        const offsetR = clickR - anchorR;
+        const offsetC = clickC - anchorC;
+
+        let fits = true;
+        const cells = [];
+
+        for (const [dr, dc] of coords) {
+          const nr = offsetR + dr;
+          const nc = offsetC + dc;
+          if (nr < 0 || nr >= lvl.rows || nc < 0 || nc >= lvl.cols || boardState[nr][nc] !== null) {
+            fits = false;
+            break;
+          }
+          cells.push([nr, nc]);
+        }
+
+        if (fits) {
+          candidates.push({ index: i, cells: cells });
+        }
+      }
+
+      if (candidates.length === 0) return null;
+      candidates.sort((a, b) => a.index - b.index);
+      return candidates[0].cells;
+    }
+
+    function onCellHover(r, c) {
+      if (!activePieceKey || activePieceCoords.length === 0) return;
+      clearHoverHighlights();
+
+      const validCells = getValidPlacement(activePieceCoords, r, c);
+      if (validCells) {
+        validCells.forEach(([nr, nc]) => {
+          const cell = document.querySelector(`.p-cell[data-r='${nr}'][data-c='${nc}']`);
+          if (cell) cell.classList.add('hover-valid');
+        });
+      } else {
+        const [ar, ac] = activePieceCoords[0];
+        activePieceCoords.forEach(([dr, dc]) => {
+          const nr = r + dr - ar;
+          const nc = c + dc - ac;
+          const cell = document.querySelector(`.p-cell[data-r='${nr}'][data-c='${nc}']`);
+          if (cell) cell.classList.add('hover-invalid');
+        });
+      }
+    }
+
+    function clearHoverHighlights() {
+      document.querySelectorAll('.p-cell').forEach(c => {
+        c.classList.remove('hover-valid', 'hover-invalid');
+      });
+    }
+
+    function onCellClick(r, c) {
+      const existingKey = boardState[r][c];
+
+      // 1. Tahtadaki parçaya tıklanırsa: Parçayı kaldırıp eline al (mevcut yönelimi korunur!)
+      if (!activePieceKey && existingKey) {
+        const placedCells = placedPieces[existingKey];
+        if (placedCells) {
+          activePieceCoords = normalizeCoords(placedCells);
+        }
+        removePieceFromBoard(existingKey);
+        activePieceKey = existingKey;
+        updateTrayUI();
+        updateActivePreview();
+        playBeep(420, 'sine', 0.08);
+        setStatus(`${PIECE_DEFS[existingKey].label} seçildi. Döndürebilir veya başka kareye koyabilirsiniz.`, 'highlight');
+        return;
+      }
+
+      // 2. Aktif parça varsa ve tahtaya tıklanırsa:
+      if (activePieceKey) {
+        const validCells = getValidPlacement(activePieceCoords, r, c);
+        if (validCells) {
+          validCells.forEach(([nr, nc]) => {
+            boardState[nr][nc] = activePieceKey;
+          });
+          placedPieces[activePieceKey] = validCells;
+          moveHistory.push({ key: activePieceKey, cells: validCells });
+
+          playBeep(360, 'triangle', 0.1);
+          clearHoverHighlights();
+          renderBoardPieces();
+
+          activePieceKey = null;
+          activePieceCoords = [];
+
+          updateTrayUI();
+          updateActivePreview();
+          checkCompletion();
+        } else {
+          playBeep(220, 'sawtooth', 0.15);
+          setStatus('Bu parça buraya sığmıyor! Döndürmek için [↻ Döndür] veya [R] tuşunu kullan.', 'highlight');
+        }
+      }
+    }
+
+    function removePieceFromBoard(key) {
+      const lvl = LEVELS[currentLevelKey];
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          if (boardState[r][c] === key) boardState[r][c] = null;
+        }
+      }
+      delete placedPieces[key];
+      renderBoardPieces();
+      updateTrayUI();
+    }
+
+    function undoMove() {
+      if (moveHistory.length === 0) {
+        setStatus('Geri alınacak hamle bulunmuyor.', 'normal');
+        return;
+      }
+      const last = moveHistory.pop();
+      removePieceFromBoard(last.key);
+      activePieceKey = last.key;
+      activePieceCoords = normalizeCoords(last.cells);
+      updateTrayUI();
+      updateActivePreview();
+      playBeep(380, 'sine', 0.08);
+      setStatus(`${PIECE_DEFS[last.key].label} geri alındı.`, 'normal');
+    }
+
+    function clearBoard() {
+      const lvl = LEVELS[currentLevelKey];
+      boardState = Array.from({ length: lvl.rows }, () => Array(lvl.cols).fill(null));
+      placedPieces = {};
+      moveHistory = [];
+      activePieceKey = null;
+      activePieceCoords = [];
+      playBeep(320, 'sine', 0.1);
+      renderBoardPieces();
+      updateTrayUI();
+      updateActivePreview();
+      setStatus('Tahta temizlendi. Parçalar tepsisine geri döndü.', 'normal');
+    }
+
+    function updateStats() {
+      const lvl = LEVELS[currentLevelKey];
+      const placedCount = Object.keys(placedPieces).length;
+      let emptyCount = 0;
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          if (boardState[r][c] === null) emptyCount++;
+        }
+      }
+      document.getElementById('statPlaced').textContent = placedCount;
+      document.getElementById('statTotal').textContent = lvl.pieces.length;
+      document.getElementById('statEmpty').textContent = emptyCount;
+    }
+
+    function setStatus(msg, style = 'normal') {
+      const box = document.getElementById('statusBox');
+      box.textContent = msg;
+      box.className = `status-box ${style === 'highlight' ? 'highlight' : style === 'success' ? 'success' : ''}`;
+    }
+
+    /* KONTROL, İPUCU VE ÇÖZÜM */
+    function checkCompletion() {
+      const lvl = LEVELS[currentLevelKey];
+      let emptyCount = 0;
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          if (boardState[r][c] === null) emptyCount++;
+        }
+      }
+
+      if (emptyCount === 0 && Object.keys(placedPieces).length === lvl.pieces.length) {
+        setTimeout(triggerVictory, 250);
+      }
+    }
+
+    function checkManual() {
+      const lvl = LEVELS[currentLevelKey];
+      let emptyCount = 0;
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          if (boardState[r][c] === null) emptyCount++;
+        }
+      }
+      const unplaced = lvl.pieces.length - Object.keys(placedPieces).length;
+
+      if (emptyCount === 0 && unplaced === 0) {
+        triggerVictory();
+      } else {
+        playBeep(220, 'sawtooth', 0.18);
+        document.getElementById('warningText').textContent = 
+          `Tahtada ${emptyCount} boş kare ve tepside yerleşmemiş ${unplaced} parça bulunuyor. Tekrar deneyebilirsiniz!`;
+        document.getElementById('warningModal').classList.add('active');
+      }
+    }
+
+    function triggerVictory() {
+      playSuccessFanfare();
+      launchConfetti();
+      setStatus('TEBRİKLER! TÜM PARÇALARI KUSURSUZ ŞEKİLDE YERLEŞTİRDİNİZ!', 'success');
+      ScormManager.commitProgress(100, 'passed');
+
+      const modal = document.getElementById('victoryModal');
+      document.getElementById('victoryDesc').innerHTML = 
+        `<b>${LEVELS[currentLevelKey].title}</b> bulmacasını hiç boşluk bırakmadan başarıyla tamamladınız!`;
+
+      const nextBtn = document.getElementById('btnNextLevel');
+      if (currentLevelKey === '6x10') {
+        nextBtn.textContent = '🎨 Serbest Moda Geç';
+      } else if (currentLevelKey === 'free') {
+        nextBtn.textContent = '🟢 1. Seviyeye Dön';
+      } else {
+        nextBtn.textContent = 'Sonraki Bulmaca ➔';
+      }
+
+      modal.classList.add('active');
+    }
+
+    function giveHint() {
+      const lvl = LEVELS[currentLevelKey];
+      if (!lvl.solution) {
+        setStatus('Serbest modda hazır ipucu bulunmamaktadır.', 'normal');
+        return;
+      }
+
+      const unplaced = lvl.pieces.filter(p => !placedPieces[p]);
+      if (unplaced.length === 0) {
+        setStatus('Tüm parçalar zaten tahtada!', 'highlight');
+        return;
+      }
+
+      const hintKey = unplaced[0];
+      const targetCells = lvl.solution[hintKey];
+
+      // Hedef hücrelerde çakışan parçaları kaldır
+      targetCells.forEach(([r, c]) => {
+        const occ = boardState[r][c];
+        if (occ && occ !== hintKey) removePieceFromBoard(occ);
+      });
+
+      targetCells.forEach(([r, c]) => boardState[r][c] = hintKey);
+      placedPieces[hintKey] = targetCells;
+      moveHistory.push({ key: hintKey, cells: targetCells });
+
+      playBeep(440, 'triangle', 0.12);
+      renderBoardPieces();
+      updateTrayUI();
+      setStatus(`💡 İpucu: ${PIECE_DEFS[hintKey].label} doğru yerine yerleştirildi!`, 'highlight');
+      checkCompletion();
+    }
+
+    function showSolution() {
+      const lvl = LEVELS[currentLevelKey];
+      if (!lvl.solution) {
+        setStatus('Serbest mod için tek bir standart çözüm yoktur.', 'normal');
+        return;
+      }
+
+      clearBoard();
+      for (const [key, cells] of Object.entries(lvl.solution)) {
+        cells.forEach(([r, c]) => boardState[r][c] = key);
+        placedPieces[key] = cells;
+      }
+
+      playBeep(440, 'triangle', 0.15);
+      renderBoardPieces();
+      updateTrayUI();
+      setStatus('👁️ Seviyenin tam çözümü tahtada gösterildi.', 'highlight');
+    }
+
+    /* GÖRSEL VE RENK YARDIMCILARI */
+    function darkenColor(hex, percent) {
+      let num = parseInt(hex.replace('#', ''), 16),
+          amt = Math.round(2.55 * percent),
+          R = (num >> 16) - amt,
+          G = (num >> 8 & 0x00FF) - amt,
+          B = (num & 0x0000FF) - amt;
+      return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255)
+      ).toString(16).slice(1);
+    }
+
+    function buildSplashPreview() {
+      const container = document.getElementById('splashPiecesPreview');
+      container.innerHTML = '';
+      ['P', 'L', 'X', 'V', 'W'].forEach(key => {
+        const def = PIECE_DEFS[key];
+        const div = document.createElement('div');
+        div.className = 'splash-preview-piece';
+        div.innerHTML = `${createPieceSvg(key, def.coords, def.color, 9).outerHTML}<span>${key}</span>`;
+        container.appendChild(div);
+      });
+    }
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#feca57', '#00cec9', '#10ac84', '#ff5252', '#38bdf8', '#ec4899', '#a855f7'];
+
+      for (let i = 0; i < 90; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          size: Math.random() * 8 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speedY: Math.random() * 4 + 2,
+          speedX: Math.random() * 3 - 1.5,
+          rot: Math.random() * 360,
+          rotSpeed: Math.random() * 6 - 3
+        });
+      }
+
+      let animFrame;
+      const render = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let activeCount = 0;
+
+        particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rot += p.rotSpeed;
+
+          if (p.y < canvas.height + 20) {
+            activeCount++;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rot * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        });
+
+        if (activeCount > 0) animFrame = requestAnimationFrame(render);
+        else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          cancelAnimationFrame(animFrame);
+        }
+      };
+      render();
+    }
+
+    /* OLAY DİNLEYİCİLERİ */
+    document.getElementById('btnStartGame').addEventListener('click', () => {
+      document.getElementById('splashOverlay').style.display = 'none';
+      playBeep(480, 'sine', 0.1);
+      setStatus('1. Seviye başladı. Sağdaki tepsiden parça seçin veya tahtaya dokunun.', 'highlight');
+    });
+
+    document.querySelectorAll('.lvl-btn').forEach(btn => {
+      btn.addEventListener('click', () => selectLevel(btn.dataset.level));
+    });
+
+    // SAĞ PANELDEKİ DÖNDÜRME BUTONLARI
+    document.getElementById('btnRotate').addEventListener('click', rotateActivePiece);
+    document.getElementById('btnFlip').addEventListener('click', flipActivePiece);
+    document.getElementById('btnCancel').addEventListener('click', cancelActivePiece);
+
+    // KLAVYE KISAYOLLARI
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'r' || e.key === 'R' || e.key === ' ') {
+        e.preventDefault();
+        rotateActivePiece();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        flipActivePiece();
+      } else if (e.key === 'Escape') {
+        cancelActivePiece();
+      }
+    });
+
+    // FARE TEKERLEĞİ İLE DÖNDÜRME
+    window.addEventListener('wheel', (e) => {
+      if (activePieceKey) {
+        e.preventDefault();
+        rotateActivePiece();
+      }
+    }, { passive: false });
+
+    // SAĞ TIK İLE HIZLI DÖNDÜRME
+    document.addEventListener('contextmenu', (e) => {
+      if (activePieceKey) {
+        e.preventDefault();
+        rotateActivePiece();
+      }
+    });
+
+    // KONTROL VE BUTONLAR
+    document.getElementById('btnCheck').addEventListener('click', checkManual);
+    document.getElementById('btnHint').addEventListener('click', giveHint);
+    document.getElementById('btnSolve').addEventListener('click', showSolution);
+    document.getElementById('btnUndo').addEventListener('click', undoMove);
+    document.getElementById('btnClear').addEventListener('click', clearBoard);
+    document.getElementById('btnRestart').addEventListener('click', clearBoard);
+
+    document.getElementById('btnGuide').addEventListener('click', () => {
+      playBeep(440, 'sine', 0.08);
+      document.getElementById('guideModal').classList.add('active');
+    });
+
+    const soundBtn = document.getElementById('btnToggleSound');
+    soundBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('pentomino_muted', String(!soundEnabled));
+      soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+    });
+    if (!soundEnabled) soundBtn.textContent = '🔇';
+
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      playBeep(440, 'sine', 0.08);
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else document.exitFullscreen().catch(() => {});
+    });
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mId = btn.dataset.close;
+        const modal = document.getElementById(mId);
+        if (modal) modal.classList.remove('active');
+        playBeep(360, 'sine', 0.06);
+      });
+    });
+
+    document.getElementById('btnNextLevel').addEventListener('click', () => {
+      document.getElementById('victoryModal').classList.remove('active');
+      const order = ['3x5', '4x5', '5x5', '6x5', '6x10', 'free'];
+      const idx = order.indexOf(currentLevelKey);
+      const nextKey = idx < order.length - 1 ? order[idx + 1] : order[0];
+      selectLevel(nextKey);
+    });
+
+    document.getElementById('btnReplayVictory').addEventListener('click', () => {
+      document.getElementById('victoryModal').classList.remove('active');
+      clearBoard();
+    });
+
+    document.getElementById('btnRestartFromWarning').addEventListener('click', () => {
+      document.getElementById('warningModal').classList.remove('active');
+      clearBoard();
+    });
+
+    // BAŞLATMA
+    selectLevel('3x5');
+    buildSplashPreview();
+  </script>
+
+<!-- Web Portali Ana Sayfa Donus Butonu -->
+<a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don" style="position: fixed; bottom: 18px; left: 18px; z-index: 99999; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(15, 23, 42, 0.92); color: #ffffff; text-decoration: none; border-radius: 9999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1.5px solid rgba(255, 255, 255, 0.25); transition: all 0.25s ease; cursor: pointer; user-select: none;">
+  <span style="font-size: 16px; line-height: 1;">🏠</span>
+  <span>Ana Sayfa</span>
+</a>
+<script>
+  if (window.self !== window.top) {
+    var hb = document.querySelector('.portal-home-nav-btn');
+    if (hb) hb.style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
