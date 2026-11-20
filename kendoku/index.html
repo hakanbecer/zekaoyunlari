@@ -1940,7 +1940,212 @@
       display: none !important;
     }
   }
-</style>
+
+    /* ========================================================================
+       MOBIL ACILIS YONERGESI & ETKINLIGE BASLA BUTONU MOBIL UYUMLULUK
+       ======================================================================== */
+    .screen-overlay,
+    .splash-overlay,
+    #splashScreen,
+    #splashOverlay {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      overscroll-behavior: contain !important;
+      -webkit-overflow-scrolling: touch !important;
+      touch-action: pan-y !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      padding: 16px 12px 60px 12px !important;
+      box-sizing: border-box !important;
+      z-index: 99999 !important;
+    }
+
+    .screen-overlay.hidden,
+    .splash-overlay.hidden,
+    #splashScreen.hidden,
+    #splashOverlay.hidden,
+    .screen-overlay[style*="display: none"],
+    .splash-overlay[style*="display: none"],
+    #splashScreen[style*="display: none"],
+    #splashOverlay[style*="display: none"] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    .splash-card {
+      margin: auto 0 !important;
+      width: 100% !important;
+      max-width: min(740px, 95vw) !important;
+      box-sizing: border-box !important;
+      overflow: visible !important;
+      flex-shrink: 0 !important;
+      touch-action: pan-y !important;
+    }
+
+    @media (max-width: 640px), (max-height: 720px) {
+      .screen-overlay,
+      .splash-overlay,
+      #splashScreen,
+      #splashOverlay {
+        padding: 10px 8px 40px 8px !important;
+        justify-content: flex-start !important;
+      }
+
+      .splash-card {
+        margin: 6px auto 20px auto !important;
+        padding: 16px 12px 20px 12px !important;
+        border-radius: 18px !important;
+        max-width: 100% !important;
+      }
+
+      .splash-badge,
+      .splash-top-badge {
+        font-size: 10.5px !important;
+        padding: 3px 10px !important;
+        margin-bottom: 6px !important;
+        letter-spacing: 0.3px !important;
+      }
+
+      .splash-title {
+        font-size: clamp(18px, 4.8vw, 22px) !important;
+        margin-bottom: 4px !important;
+        line-height: 1.25 !important;
+      }
+
+      .splash-subtitle,
+      .splash-desc,
+      .splash-prompt,
+      .splash-prompt-text,
+      .splash-start-note {
+        font-size: 12px !important;
+        margin-bottom: 8px !important;
+        line-height: 1.35 !important;
+      }
+
+      .splash-preview,
+      .splash-tiles-preview,
+      .splash-marbles,
+      .splash-preview-panel,
+      .splash-pieces-preview {
+        max-height: 80px !important;
+        margin-bottom: 8px !important;
+        padding: 6px 10px !important;
+        transform: scale(0.85) !important;
+        transform-origin: center top !important;
+      }
+
+      .splash-preview svg,
+      .splash-preview-svg,
+      .preview-pyramid-svg {
+        max-height: 75px !important;
+        width: auto !important;
+      }
+
+      .splash-instructions,
+      .splash-rules-box,
+      .instructions-box,
+      .rules-grid,
+      .splash-rules-grid,
+      .splash-rules-list,
+      .rules-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 10px 10px !important;
+        margin-bottom: 10px !important;
+        border-radius: 14px !important;
+        max-height: min(44vh, 250px) !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+      }
+
+      .instructions-header,
+      .splash-instructions-title,
+      .splash-rules-title,
+      .rules-title {
+        font-size: 13px !important;
+        margin-bottom: 6px !important;
+        gap: 6px !important;
+      }
+
+      .splash-instructions-list,
+      .splash-rules-list,
+      .instructions-list {
+        gap: 6px !important;
+      }
+
+      .splash-instructions-list li,
+      .splash-rules-list li,
+      .instructions-list li,
+      .splash-rule-item,
+      .rule-item,
+      .rule-card {
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+        gap: 8px !important;
+        margin-bottom: 4px !important;
+      }
+
+      .step-num,
+      .rule-num,
+      .rule-icon {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        font-size: 11px !important;
+      }
+
+      .btn-start,
+      .btn-start-activity,
+      .btn-splash-start {
+        width: 100% !important;
+        min-height: 48px !important;
+        padding: 12px 18px !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        border-radius: 12px !important;
+        margin-top: 4px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+        touch-action: manipulation !important;
+        cursor: pointer !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 100 !important;
+      }
+    }
+
+    @media (max-height: 520px) {
+      .splash-preview,
+      .splash-tiles-preview,
+      .splash-marbles,
+      .splash-preview-panel,
+      .splash-pieces-preview {
+        display: none !important;
+      }
+      .splash-instructions,
+      .splash-rules-box,
+      .instructions-box {
+        max-height: 140px !important;
+      }
+    }
+
+  </style>
 <a href="../index.html" class="portal-home-nav-btn" title="Oyun Listesine / Ana Sayfaya Don">
   <span style="font-size: 18px; line-height: 1;">🏠</span>
   <span class="btn-label">Ana Sayfa</span>
